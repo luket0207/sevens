@@ -1,0 +1,142 @@
+SEVENS VIBE CODING RULES
+
+Purpose
+- Keep shipping fast without building messy or fragile code.
+- Prefer reuse of existing engine systems before adding new custom code.
+- Keep features easy to review, debug, and extend.
+
+Core Principles
+- Reuse first: always check existing components/utilities before creating new ones.
+- Small focused files: avoid large multi-purpose files.
+- Single responsibility: each file should do one clear job.
+- Consistent style: follow existing project patterns and naming.
+- No hidden magic: keep logic explicit and traceable.
+- Save all vital values to the game state in the gameContext. This way we can use saveGame.jsx in the engine to make a save state which we can reload at a later time.
+
+Folder Structure Rules
+- Keep feature code in `src/game/<feature>/`.
+- Keep shared framework-level logic in `src/engine/`.
+- Keep global styles/tokens in `src/assets/scss/ui/`.
+- Put feature-specific styles next to the feature/component they style.
+- Do not create random top-level folders under `src/` without a clear reason.
+- For new larger features, use this shape:
+  - `src/game/<feature>/components/`
+  - `src/game/<feature>/hooks/`
+  - `src/game/<feature>/utils/`
+  - `src/game/<feature>/state/` (if needed)
+  - `src/game/<feature>/index.jsx` (feature entry)
+
+Code Quality Rules
+- Prefer composition over monolithic components.
+- Soft file-size limits:
+  - Components: target <= 250 lines
+  - Utilities/helpers: target <= 150 lines
+  - If bigger, split into smaller files.
+- Keep business logic out of JSX markup when possible.
+- Extract repeated logic to shared helpers/hooks.
+- Do not duplicate utility logic that already exists.
+- Use clear names (no vague names like `data2`, `temp`, `stuff`).
+- Remove dead code and stale comments.
+- Leave concise comments only where logic is genuinely non-obvious.
+
+State and Data Flow
+- Keep state as local as possible; lift state only when needed by multiple children.
+- Keep derived values computed, not duplicated in state.
+- Prefer pure functions in `utils` for deterministic game logic.
+- Side effects should be isolated and predictable.
+
+Styling and Theme Rules
+- Always use the global SCSS variable system from `src/assets/scss/ui/`.
+- Current global theme sources:
+  - `src/assets/scss/ui/colours.scss`
+  - `src/assets/scss/ui/typography.scss`
+  - `src/assets/scss/ui/_import.scss`
+- New colors/typography tokens must be added to the global token files first.
+- Component styles must consume global tokens; avoid hard-coded hex values.
+- The theme system can evolve, but there must always be one global source of truth for colors and typography.
+
+Engine Reuse Checklist (MANDATORY Before New Code)
+- Before implementing any feature, review and decide if these can be reused:
+  - `src/engine/gameContext/gameContext.jsx`
+  - `src/engine/ui/bars/bars.jsx`
+  - `src/engine/ui/button/button.jsx`
+  - `src/engine/ui/modal/modal.jsx`
+  - `src/engine/ui/modal/modalContext.jsx`
+  - `src/engine/ui/slidePanel/slidePanel.jsx`
+  - `src/engine/ui/toast/toast.jsx`
+  - `src/engine/ui/tooltip/tooltip.jsx`
+  - `src/engine/utils/makeDecision/makeDecision.jsx`
+  - `src/engine/utils/rng/rng.jsx`
+  - `src/engine/utils/saveGame/saveGame.jsx`
+  - `src/engine/utils/timer/timer.jsx`
+- In implementation notes, explicitly record:
+  - Which engine parts were considered
+  - Which were used
+  - Why any were not used
+
+Definition of Done (per feature)
+- Feature behavior works as requested.
+- Reuse checklist completed and documented.
+- Code follows folder and file-size rules.
+- Styling uses global theme tokens.
+- No obvious console errors.
+- `testing.txt` updated with:
+  - How to manually test the feature
+  - Any automated tests that exist or should be added
+- Run quality checks before marking complete:
+  - `npm run lint`
+  - `npm run build`
+
+Vibe Workflow Rules
+- All vibe process files live under `vibe/`.
+- Epic tracking structure:
+  - `vibe/epics/<epic-name>/features.txt`
+  - `vibe/epics/<epic-name>/implementation.txt`
+  - `vibe/epics/<epic-name>/bugs.txt`
+  - `vibe/epics/<epic-name>/testing.txt`
+
+Epics and Files
+- `features.txt`
+  - List every feature/sub-feature needed to complete the epic.
+  - Keep items small enough to implement in one focused pass.
+  - Include status markers: `not started`, `in progress`, `done`.
+  - Includes info on when to stop implemention and start testing, as well as how to test at this point
+- `implementation.txt`
+  - After implementing a feature, add a short entry with:
+    - Feature name
+    - What was implemented
+    - Engine components considered/used/not used (with reasons)
+    - Files changed
+    - Any tradeoffs or follow-up tasks
+- `bugs.txt`
+  - Track bugs related to the epic only.
+  - Each bug entry should include:
+    - Bug title
+    - Repro steps
+    - Expected vs actual behavior
+    - Suspected cause
+    - Attempted fixes
+    - Final fix (if solved)
+    - Status: `not started`, `investigating`, `attempted`, `fixed`, `blocked`
+- `testing.txt`
+  - Must be updated after every feature implementation.
+  - For each feature, include:
+    - Manual test steps written for a non-developer to follow
+    - Expected result for each step
+    - Automated tests completed (unit/integration/e2e where relevant)
+    - Automated tests still needed to fully prove behavior
+    - Test status: `not started`, `in progress`, `passed`, `failed`, `blocked`
+
+Epic Completion Gate
+- An epic is only done when its testing has been run and documented.
+- At the end of every epic, execute and record:
+  - Full manual regression flow for that epic
+  - Relevant automated tests proving the epic works as intended
+  - Any remaining gaps, with clear next actions
+
+Working Agreement While Vibe Coding
+- Build in small increments and log progress in epic files continuously.
+- Do not jump to new features until current feature notes are updated.
+- If blocked, log the blocker and next best option instead of guessing silently.
+- Prefer shippable progress over large risky rewrites.
+- When changing core/shared systems, note potential impact on other epics.
