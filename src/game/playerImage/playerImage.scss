@@ -1,0 +1,158 @@
+@use "../../assets/scss/ui/import" as *;
+
+.playerImage {
+  --player-image-width: 84px;
+  --player-head-size: 42px;
+  --player-body-width: 60px;
+  --player-body-height: 70px;
+  width: var(--player-image-width);
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+.playerImage--small {
+  --player-image-width: 68px;
+  --player-head-size: 34px;
+  --player-body-width: 48px;
+  --player-body-height: 58px;
+}
+
+.playerImage--medium {
+  --player-image-width: 84px;
+  --player-head-size: 42px;
+  --player-body-width: 60px;
+  --player-body-height: 70px;
+}
+
+.playerImage--large {
+  --player-image-width: 104px;
+  --player-head-size: 52px;
+  --player-body-width: 74px;
+  --player-body-height: 84px;
+}
+
+.playerImage__headWrap {
+  position: relative;
+  z-index: 2;
+}
+
+.playerImage__head {
+  width: var(--player-head-size);
+  height: var(--player-head-size);
+  position: relative;
+}
+
+.playerImage__face {
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba($siteBackground, 0.35);
+  box-shadow: inset 0 -2px 0 rgba($siteBackground, 0.15);
+}
+
+.playerImage__head--round .playerImage__face {
+  border-radius: 50%;
+}
+
+.playerImage__head--wide .playerImage__face {
+  transform: scaleX(1.15);
+  border-radius: 48%;
+}
+
+.playerImage__head--tall .playerImage__face {
+  transform: scaleY(1.12);
+  border-radius: 45%;
+}
+
+.playerImage__head--square .playerImage__face {
+  border-radius: 24%;
+}
+
+.playerImage__head--square-tall .playerImage__face {
+  transform: scaleY(1.12);
+  border-radius: 22%;
+}
+
+.playerImage__hair {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  border: 1px solid rgba($siteBackground, 0.28);
+}
+
+.playerImage__hair--short {
+  top: -5%;
+  height: 34%;
+  border-radius: 60% 60% 40% 40%;
+}
+
+.playerImage__hair--short-spikey {
+  top: -12%;
+  height: 34%;
+  clip-path: polygon(0 100%, 10% 35%, 25% 100%, 40% 30%, 55% 100%, 70% 30%, 85% 100%, 100% 35%, 100% 100%);
+}
+
+.playerImage__hair--curly {
+  top: -8%;
+  height: 40%;
+  border-radius: 999px;
+  box-shadow:
+    -8px 0 0 currentColor,
+    8px 0 0 currentColor,
+    -4px 6px 0 currentColor,
+    4px 6px 0 currentColor;
+  color: inherit;
+}
+
+.playerImage__hair--long {
+  top: -8%;
+  height: 58%;
+  border-radius: 48% 48% 35% 35%;
+}
+
+.playerImage__bodyWrap {
+  margin-top: -0.3rem;
+  width: var(--player-body-width);
+  height: var(--player-body-height);
+}
+
+.playerImage__shirt.shirtRenderer {
+  width: 100%;
+  height: 100%;
+}
+
+.playerImageDebug {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.playerImageDebug__section {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.playerImageDebug__title {
+  font-size: 0.95rem;
+}
+
+.playerImageDebug__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.55rem;
+}
+
+.playerImageDebug__card {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  padding: 0.5rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  background: rgba($siteBackground, 0.28);
+}
+
+.playerImageDebug__label {
+  font-size: 0.75rem;
+  color: rgba($lightText, 0.88);
+}
+

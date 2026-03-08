@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import PlayerImageDebugGallery from "../../../playerImage/components/playerImageDebugGallery";
 
 const formatCounts = (counts = {}) => {
   const entries = Object.entries(counts);
@@ -12,7 +13,7 @@ const formatCounts = (counts = {}) => {
     .join(" | ");
 };
 
-const TeamSelectorDebugPanel = ({ selectorState }) => {
+const TeamSelectorDebugPanel = ({ selectorState, teamKit }) => {
   const goalkeeperPool = Array.isArray(selectorState?.goalkeeperPool) ? selectorState.goalkeeperPool : [];
   const outfieldPool = Array.isArray(selectorState?.outfieldPool) ? selectorState.outfieldPool : [];
   const outfieldDebugSummary = selectorState?.outfieldDebugSummary ?? {};
@@ -54,10 +55,14 @@ const TeamSelectorDebugPanel = ({ selectorState }) => {
           <p className="careerStart__hint">Outfield Pool JSON</p>
           <pre className="careerStart__teamDebugJson">{JSON.stringify(outfieldPool, null, 2)}</pre>
         </div>
+
+        <div className="careerStart__teamDebugJsonWrap">
+          <p className="careerStart__hint">Player Image Debug Gallery</p>
+          <PlayerImageDebugGallery teamKit={teamKit} />
+        </div>
       </div>
     </details>
   );
 };
 
 export default TeamSelectorDebugPanel;
-

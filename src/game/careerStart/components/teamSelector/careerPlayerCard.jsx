@@ -6,12 +6,20 @@ import {
   PLAYER_GENERATION_TYPES,
   getRatingDisplayMeta,
 } from "../../../playerGeneration";
+import PlayerImage from "../../../playerImage/components/playerImage";
 
 const getSkillOrder = (playerType) => {
   return playerType === PLAYER_GENERATION_TYPES.GOALKEEPER ? GOALKEEPER_SKILLS : OUTFIELD_SKILLS;
 };
 
-const CareerPlayerCard = ({ player, title, onSelect, selectLabel = "Select Player", compact = false }) => {
+const CareerPlayerCard = ({
+  player,
+  title,
+  onSelect,
+  selectLabel = "Select Player",
+  compact = false,
+  teamKit,
+}) => {
   if (!player) {
     return null;
   }
@@ -28,6 +36,12 @@ const CareerPlayerCard = ({ player, title, onSelect, selectLabel = "Select Playe
   return (
     <article className={cardClasses}>
       <div className="careerStart__playerCardHeader">
+        <PlayerImage
+          appearance={player.appearance}
+          playerType={player.playerType}
+          teamKit={teamKit}
+          size={compact ? "small" : "medium"}
+        />
         <div className="careerStart__playerCardTitleWrap">
           <h3 className="careerStart__playerCardTitle">{title}</h3>
           <p className="careerStart__playerName">{player.name || "Unnamed Player"}</p>

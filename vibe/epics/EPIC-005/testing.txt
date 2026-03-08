@@ -147,7 +147,7 @@ FEAT-511 - Generate All Career Teams and Organise by League
 Manual steps:
 1. Generate a career and inspect competition/team totals in summary.
 Expected:
-- 46 AI teams generated.
+- 51 AI teams generated.
 - Teams grouped into correct competition buckets.
 - Domestic and foreign groups separated in stored state.
 Automated completed:
@@ -314,4 +314,38 @@ Automated completed:
 Automated needed:
 - Integration test that simulates strict-mode double effect invocation for loading route.
 - Regression test asserting generator run restarts correctly after cleanup cancellation.
+Status: in progress
+
+BUG-005 - Foreign Teams Too Highly Rated
+Manual steps:
+1. Open `/career/start` and complete setup requirements.
+2. Click `Start Career` and wait for generation to finish.
+3. Open `/career/home` debug view and inspect teams under `Foreign Champions Cup`.
+Expected:
+- Foreign teams generate within `42..47` overall range.
+- No foreign team is generated below `42` or above `47`.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-005.
+- Focused eslint command on `careerCompetitionSchema.js` was attempted but blocked in this sandbox by `EPERM` path-resolution errors outside writable roots.
+Automated needed:
+- Unit test asserting `foreign-champions-cup` schema bounds are `minOverall: 42`, `maxOverall: 47`.
+- Integration test verifying generated foreign team overall values stay within schema bounds.
+Status: in progress
+
+BUG-006 - Foreign Team Count Incorrect
+Manual steps:
+1. Open `/career/start` and complete setup requirements.
+2. Click `Start Career` and wait for generation to complete.
+3. Open `/career/home` debug view and inspect `Foreign Champions Cup`.
+4. Count generated teams in that competition.
+Expected:
+- `Foreign Champions Cup` contains exactly `12` teams.
+- Career totals reflect `51` AI teams generated overall.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-006.
+Automated needed:
+- Unit test asserting `foreign-champions-cup` schema `teamCount` is `12`.
+- Integration test verifying generated world totals include `51` AI teams and `12` foreign teams.
 Status: in progress

@@ -164,6 +164,7 @@ Feature List
 ----------------------------------------------------------------
 FEAT-601 - Create Reusable Player Image Component
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create a reusable component that renders a player image from player appearance data and team data.
@@ -185,6 +186,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-602 - Add Appearance Array Parsing Utility
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create a clean way to decode the 3-value appearance array into renderable appearance settings.
@@ -206,6 +208,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-603 - Implement Skin Tone and Hair Colour Mapping
 ----------------------------------------------------------------
+Status: done
 
 Description
 Map the first appearance value into the correct skin tone and hair colour combination.
@@ -228,6 +231,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-604 - Implement Head Shape Variants
 ----------------------------------------------------------------
+Status: done
 
 Description
 Render the different head silhouettes defined by the second appearance value.
@@ -251,6 +255,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-605 - Implement Hairstyle Variants
 ----------------------------------------------------------------
+Status: done
 
 Description
 Render the different hairstyles defined by the third appearance value.
@@ -275,6 +280,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-606 - Compose Player Body from Team Kit
 ----------------------------------------------------------------
+Status: done
 
 Description
 Use the player's team kit as the body/shirt portion of the player image.
@@ -294,6 +300,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-607 - Define Player Image Layout and Scaling
 ----------------------------------------------------------------
+Status: done
 
 Description
 Establish the base layout, proportions, and sizing behaviour for the player image component.
@@ -316,6 +323,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-608 - Integrate Player Image into Career Team Selector
 ----------------------------------------------------------------
+Status: done
 
 Description
 Use the new player image component anywhere players are currently displayed in the team selection flow on /career/start.
@@ -336,6 +344,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-609 - Keep Player Image Rendering Reusable Across Future Screens
 ----------------------------------------------------------------
+Status: done
 
 Description
 Ensure the implementation is structured for reuse across the rest of the game.
@@ -357,6 +366,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-610 - Add Player Image Debug/Test Cases
 ----------------------------------------------------------------
+Status: done
 
 Description
 Add lightweight development support to inspect and verify the player image combinations.

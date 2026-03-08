@@ -38,12 +38,12 @@ The career must generate the following teams and league groupings:
 - 8 teams rated 30 to 35 - League 3
 - 8 teams rated 35 to 40 - League 2
 - 8 teams rated 40 to 45 - League 1
-- 7 teams rated 40 to 50 - Foreign teams for the Champions Cup
+- 12 teams rated 42 to 47 - Foreign teams for the Champions Cup
 
 This gives a total of:
 - 39 domestic league teams
-- 7 foreign teams
-- 46 generated AI teams overall
+- 12 foreign teams
+- 51 generated AI teams overall
 
 These should be generated fresh when a new career is started.
 
@@ -264,12 +264,12 @@ Requirements
   - League 3 -> 8 teams rated 30 to 35
   - League 2 -> 8 teams rated 35 to 40
   - League 1 -> 8 teams rated 40 to 45
-  - Foreign Champions Cup -> 7 teams rated 40 to 50
+  - Foreign Champions Cup -> 12 teams rated 42 to 47
 - Keep the competition schema reusable and easy to iterate over during generation.
 
 Acceptance Criteria
 - A single source of truth exists for the league/team generation schema.
-- The schema correctly describes the 46 AI teams required for a new career.
+- The schema correctly describes the 51 AI teams required for a new career.
 
 ----------------------------------------------------------------
 FEAT-504 - Generate Team Overall Values per Competition
@@ -462,7 +462,7 @@ Requirements
 - Keep domestic leagues and foreign teams clearly separated in the resulting data model.
 
 Acceptance Criteria
-- All 46 AI teams are generated.
+- All 51 AI teams are generated.
 - Teams are placed into the correct competition buckets.
 - The resulting structure is suitable for saving into gameContext.
 
@@ -621,7 +621,7 @@ This epic is complete when:
   - 8 teams for League 3 rated 30 to 35
   - 8 teams for League 2 rated 35 to 40
   - 8 teams for League 1 rated 40 to 45
-  - 7 foreign teams rated 40 to 50
+  - 12 foreign teams rated 42 to 47
 - Every generated team includes:
   - team name
   - stadium name

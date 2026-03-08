@@ -31,7 +31,7 @@ const createSelectedSlots = ({ selectedGoalkeeper, selectedOutfieldPlayers }) =>
   ];
 };
 
-const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlayers }) => {
+const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlayers, teamKit }) => {
   const safeSelectorState = normalizeTeamSelectorState(selectorState);
   const goalkeeperGeneration = usePlayerGeneration({
     defaultPlayerType: PLAYER_GENERATION_TYPES.GOALKEEPER,
@@ -135,6 +135,7 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
                     title={`Option ${index + 1}`}
                     onSelect={() => handleSelectCurrentPlayer(player)}
                     selectLabel="Select For Team"
+                    teamKit={teamKit}
                   />
                 ))}
               </div>
@@ -153,7 +154,13 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
           <div className="careerStart__chosenList">
             {selectedSlots.map((slot) =>
               slot.player ? (
-                <CareerPlayerCard key={slot.label} player={slot.player} title={slot.label} compact />
+                <CareerPlayerCard
+                  key={slot.label}
+                  player={slot.player}
+                  title={slot.label}
+                  compact
+                  teamKit={teamKit}
+                />
               ) : (
                 <article key={slot.label} className="careerStart__chosenEmptySlot">
                   <strong>{slot.label}</strong>
@@ -165,10 +172,9 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
         </section>
       </div>
 
-      <TeamSelectorDebugPanel selectorState={safeSelectorState} />
+      <TeamSelectorDebugPanel selectorState={safeSelectorState} teamKit={teamKit} />
     </div>
   );
 };
 
 export default CareerTeamSelector;
-

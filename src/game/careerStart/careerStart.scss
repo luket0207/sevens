@@ -297,14 +297,15 @@
 
 .careerStart__playerCardHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 0.6rem;
 }
 
 .careerStart__playerCardTitleWrap {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .careerStart__playerCardTitle {
@@ -316,6 +317,10 @@
   margin: 0;
   font-size: 0.88rem;
   color: rgba($lightText, 0.86);
+}
+
+.careerStart__playerCard--compact .careerStart__playerCardHeader {
+  gap: 0.5rem;
 }
 
 .careerStart__playerMeta {

@@ -22,8 +22,8 @@ What was implemented:
   - League 3: 8 teams, `30..35`
   - League 2: 8 teams, `35..40`
   - League 1: 8 teams, `40..45`
-  - Foreign Champions Cup: 7 teams, `40..50`
-  - total AI teams = 46.
+  - Foreign Champions Cup: 12 teams, `42..47`
+  - total AI teams = 51.
 - Added shared AI team generator utility:
   - generates team identity (name + stadium), kit set, keeper kit, team overall, player targets, role plan, and full players.
 - Added curated/template identity pools with uniqueness guards:
@@ -210,6 +210,45 @@ Engine components not used:
 
 Files changed:
 - `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+BUG-005 - Foreign Teams Too Highly Rated
+Status: fixed
+
+What was implemented:
+- Reduced foreign competition overall range to tighten generated AI strength distribution.
+- Updated foreign league schema from `40..50` to `42..47` so foreign teams no longer spike too high at generation time.
+
+Engine components used:
+- `rng` (existing generation dependency) consumes updated schema bounds during team-overall generation.
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this constants-only balance adjustment).
+
+Files changed:
+- `src/game/careerGeneration/constants/careerCompetitionSchema.js`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+BUG-006 - Foreign Team Count Incorrect
+Status: fixed
+
+What was implemented:
+- Increased foreign competition team generation count to match updated requirement.
+- Updated schema from `7` to `12` teams for `Foreign Champions Cup`, which raises total AI teams generated from `46` to `51`.
+
+Engine components used:
+- `rng` (existing generation dependency) continues to generate team overalls for the expanded foreign team set via schema iteration.
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this constants-only schema count correction).
+
+Files changed:
+- `src/game/careerGeneration/constants/careerCompetitionSchema.js`
+- `vibe/epics/EPIC-005/features.txt`
 - `vibe/epics/EPIC-005/bugs.txt`
 - `vibe/epics/EPIC-005/implementation.txt`
 - `vibe/epics/EPIC-005/testing.txt`

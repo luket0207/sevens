@@ -65,6 +65,17 @@ const CareerStart = () => {
     });
   }, [awayColour, awayKit, goalkeeperKit, homeColour, homeKit, players, teamName, teamStadium]);
 
+  const selectorTeamKit = useMemo(
+    () => ({
+      homeKit,
+      awayKit,
+      homeColour,
+      awayColour,
+      goalkeeperKit,
+    }),
+    [awayColour, awayKit, goalkeeperKit, homeColour, homeKit]
+  );
+
   const updateKitState = (patch) => {
     Object.entries(patch).forEach(([key, value]) => {
       setGameValue(`career.setup.${key}`, value);
@@ -147,6 +158,7 @@ const CareerStart = () => {
             setGameValue("career.setup.teamSelector", nextSelectorState)
           }
           onUpdatePlayers={(nextPlayers) => setGameValue("career.setup.players", nextPlayers)}
+          teamKit={selectorTeamKit}
         />
       </section>
 

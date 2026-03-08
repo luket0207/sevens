@@ -1,0 +1,61 @@
+EPIC-006 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-601 to FEAT-610 - Reusable Player Image Component and Team Selector Integration
+Status: done
+
+What was implemented:
+- Added a reusable `playerImage` feature module:
+  - `PlayerImage` render component
+  - `parsePlayerAppearance` utility
+  - debug gallery helper component for visual verification.
+- Added centralized appearance parser/mapping utility for the 3-value appearance array:
+  - value 1: skin tone + hair colour mapping (1-5)
+  - value 2: head shape mapping (round, wide, tall, square, square tall)
+  - value 3: hairstyle mapping (bald, short, short spikey, curly, long)
+  - normalizes invalid/non-numeric values into safe `1..5` range.
+- Implemented stylised head silhouette and hairstyle variants in `playerImage.scss`:
+  - simple South-Park-inspired style direction
+  - bald suppresses hair rendering.
+- Composed player body from existing team kit renderer:
+  - reused `ShirtRenderer` for torso/shirt rendering
+  - supports explicit shirt override and default team home kit
+  - supports goalkeeper colour kit fallback from existing keeper kit options.
+- Added scaling/layout variants (`small`, `medium`, `large`) so player image stays readable in cards/lists.
+- Integrated `PlayerImage` into career team selector player displays:
+  - choice cards
+  - chosen-player list cards.
+- Added debug/test support section for image combinations in team selector debug panel:
+  - skin/hair values 1-5
+  - head shape values 1-5
+  - hairstyle values 1-5
+  - team-kit variants (home, away, goalkeeper).
+
+Engine components used:
+- `button` (existing selector card actions remain via engine button).
+
+Engine components not used:
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not required directly for the player-image render/mapping implementation).
+
+Files changed:
+- `src/game/playerImage/components/playerImage.jsx`
+- `src/game/playerImage/components/playerImageDebugGallery.jsx`
+- `src/game/playerImage/utils/appearanceParser.js`
+- `src/game/playerImage/playerImage.scss`
+- `src/game/playerImage/index.js`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/components/teamSelector/careerTeamSelector.jsx`
+- `src/game/careerStart/components/teamSelector/teamSelectorDebugPanel.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-006/features.txt`
+- `vibe/epics/EPIC-006/implementation.txt`
+- `vibe/epics/EPIC-006/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Player image focuses on simplified silhouette readability rather than detailed facial features.
+- Current team selector integration passes team kit from career setup; future screens can pass explicit shirts/teams directly using the reusable component API.
+- No automated unit/component tests were added in this pass; test gaps are listed in `testing.txt`.

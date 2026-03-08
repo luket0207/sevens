@@ -43,9 +43,9 @@ export const CAREER_COMPETITION_SCHEMA = Object.freeze([
     id: "foreign-champions-cup",
     name: "Foreign Champions Cup",
     type: "foreign",
-    teamCount: 7,
-    minOverall: 40,
-    maxOverall: 50,
+    teamCount: 12,
+    minOverall: 42,
+    maxOverall: 47,
   }),
 ]);
 
@@ -57,4 +57,3 @@ export const CAREER_TOTAL_AI_TEAMS = CAREER_COMPETITION_SCHEMA.reduce(
 );
 
 export const CAREER_TOTAL_AI_PLAYERS = CAREER_TOTAL_AI_TEAMS * PLAYERS_PER_TEAM;
-

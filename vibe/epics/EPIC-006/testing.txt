@@ -1,0 +1,148 @@
+EPIC-006 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm.cmd exec eslint -- src/game/playerImage/components/playerImage.jsx src/game/playerImage/components/playerImageDebugGallery.jsx src/game/playerImage/utils/appearanceParser.js src/game/playerImage/index.js src/game/careerStart/components/teamSelector/careerPlayerCard.jsx src/game/careerStart/components/teamSelector/careerTeamSelector.jsx src/game/careerStart/components/teamSelector/teamSelectorDebugPanel.jsx src/game/careerStart/careerStart.jsx`: passed.
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated engine/info modules.
+
+Manual verification note:
+- Manual browser verification checklist below still needs to be executed in-app to fully close EPIC-006 QA.
+
+FEAT-601 - Create Reusable Player Image Component
+Manual steps:
+1. Open `/career/start`.
+2. Generate player choices in the Players section.
+Expected:
+- Player cards render a reusable player image component from appearance + team kit data.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Component test for `PlayerImage` render with different prop combinations.
+Status: in progress
+
+FEAT-602 - Add Appearance Array Parsing Utility
+Manual steps:
+1. Use player image debug gallery in selector debug panel.
+2. Inspect visual outputs for values 1-5 in each slot.
+Expected:
+- Appearance mapping is consistent and stable for normalized values.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for `normalizeAppearanceArray` and `parsePlayerAppearance`.
+Status: in progress
+
+FEAT-603 - Implement Skin Tone and Hair Colour Mapping
+Manual steps:
+1. Open skin/hair mapping row in debug gallery.
+2. Compare values 1-5.
+Expected:
+- Skin/hair combinations map correctly by value.
+- Bald variants do not render hair.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for first-value mapping and bald suppression behavior.
+Status: in progress
+
+FEAT-604 - Implement Head Shape Variants
+Manual steps:
+1. Open head-shape row in debug gallery.
+2. Compare values 1-5.
+Expected:
+- Head silhouettes are visually distinct and match intended mapping.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Visual/component snapshot tests for head shape class mapping.
+Status: in progress
+
+FEAT-605 - Implement Hairstyle Variants
+Manual steps:
+1. Open hairstyle row in debug gallery.
+2. Compare values 1-5.
+Expected:
+- All hairstyle variants render distinctly.
+- Bald shows no hair.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit/component tests for hairstyle class mapping and bald suppression.
+Status: in progress
+
+FEAT-606 - Compose Player Body from Team Kit
+Manual steps:
+1. Inspect player cards in selector.
+2. Compare shirt visuals against current team kits.
+Expected:
+- Torso uses team kit visuals through shared shirt renderer.
+- Away/goalkeeper variants display in debug gallery.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Component test ensuring shirt renderer composition path is used.
+Status: in progress
+
+FEAT-607 - Define Player Image Layout and Scaling
+Manual steps:
+1. Compare normal choice cards vs compact chosen-player cards.
+2. Resize viewport to mobile widths.
+Expected:
+- Player images remain readable and proportionally stable at different sizes.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Visual regression tests across size variants (`small`, `medium`, `large`).
+Status: in progress
+
+FEAT-608 - Integrate Player Image into Career Team Selector
+Manual steps:
+1. Generate choices in `/career/start`.
+2. Confirm image appears on option cards.
+3. Select players and confirm image appears in chosen list cards.
+Expected:
+- Images render in both choice and chosen-player display areas.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Integration/component tests for selector card image presence.
+Status: in progress
+
+FEAT-609 - Keep Player Image Rendering Reusable Across Future Screens
+Manual steps:
+1. Confirm player-image logic is in dedicated feature module files.
+2. Confirm selector-specific logic is not embedded in parser/renderer internals.
+Expected:
+- Rendering and appearance parsing are reusable in non-selector contexts.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests targeting module API contracts and prop handling.
+Status: in progress
+
+FEAT-610 - Add Player Image Debug/Test Cases
+Manual steps:
+1. Open selector debug panel.
+2. Inspect player image debug gallery sections.
+Expected:
+- Gallery exposes all required mapping/test slices:
+  - skin/hair (1-5)
+  - head shape (1-5)
+  - hairstyle (1-5)
+  - team kit variants.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Component test for debug gallery section rendering and item counts.
+Status: in progress

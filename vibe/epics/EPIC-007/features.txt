@@ -1,0 +1,662 @@
+EPIC-007 - Career Calendar and Main Game Loop Structure
+
+Overview
+The goal of this epic is to build the main structural loop for the game around a seasonal calendar.
+
+This epic establishes:
+- the main /career/home structure
+- the season calendar component
+- the schedule/fixture generation for the season
+- the main day-to-day progression flow
+- the new flash modal component for day progression
+- the first real framework for moving through time in Career Mode
+
+Match generation itself is not in scope and must not be implemented or accounted for beyond scheduling fixtures into the calendar.
+
+This epic is about:
+- calendar structure
+- schedule structure
+- progression structure
+- visualisation of events in time
+
+It is not yet about:
+- match simulation
+- playing matches
+- resolving cup outcomes
+- resolving standings from played matches
+- future-season transitions
+- event consequences
+
+================================================================
+Core Structural Goals
+================================================================
+
+The first thing to do is remove the current debugging output on /career/home because it has served its purpose.
+
+Then /career/home should become the main game loop screen for the career.
+
+The layout should be:
+- a calendar panel on the left taking roughly 70% of the width
+- a control panel on the right for navigation/actions
+- a debugging section at the bottom for future and current debug use
+
+The calendar should show the current season schedule and allow the player to move through time.
+
+Only one month should be visible at a time.
+
+================================================================
+Calendar Model
+================================================================
+
+A career can contain multiple seasons over time.
+
+For this epic, we only need to build the structure for one season calendar and support the idea that future seasons can exist later.
+
+One season calendar consists of:
+- 4 months
+- each month has 4 weeks
+- each week has 7 days
+
+This means one season is:
+- 16 total weeks
+- 112 total days
+
+Only one month should be visible at once.
+There should be basic pagination to move between the months.
+
+The calendar should clearly show:
+- what day is the current day
+- what days contain matches
+- what days contain cup draws
+
+When showing a match in the calendar, display:
+- the opponent
+- the competition the match belongs to
+
+================================================================
+League Structure for Starting Career
+================================================================
+
+The player starts in League 5.
+
+League 5 contains:
+- the player team
+- the 7 other generated League 5 teams
+
+That gives:
+- 8 teams total in League 5
+
+A league season uses a double round-robin structure:
+- every team plays every other team home and away
+
+For an 8-team league this gives:
+- 14 league matches per team
+
+There are 16 weeks in the season, so league scheduling must account for:
+- 14 league match weeks
+- 2 non-league-match weeks
+
+League schedule rules:
+- league matches are played on Saturday or Sunday
+- weeks 1 to 7 = league match weeks
+- week 8 = break from league matches
+- weeks 9 to 15 = league match weeks
+- week 16 = reserved for league playoffs and cup finals
+
+This means:
+- weeks 1 to 7 each contain one league match
+- week 8 contains no league match
+- weeks 9 to 15 each contain one league match
+- week 16 contains no normal league match
+
+================================================================
+Cup Competitions
+================================================================
+
+There are 2 cup competitions in the game.
+
+----------------------------------------------------------------
+League Cup
+----------------------------------------------------------------
+
+Participation:
+- every team in Leagues 1 to 4 enters the League Cup
+
+Competition format:
+- random knockout cup
+- 5 rounds total
+
+Draw timing:
+- the draw for the next round happens on the Thursday before the next round of matches is due
+
+League Cup match weeks:
+- week 2
+- week 5
+- week 8
+- week 12
+- week 16
+
+League Cup match day rules:
+- week 2 = Wednesday
+- week 5 = Wednesday
+- week 8 = Saturday
+- week 12 = Wednesday
+- week 16 = Wednesday
+
+Special note:
+- week 8 cup match is on Saturday because there are no league matches that weekend
+
+----------------------------------------------------------------
+Champions Cup
+----------------------------------------------------------------
+
+Participation:
+- top 4 teams from League 1 from the previous season
+- plus 12 foreign teams
+- 16 total teams
+
+Competition format:
+- 4 groups of 4
+- each team plays each other team in its group once
+- top 2 from each group qualify for knockout stage
+
+Knockout quarter-final structure:
+- QF1 = Winner Group A vs Runner-up Group D
+- QF2 = Winner Group B vs Runner-up Group C
+- QF3 = Winner Group C vs Runner-up Group B
+- QF4 = Winner Group D vs Runner-up Group A
+
+Semi-finals:
+- drawn at random from the quarter-final winners
+- home team/random ordering should also be randomised
+
+Final:
+- drawn at random from the semi-final winners
+- home team/random ordering should also be randomised
+
+Champions Cup match weeks:
+- week 1
+- week 4
+- week 8
+- week 11
+- week 14
+- week 16
+
+Champions Cup match day rules:
+- weeks 1, 4, 8, 11, 14 = Wednesday
+- week 16 = Saturday
+
+================================================================
+Playoff Match Rules
+================================================================
+
+A playoff match can also appear in the calendar.
+
+Playoff eligibility:
+- Leagues 5, 4, 3, and 2
+- if a team finishes 2nd or 3rd in those leagues
+- those 2 teams play each other in a playoff
+- the winner gets promoted
+
+Playoff timing:
+- week 16
+- Saturday
+
+Important rule:
+- it is impossible for a Champions Cup team to also be in a playoff
+- so these week 16 Saturday events do not conflict
+
+For this epic, playoff scheduling structure should exist in the calendar model, but no outcome resolution is required yet.
+
+================================================================
+Day Progression
+================================================================
+
+The player must be able to move through days in the calendar.
+
+When moving to a new day:
+- a modal-like visual must appear showing that a new day has started
+- for this, do not use the existing modal component
+- instead, create a new component called Flash Modal
+
+Flash Modal rules:
+- takes:
+  - content
+  - duration in seconds
+- content is displayed in the centre of the screen
+- dark overlay behind it
+- user cannot close it manually
+- user cannot interact with the app while it is active
+- it auto closes after the duration
+- then control returns to the app
+
+The day progression feature must use this Flash Modal to show what day has started.
+
+Important rule:
+- it should only appear when a new day starts
+- it should not repeat again during the same day
+- it should only trigger once per day transition
+
+For events on the calendar:
+- when reaching them for now, do nothing
+- they are placeholders for future logic
+
+================================================================
+Layout Requirements
+================================================================
+
+/career/home should use this general layout:
+
+Main layout:
+- left panel: calendar area, about 70% width
+- right panel: control area
+- bottom section: debugging area
+
+Calendar panel:
+- shows one month at a time
+- supports month pagination
+- shows current day and scheduled events
+
+Control panel:
+- continue / move to next day actions
+- future navigation links to other pages
+- simple structural controls for now
+
+Debug section:
+- reserved for later use
+- can contain schedule/debug output as needed during implementation
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-701 - Remove Existing Career Home Debug View and Replace Page Structure
+----------------------------------------------------------------
+
+Description
+Remove the current /career/home debugging content and replace it with the new main game loop page structure.
+
+Requirements
+- Remove the old debugging-first content currently on /career/home.
+- Build the new /career/home layout as the main Career Mode screen.
+- Layout must include:
+  - left calendar panel at roughly 70% width
+  - right control panel
+  - bottom debugging section
+- The page should be responsive and structured for future expansion.
+
+Acceptance Criteria
+- The old debug-focused career home content is removed.
+- /career/home now uses the new calendar/control/debug layout.
+- The page is ready to host the game loop systems in this epic.
+
+----------------------------------------------------------------
+FEAT-702 - Define Season Calendar Data Model
+----------------------------------------------------------------
+
+Description
+Create the core data model for a season calendar.
+
+Requirements
+- Define the season calendar structure as:
+  - 4 months
+  - 4 weeks per month
+  - 7 days per week
+- Support the concept that a career can later contain multiple seasons, even if this epic only works with one.
+- The model should track:
+  - months
+  - weeks
+  - days
+  - events assigned to days
+  - current day position
+- Keep the structure clean and future-proof for later progression across seasons.
+
+Acceptance Criteria
+- A reusable season calendar data model exists.
+- The model can represent all 112 days of a season.
+- The model is suitable for rendering and time progression.
+
+----------------------------------------------------------------
+FEAT-703 - Build Calendar Component with Single-Month View
+----------------------------------------------------------------
+
+Description
+Create the visual calendar component used on /career/home.
+
+Requirements
+- Build a reusable calendar component for the season view.
+- Only one month should be visible at a time.
+- The visible month should show:
+  - 4 weeks
+  - 7 days per week
+- The calendar should clearly indicate:
+  - current day
+  - days with matches
+  - days with cup draws
+- Match days should show:
+  - opponent
+  - competition name
+- Keep the display readable and structured.
+
+Acceptance Criteria
+- The calendar renders one month at a time.
+- The current day is visually clear.
+- Match and cup-draw days are clearly marked.
+- Match entries display opponent and competition.
+
+----------------------------------------------------------------
+FEAT-704 - Add Calendar Month Pagination
+----------------------------------------------------------------
+
+Description
+Allow the user to move between the 4 months of the current season calendar.
+
+Requirements
+- Add basic pagination/controls to move between months.
+- Only one month is shown at once.
+- The user must be able to move backward and forward between months.
+- Keep the interaction simple and clear.
+- Ensure pagination does not break the current-day highlighting or event rendering.
+
+Acceptance Criteria
+- The user can page between all 4 months.
+- Only one month is visible at any given time.
+- Current day and events still render correctly after pagination.
+
+----------------------------------------------------------------
+FEAT-705 - Generate League 5 Fixture Schedule
+----------------------------------------------------------------
+
+Description
+Generate the player's League 5 season fixture schedule.
+
+Requirements
+- Use the 8 teams in League 5:
+  - player team
+  - 7 generated League 5 AI teams
+- Generate a double round-robin league fixture list.
+- Each team must play every other team home and away.
+- The player team must therefore receive 14 league matches.
+- Schedule league matches into:
+  - weeks 1 to 7
+  - weeks 9 to 15
+- Each league match must occur on Saturday or Sunday.
+- Week 8 must contain no league match.
+- Week 16 must contain no regular league match.
+- Keep the structure reusable for future league scheduling.
+
+Acceptance Criteria
+- The player team receives 14 League 5 fixtures.
+- Fixtures follow a valid home-and-away round-robin structure.
+- League matches are placed only in the allowed weeks.
+- Week 8 and week 16 have no regular league matches.
+
+----------------------------------------------------------------
+FEAT-706 - Define Cup Competition Schedule Schemas
+----------------------------------------------------------------
+
+Description
+Create the schedule structure definitions for the League Cup and Champions Cup.
+
+Requirements
+- Define League Cup schedule slots:
+  - week 2 Wednesday
+  - week 5 Wednesday
+  - week 8 Saturday
+  - week 12 Wednesday
+  - week 16 Wednesday
+- Define League Cup draw slots:
+  - Thursday before each next round of matches
+- Define Champions Cup schedule slots:
+  - week 1 Wednesday
+  - week 4 Wednesday
+  - week 8 Wednesday
+  - week 11 Wednesday
+  - week 14 Wednesday
+  - week 16 Saturday
+- Define the Champions Cup competition format:
+  - 4 groups of 4
+  - single round-robin in groups
+  - top 2 qualify
+  - fixed quarter-final pairing logic
+  - random semi-final draw
+  - random final pairing ordering/home assignment
+- Keep this schema as schedule structure only for now.
+
+Acceptance Criteria
+- The League Cup schedule structure is defined.
+- The Champions Cup schedule structure is defined.
+- The timing rules and competition structure are captured in reusable data/config.
+
+----------------------------------------------------------------
+FEAT-707 - Insert Cup Draw and Cup Match Events into Calendar
+----------------------------------------------------------------
+
+Description
+Place cup-related events into the calendar structure.
+
+Requirements
+- Insert League Cup draw events on the correct Thursdays.
+- Insert League Cup match events into the correct weeks/days.
+- Insert Champions Cup match slots into the correct weeks/days.
+- For this epic, event placement is more important than full competition outcome resolution.
+- Events should be identifiable in the calendar as:
+  - cup draw
+  - cup match
+- Match events should include competition identity.
+- Use placeholder or structurally valid event data where later competition resolution is still out of scope.
+
+Acceptance Criteria
+- Cup draw events appear on the correct days.
+- Cup match events appear on the correct days.
+- The calendar can visually distinguish these events from league fixtures.
+
+----------------------------------------------------------------
+FEAT-708 - Add Playoff and Final Week Event Slots
+----------------------------------------------------------------
+
+Description
+Represent week 16 special event structure in the calendar.
+
+Requirements
+- Reserve week 16 Saturday for:
+  - playoffs where applicable
+  - Champions Cup final
+- Reserve week 16 Wednesday for:
+  - League Cup final
+- Support the concept of playoff matches for Leagues 5, 4, 3, and 2.
+- For this epic, event structure and timing are required even if final season-resolution logic is not yet implemented.
+- Ensure the calendar model can represent these week 16 special events cleanly.
+
+Acceptance Criteria
+- Week 16 special event slots are represented in the calendar model.
+- The calendar can show playoff/final event placeholders or structured events on the correct days.
+
+----------------------------------------------------------------
+FEAT-709 - Build Career Day Progression System
+----------------------------------------------------------------
+
+Description
+Allow the player to move through time one day at a time.
+
+Requirements
+- Add a day progression system to the career loop.
+- The system should move from one day to the next in sequence through the season calendar.
+- Track the current day accurately.
+- Update the calendar state when the day advances.
+- Ensure the current day highlight updates correctly.
+- Reaching event days should not trigger gameplay logic yet; for now they are simply reached and ignored.
+
+Acceptance Criteria
+- The player can advance from one day to the next.
+- The current day updates correctly in state and UI.
+- Event days do not yet trigger deeper logic.
+
+----------------------------------------------------------------
+FEAT-710 - Create Reusable Flash Modal Component
+----------------------------------------------------------------
+
+Description
+Create a new modal-like component specifically for short forced display messages.
+
+Requirements
+- Create a new component called Flash Modal.
+- It must accept:
+  - content
+  - duration in seconds
+- Behaviour:
+  - dark overlay behind the content
+  - content centred on screen
+  - user cannot close it manually
+  - user cannot interact with the app while it is visible
+  - it automatically closes after the duration
+- Do not use the existing modal component for this.
+
+Acceptance Criteria
+- A reusable Flash Modal component exists.
+- It accepts content and duration.
+- It blocks interaction and auto-closes after the set time.
+
+----------------------------------------------------------------
+FEAT-711 - Trigger Flash Modal on New Day Start
+----------------------------------------------------------------
+
+Description
+Use the new Flash Modal to announce each new day as time progresses.
+
+Requirements
+- When a new day starts, show a Flash Modal.
+- The Flash Modal should display what day has begun.
+- It should only appear once for each day transition.
+- It should not show again during the same day.
+- It should be tied to day progression, not to calendar rendering alone.
+
+Acceptance Criteria
+- Advancing to a new day shows a Flash Modal.
+- The Flash Modal appears once per day start only.
+- It does not repeatedly trigger during the same day.
+
+----------------------------------------------------------------
+FEAT-712 - Build Career Control Panel
+----------------------------------------------------------------
+
+Description
+Create the right-hand control panel used to operate the calendar loop.
+
+Requirements
+- Build the control panel on the right side of /career/home.
+- Include:
+  - continue / next day control
+  - placeholder links or slots for future page navigation
+  - space for future game loop controls
+- Keep the panel structurally useful now but easy to expand later.
+
+Acceptance Criteria
+- The right-hand control panel exists.
+- The player can advance the day from the control panel.
+- The panel has a clear structure for future controls.
+
+----------------------------------------------------------------
+FEAT-713 - Add Bottom Debug Section for Calendar and Schedule Inspection
+----------------------------------------------------------------
+
+Description
+Provide a debugging area at the bottom of /career/home for schedule inspection and future debug tools.
+
+Requirements
+- Add a dedicated debug section at the bottom of the page.
+- It should be usable for inspecting current calendar/schedule data during development.
+- Keep it lightweight and easy to extend later.
+- This area does not replace the main calendar UI.
+
+Acceptance Criteria
+- A bottom debug section exists on /career/home.
+- The page has a clear place for current and future debugging output.
+
+----------------------------------------------------------------
+FEAT-714 - Connect Career Calendar to Generated Career Data
+----------------------------------------------------------------
+
+Description
+Use the generated career/team data from earlier epics as the basis for the season calendar and fixtures.
+
+Requirements
+- Read the player team and League 5 team data from gameContext.
+- Use that data when generating the player's season fixtures.
+- Ensure the calendar and schedule systems are integrated with the existing career state rather than using disconnected mock data.
+- Keep the integration clean and future-proof for later multi-season support.
+
+Acceptance Criteria
+- The calendar/fixture generation uses real generated career data.
+- The player team and League 5 opponents come from saved career state.
+- The system is integrated rather than isolated.
+
+----------------------------------------------------------------
+FEAT-715 - Add Calendar Event Types and Display Rules
+----------------------------------------------------------------
+
+Description
+Create a consistent event model for the different day types shown in the calendar.
+
+Requirements
+- Define calendar event types for at least:
+  - league match
+  - cup match
+  - cup draw
+  - playoff match
+  - final
+- Each event type should include the data needed for calendar display.
+- Match-type events should support:
+  - competition name
+  - opponent
+- The display layer should render events according to their type.
+
+Acceptance Criteria
+- Calendar events are typed consistently.
+- The display logic can render different kinds of day events correctly.
+- Match events display opponent and competition.
+
+----------------------------------------------------------------
+FEAT-716 - Keep Match Logic Explicitly Out of Scope
+----------------------------------------------------------------
+
+Description
+Ensure this epic lays schedule foundations without accidentally implementing match-resolution systems.
+
+Requirements
+- Do not build match generation, match simulation, match result resolution, or competition advancement logic in this epic.
+- Where events are reached in the calendar, do nothing for now beyond existing structural progression.
+- Keep the implementation cleanly scoped to schedule and loop foundations.
+
+Acceptance Criteria
+- The epic does not introduce actual match-resolution systems.
+- Event days are structurally present but inert for now.
+- The game loop remains focused on calendar/time structure only.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- /career/home has been restructured into the main game loop layout.
+- The old career home debug output has been removed.
+- A season calendar model exists with 4 months, 4 weeks per month, and 7 days per week.
+- Only one month is visible at a time.
+- The user can paginate between months.
+- The calendar clearly shows:
+  - current day
+  - match days
+  - cup draw days
+- Match entries display opponent and competition.
+- The player’s 14 League 5 fixtures are generated and scheduled into valid weeks.
+- Week 8 is a break from league matches.
+- Week 16 is reserved for playoffs and cup finals.
+- Cup schedule structures for League Cup and Champions Cup are defined and inserted into the calendar.
+- A day-by-day progression system exists.
+- A reusable Flash Modal component exists and is used for day-start announcements.
+- The Flash Modal appears once when each new day begins and then auto-closes.
+- Event days are represented in the calendar but do not yet trigger match/gameplay logic.
+- /career/home includes the left calendar panel, right control panel, and bottom debug section.
+- The whole system is ready to become the foundation of the main Career Mode loop.

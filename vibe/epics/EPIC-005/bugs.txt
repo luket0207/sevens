@@ -144,3 +144,58 @@ Final fix:
   - retry path no longer depends on resetting `hasStartedRef`
 
 Status: fixed
+
+
+BUG-005 - Foreign Teams Too Highly Rated
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. After generation completes, inspect `Foreign Champions Cup` teams on `/career/home` debug view.
+
+Expected behavior:
+- Foreign teams should generate in a tighter, mid-high range aligned with the new target (`42..47`).
+
+Actual behavior:
+- Foreign teams were generated from `40..50`, which produced teams that were too highly rated at the upper end for the intended balance.
+
+Suspected cause:
+- `Foreign Champions Cup` competition schema in career generation constants still used `minOverall: 40` and `maxOverall: 50`.
+
+Attempted fixes:
+- Updated foreign competition schema range to the requested values.
+- Re-ran generation validation commands to ensure no regressions from schema change.
+
+Final fix:
+- Updated `src/game/careerGeneration/constants/careerCompetitionSchema.js`:
+  - changed foreign `minOverall` from `40` to `42`
+  - changed foreign `maxOverall` from `50` to `47`
+
+Status: fixed
+
+
+BUG-006 - Foreign Team Count Incorrect
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. After generation completes, inspect `Foreign Champions Cup` on `/career/home` debug view.
+
+Expected behavior:
+- `Foreign Champions Cup` should generate `12` AI teams.
+
+Actual behavior:
+- `Foreign Champions Cup` generated only `7` AI teams.
+
+Suspected cause:
+- `teamCount` for the foreign competition schema was left at `7`.
+
+Attempted fixes:
+- Updated foreign competition schema team count from `7` to `12`.
+- Re-ran generation validation commands to ensure totals and generation flow still complete.
+
+Final fix:
+- Updated `src/game/careerGeneration/constants/careerCompetitionSchema.js`:
+  - changed foreign `teamCount` from `7` to `12`
+
+Status: fixed
