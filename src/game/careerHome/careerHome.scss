@@ -1,67 +1,44 @@
 @use "../../assets/scss/ui/import" as *;
 
+.careerHome {
+  display: grid;
+  gap: 1rem;
+}
+
+.careerHome__topRow {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
+  gap: 1rem;
+}
+
 .careerHome__panel {
   background: rgba($secondaryBackground, 0.92);
   border: 1px solid rgba($lightText, 0.2);
   border-radius: 14px;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  display: grid;
-  gap: 0.85rem;
+  padding: clamp(0.9rem, 1.8vw, 1.35rem);
 }
 
-.careerHome__sectionTitle {
-  font-size: 1.18rem;
+.careerHome__panel--calendar,
+.careerHome__panel--controls {
+  min-height: 540px;
 }
 
 .careerHome__hint {
-  color: rgba($lightText, 0.88);
+  color: rgba($lightText, 0.86);
 }
 
-.careerHome__accordion {
+.careerHome__panel--debug {
   display: grid;
   gap: 0.65rem;
 }
 
-.careerHome__item {
-  border: 1px solid rgba($lightText, 0.18);
-  border-radius: 10px;
-  background: rgba($siteBackground, 0.32);
-  padding: 0.65rem 0.75rem;
-}
+@media (max-width: 1040px) {
+  .careerHome__topRow {
+    grid-template-columns: 1fr;
+  }
 
-.careerHome__summary {
-  cursor: pointer;
-  font-weight: 700;
+  .careerHome__panel--calendar,
+  .careerHome__panel--controls {
+    min-height: initial;
+  }
 }
-
-.careerHome__content {
-  margin-top: 0.65rem;
-  display: grid;
-  gap: 0.65rem;
-}
-
-.careerHome__kitRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.careerHome__kitCard {
-  border: 1px solid rgba($lightText, 0.18);
-  border-radius: 10px;
-  padding: 0.55rem;
-  background: rgba($siteBackground, 0.36);
-  display: grid;
-  gap: 0.4rem;
-}
-
-.careerHome__json {
-  margin: 0;
-  border: 1px solid rgba($lightText, 0.18);
-  border-radius: 10px;
-  padding: 0.7rem;
-  background: rgba($siteBackground, 0.5);
-  max-height: 280px;
-  overflow: auto;
-}
-

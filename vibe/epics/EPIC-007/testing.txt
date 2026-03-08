@@ -1,0 +1,214 @@
+EPIC-007 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated shared engine/info modules.
+
+Manual verification note:
+- Full browser/manual verification is still pending. Steps below define the expected checks for each implemented feature.
+
+FEAT-701 - Remove Existing Career Home Debug View and Replace Page Structure
+Manual steps:
+1. Complete career generation and open `/career/home`.
+Expected:
+- Old nested debug tree is replaced by the new game-loop layout.
+- Page shows left calendar panel, right control panel, and bottom debug section.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed on unrelated baseline issues.
+Automated needed:
+- Component/layout test for `/career/home` structural regions.
+Status: in progress
+
+FEAT-702 - Define Season Calendar Data Model
+Manual steps:
+1. Open `/career/home` and inspect Calendar Debug summary.
+Expected:
+- Season shape shows 4 months, 16 weeks, 112 days.
+- Calendar state tracks current day and event assignment structure.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for season scaffold dimensions and day indexing.
+Status: in progress
+
+FEAT-703 - Build Calendar Component with Single-Month View
+Manual steps:
+1. Open `/career/home`.
+2. Inspect visible month card grid.
+Expected:
+- Exactly one month is shown at a time.
+- Current day is clearly highlighted.
+- Match/cup-draw markers are visible.
+- Match entries include opponent + competition.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for one-month render and event labels.
+Status: in progress
+
+FEAT-704 - Add Calendar Month Pagination
+Manual steps:
+1. Click Previous/Next Month controls in calendar header.
+Expected:
+- Pagination moves between all four months.
+- Current-day highlighting and event render remain valid after paging.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for month-index pagination boundaries.
+Status: in progress
+
+FEAT-705 - Generate League 5 Fixture Schedule
+Manual steps:
+1. Generate a career and open `/career/home`.
+2. Inspect League 5 match events in the calendar/debug output.
+Expected:
+- 14 League 5 player fixtures exist.
+- Fixtures are home/away against 7 League 5 opponents.
+- Fixtures are scheduled only in weeks 1-7 and 9-15 on Saturday/Sunday.
+- No regular league fixtures in weeks 8 or 16.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for fixture counts, opponent pairing, and allowed-week constraints.
+Status: in progress
+
+FEAT-706 - Define Cup Competition Schedule Schemas
+Manual steps:
+1. Inspect cup schedule entries in calendar/debug output.
+Expected:
+- League Cup match and draw slots match required timing.
+- Champions Cup slots and structural schema are present.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for fixed cup slot week/day schemas and quarter-final pairing definitions.
+Status: in progress
+
+FEAT-707 - Insert Cup Draw and Cup Match Events into Calendar
+Manual steps:
+1. Navigate months containing cup events.
+Expected:
+- League Cup draws appear on expected Thursdays.
+- Cup match events appear on required slot days.
+- Cup draw and cup match events are visually distinguishable.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration test asserting insertion of cup draw/match events into correct day indices.
+Status: in progress
+
+FEAT-708 - Add Playoff and Final Week Event Slots
+Manual steps:
+1. Open month containing week 16.
+Expected:
+- Week 16 Wednesday includes League Cup final placeholder.
+- Week 16 Saturday includes Champions Cup final and playoff placeholders.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit test for week 16 special-event placement.
+Status: in progress
+
+FEAT-709 - Build Career Day Progression System
+Manual steps:
+1. Click Continue to Next Day repeatedly in control panel.
+Expected:
+- Current day advances by exactly one day per click.
+- Calendar current-day highlight updates correctly.
+- Reaching event days does not trigger match logic.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration test for day-by-day progression state updates.
+Status: in progress
+
+FEAT-710 - Create Reusable Flash Modal Component
+Manual steps:
+1. Trigger day progression.
+Expected:
+- Flash modal appears centered with dark overlay.
+- Interaction is blocked while modal is active.
+- Modal auto-closes after configured duration.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for auto-close timing and overlay lock behavior.
+Status: in progress
+
+FEAT-711 - Trigger Flash Modal on New Day Start
+Manual steps:
+1. Advance one day.
+2. Wait for modal to close without further interaction.
+Expected:
+- Flash modal appears once for that day transition.
+- Modal does not retrigger repeatedly during same day render.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration test ensuring one flash trigger per day-advance action.
+Status: in progress
+
+FEAT-712 - Build Career Control Panel
+Manual steps:
+1. Inspect right panel on `/career/home`.
+2. Use Continue button to advance day.
+Expected:
+- Control panel exists and advances day.
+- Placeholder navigation controls are present.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for control panel actions/disabled end-of-season state.
+Status: in progress
+
+FEAT-713 - Add Bottom Debug Section for Calendar and Schedule Inspection
+Manual steps:
+1. Inspect bottom debug panel on `/career/home`.
+Expected:
+- Dedicated debug area exists below main calendar/control layout.
+- Calendar summary and structure JSON are visible.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component snapshot test for debug panel content blocks.
+Status: in progress
+
+FEAT-714 - Connect Career Calendar to Generated Career Data
+Manual steps:
+1. Start a new career from `/career/start`.
+2. Complete generation and open `/career/home`.
+Expected:
+- Calendar initializes from `career.world` data.
+- League 5 opponents derive from generated teams, not static mocks.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration test covering start->generate->calendar initialization flow.
+Status: in progress
+
+FEAT-715 - Add Calendar Event Types and Display Rules
+Manual steps:
+1. Inspect days containing league, cup, draw, playoff, and final entries.
+Expected:
+- Event badges/types are consistent and distinct.
+- Match-type events show competition and opponent.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for event-type mapping and display line formatting.
+Status: in progress
+
+FEAT-716 - Keep Match Logic Explicitly Out of Scope
+Manual steps:
+1. Advance through several event-heavy days.
+Expected:
+- No match simulation, result resolution, or competition advancement is triggered.
+- Events remain structural placeholders only.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration regression test asserting no match-resolution side effects during day progression.
+Status: in progress

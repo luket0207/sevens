@@ -1,0 +1,98 @@
+EPIC-007 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-701 to FEAT-716 - Career Calendar and Main Loop Foundation
+Status: done
+
+What was implemented:
+- Replaced the old debug-first `/career/home` view with a game-loop layout:
+  - left calendar panel (~70%)
+  - right control panel
+  - bottom debug section
+- Added a new career calendar feature module under `src/game/careerCalendar/`:
+  - reusable constants for season structure (`4 months x 4 weeks x 7 days = 112 days`)
+  - typed calendar event model (`league match`, `cup match`, `cup draw`, `playoff match`, `final`)
+  - season scaffold builder with explicit month/week/day hierarchy
+- Added a reusable single-month calendar UI component:
+  - renders only one month at a time
+  - keeps current day highlighting visible
+  - marks match days and cup draw days
+  - displays opponent + competition for match-type events
+- Added month pagination controls:
+  - previous/next month actions
+  - month rendering and event visibility remain stable through pagination
+- Implemented League 5 player fixture generation from real career data:
+  - uses player team + generated League 5 opponents from `career.world`
+  - builds 14 fixtures (home/away vs 7 opponents)
+  - schedules into weeks `1-7` and `9-15`
+  - schedules league matches only on Saturday/Sunday
+  - no regular league fixture in weeks `8` or `16`
+- Implemented cup schedule schemas and insertion:
+  - League Cup match slots and draw slots on required weeks/days
+  - Champions Cup slot timing and structure model:
+    - 4 groups of 4
+    - fixed quarter-final pairing rules
+    - randomised semi-final and final ordering structure
+- Added week 16 special-event structure:
+  - League Cup final on Wednesday
+  - Champions Cup final on Saturday
+  - playoff placeholders on Saturday for Leagues 5, 4, 3, and 2
+- Added day progression in the career loop:
+  - next-day control advances one day at a time through season days
+  - current-day and visible month update in state/UI
+  - event days remain inert (no simulation/resolution logic)
+- Added new reusable `FlashModal` component (not using existing modal):
+  - accepts `content` and `durationSeconds`
+  - full-screen dark overlay + centered content
+  - blocks interaction while shown
+  - auto-closes after duration
+- Wired flash modal into day progression:
+  - triggered once when moving to a new day
+  - not repeatedly triggered during the same day render cycle
+- Added right-side control panel and bottom debug panel components:
+  - control panel exposes next-day action and future navigation placeholders
+  - debug panel exposes calendar summary and Champions Cup structure data
+- Integrated calendar lifecycle with existing generated career state:
+  - calendar initializes from `career.world` only after generation completes
+  - calendar state persists inside `gameContext` (`career.calendar`)
+  - starting a new career resets calendar state cleanly
+
+Engine components used:
+- `gameContext` for persistent calendar/day progression state.
+- `button` for month pagination, day progression, and control panel actions.
+- `rng` for fixture day variation and Champions Cup random draw ordering.
+
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this scheduling/loop foundation slice).
+
+Files changed:
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerHome/careerHome.scss`
+- `src/game/careerStart/careerStart.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/flashModal/flashModal.jsx`
+- `src/engine/ui/flashModal/flashModal.scss`
+- `src/game/careerCalendar/index.js`
+- `src/game/careerCalendar/constants/calendarConstants.js`
+- `src/game/careerCalendar/constants/cupScheduleSchema.js`
+- `src/game/careerCalendar/utils/calendarModel.js`
+- `src/game/careerCalendar/utils/fixtureGeneration.js`
+- `src/game/careerCalendar/utils/cupScheduleGeneration.js`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.scss`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+- `vibe/epics/EPIC-007/features.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Champions Cup participant ordering is structural/randomized placeholder logic until standings/history systems exist.
+- Calendar currently initializes one active season, but the state shape supports later multi-season extension.
+- No match simulation, result resolution, or competition advancement is implemented in this epic by design.

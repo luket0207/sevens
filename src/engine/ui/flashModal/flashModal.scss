@@ -1,0 +1,32 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.flashModal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.flashModal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba($siteBackground, 0.84);
+}
+
+.flashModal__content {
+  position: relative;
+  z-index: 1;
+  min-width: min(560px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  border: 1px solid rgba($lightText, 0.28);
+  border-radius: 14px;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: linear-gradient(180deg, rgba($secondaryBackground, 0.96), rgba($primaryBackground, 0.94));
+  color: $lightText;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+}

@@ -1,0 +1,38 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.careerControlPanel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.careerControlPanel__section {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.24);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.careerControlPanel__title {
+  font-size: 1.1rem;
+}
+
+.careerControlPanel__subtitle {
+  font-size: 0.98rem;
+}
+
+.careerControlPanel__currentDay {
+  color: rgba($lightText, 0.9);
+}
+
+.careerControlPanel__links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.careerControlPanel__note {
+  color: rgba($lightText, 0.84);
+  line-height: 1.35;
+}

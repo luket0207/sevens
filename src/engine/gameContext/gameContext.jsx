@@ -92,6 +92,43 @@ const DEFAULT_CAREER_WORLD = Object.freeze({
   },
 });
 
+const DEFAULT_CAREER_CALENDAR = Object.freeze({
+  status: "idle",
+  sourceGeneratedAt: "",
+  seasons: [],
+  activeSeasonId: "",
+  currentDayIndex: 0,
+  visibleMonthIndex: 0,
+  pendingFlashDayIndex: null,
+  lastAdvancedAt: "",
+  championsCupStructure: {
+    participants: [],
+    groups: {},
+    quarterFinals: [],
+    semiFinals: [],
+    final: {},
+  },
+  debug: {
+    seasonShape: {
+      totalMonths: 0,
+      totalWeeks: 0,
+      totalDays: 0,
+    },
+    eventTypeCounts: {},
+    totals: {
+      totalScheduledEvents: 0,
+      leagueFixtures: 0,
+      leagueCupEvents: 0,
+      championsCupEvents: 0,
+      playoffEvents: 0,
+      leagueMatchesInCalendar: 0,
+    },
+    leagueFixturePreview: [],
+    cupEventPreview: [],
+    playoffPreview: [],
+  },
+});
+
 const DEFAULT_GAME_STATE = Object.freeze({
   player: {
     health: 100,
@@ -107,6 +144,7 @@ const DEFAULT_GAME_STATE = Object.freeze({
     setup: DEFAULT_CAREER_SETUP,
     generation: DEFAULT_CAREER_GENERATION,
     world: DEFAULT_CAREER_WORLD,
+    calendar: DEFAULT_CAREER_CALENDAR,
   },
 });
 

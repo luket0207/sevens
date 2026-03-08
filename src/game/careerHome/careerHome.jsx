@@ -1,14 +1,88 @@
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useGame } from "../../engine/gameContext/gameContext";
+import FlashModal from "../../engine/ui/flashModal/flashModal";
 import PageLayout from "../shared/pageLayout/pageLayout";
-import ShirtRenderer from "../careerStart/components/shirtRenderer";
+import {
+  buildCareerCalendarState,
+  buildDayTransitionLabel,
+  CareerCalendarDebugPanel,
+  CareerControlPanel,
+  SeasonCalendar,
+} from "../careerCalendar";
+import { clampMonthIndex, getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
 import "./careerHome.scss";
 
+const CALENDAR_STATUS_READY = "ready";
+const DAY_FLASH_DURATION_SECONDS = 1.2;
+
+const getActiveSeason = (seasons, activeSeasonId) => {
+  if (!Array.isArray(seasons) || seasons.length === 0) {
+    return null;
+  }
+
+  return seasons.find((season) => season.id === activeSeasonId) ?? seasons[0];
+};
+
 const CareerHome = () => {
-  const { gameState } = useGame();
+  const { gameState, setGameState, setGameValue } = useGame();
+  const [isFlashOpen, setIsFlashOpen] = useState(false);
+  const [flashContent, setFlashContent] = useState("");
+
   const generationStatus = gameState?.career?.generation?.status ?? "idle";
-  const careerWorld = gameState?.career?.world ?? {};
-  const competitions = Array.isArray(careerWorld.competitions) ? careerWorld.competitions : [];
+  const careerWorld = useMemo(() => gameState?.career?.world ?? null, [gameState?.career?.world]);
+  const competitions = useMemo(
+    () => (Array.isArray(careerWorld?.competitions) ? careerWorld.competitions : []),
+    [careerWorld]
+  );
+  const calendarState = useMemo(() => gameState?.career?.calendar ?? null, [gameState?.career?.calendar]);
+  const seasons = useMemo(
+    () => (Array.isArray(calendarState?.seasons) ? calendarState.seasons : []),
+    [calendarState]
+  );
+  const activeSeason = useMemo(
+    () => getActiveSeason(seasons, calendarState?.activeSeasonId),
+    [calendarState?.activeSeasonId, seasons]
+  );
+
+  useEffect(() => {
+    if (generationStatus !== "complete" || competitions.length === 0) {
+      return;
+    }
+
+    const currentCalendarState = calendarState ?? {};
+    const hasCalendarForCurrentWorld =
+      currentCalendarState.status === CALENDAR_STATUS_READY &&
+      currentCalendarState.sourceGeneratedAt === (careerWorld?.generatedAt ?? "") &&
+      Array.isArray(currentCalendarState.seasons) &&
+      currentCalendarState.seasons.length > 0;
+
+    if (hasCalendarForCurrentWorld) {
+      return;
+    }
+
+    const nextCalendarState = buildCareerCalendarState({ careerWorld });
+
+    setGameState((prev) => ({
+      ...prev,
+      career: {
+        ...prev.career,
+        calendar: {
+          ...(prev.career?.calendar ?? {}),
+          status: CALENDAR_STATUS_READY,
+          sourceGeneratedAt: careerWorld?.generatedAt ?? "",
+          seasons: nextCalendarState.seasons,
+          activeSeasonId: nextCalendarState.activeSeasonId,
+          currentDayIndex: nextCalendarState.currentDayIndex,
+          visibleMonthIndex: nextCalendarState.visibleMonthIndex,
+          pendingFlashDayIndex: null,
+          lastAdvancedAt: "",
+          championsCupStructure: nextCalendarState.championsCupStructure,
+          debug: nextCalendarState.debug,
+        },
+      },
+    }));
+  }, [calendarState, careerWorld, competitions.length, generationStatus, setGameState]);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -18,104 +92,120 @@ const CareerHome = () => {
     return <Navigate to="/career/start" replace />;
   }
 
-  const totals = careerWorld.totals ?? {};
-  const debug = careerWorld.debug ?? {};
-  const playerTeam = careerWorld.playerTeam ?? null;
+  if (!activeSeason) {
+    return (
+      <PageLayout
+        title="Career Home"
+        subtitle="Preparing your season calendar and game loop structure from generated career data."
+      >
+        <section className="careerHome__panel">
+          <p className="careerHome__hint">Initialising calendar model...</p>
+        </section>
+      </PageLayout>
+    );
+  }
+
+  const rawCurrentDayIndex = Number.isInteger(calendarState?.currentDayIndex)
+    ? calendarState.currentDayIndex
+    : 0;
+  const currentDayIndex = Math.max(0, Math.min(rawCurrentDayIndex, activeSeason.totalDays - 1));
+
+  const derivedVisibleMonthIndex = Number.isInteger(calendarState?.visibleMonthIndex)
+    ? calendarState.visibleMonthIndex
+    : getMonthIndexFromDayIndex(currentDayIndex);
+  const visibleMonthIndex = clampMonthIndex(derivedVisibleMonthIndex, activeSeason.months.length);
+  const currentDay = activeSeason.days[currentDayIndex] ?? null;
+  const visibleMonth = activeSeason.months[visibleMonthIndex] ?? null;
+  const isSeasonComplete = currentDayIndex >= activeSeason.totalDays - 1;
+
+  const updateVisibleMonth = (nextMonthIndex) => {
+    setGameValue(
+      "career.calendar.visibleMonthIndex",
+      clampMonthIndex(nextMonthIndex, activeSeason.months.length)
+    );
+  };
+
+  const moveToNextDay = () => {
+    if (isSeasonComplete) {
+      return;
+    }
+
+    const nextDayIndex = currentDayIndex + 1;
+    const nextMonthIndex = getMonthIndexFromDayIndex(nextDayIndex);
+    const nextDay = activeSeason.days[nextDayIndex] ?? null;
+
+    if (nextDay) {
+      setFlashContent(buildDayTransitionLabel(nextDay));
+      setIsFlashOpen(true);
+    }
+
+    setGameState((prev) => ({
+      ...prev,
+      career: {
+        ...prev.career,
+        calendar: {
+          ...(prev.career?.calendar ?? {}),
+          currentDayIndex: nextDayIndex,
+          visibleMonthIndex: nextMonthIndex,
+          pendingFlashDayIndex: null,
+          lastAdvancedAt: new Date().toISOString(),
+        },
+      },
+    }));
+  };
+
+  const generationTotals = careerWorld?.totals ?? {};
 
   return (
     <PageLayout
-      title="Career Home Debug"
-      subtitle="Generated career leagues, teams, and players are shown below in nested accordions."
+      title="Career Home"
+      subtitle="Main game loop: advance day-by-day through the season calendar. Scheduled events are visible but inert for now."
     >
-      <section className="careerHome__panel">
-        <h2 className="careerHome__sectionTitle">Generation Summary</h2>
-        <p className="careerHome__hint">Generated at: {careerWorld.generatedAt || "Unknown"}</p>
-        <p className="careerHome__hint">
-          Competitions: {totals.competitionCount ?? 0} | AI Teams: {totals.aiTeamCount ?? 0} | AI Players:{" "}
-          {totals.aiPlayerCount ?? 0}
-        </p>
-      </section>
+      <section className="careerHome">
+        <section className="careerHome__topRow">
+          <article className="careerHome__panel careerHome__panel--calendar">
+            <SeasonCalendar
+              season={activeSeason}
+              visibleMonthIndex={visibleMonthIndex}
+              currentDayIndex={currentDayIndex}
+              onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
+              onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
+              canGoPreviousMonth={visibleMonthIndex > 0}
+              canGoNextMonth={visibleMonthIndex < activeSeason.months.length - 1}
+            />
+          </article>
 
-      {playerTeam ? (
-        <section className="careerHome__panel">
-          <h2 className="careerHome__sectionTitle">Player Team</h2>
-          <p className="careerHome__hint">
-            {playerTeam.teamName} | {playerTeam.stadiumName} | Overall {playerTeam.teamOverall}
-          </p>
-          <p className="careerHome__hint">Players: {Array.isArray(playerTeam.players) ? playerTeam.players.length : 0}</p>
+          <aside className="careerHome__panel careerHome__panel--controls">
+            <CareerControlPanel
+              currentDayLabel={buildDayTransitionLabel(currentDay)}
+              isSeasonComplete={isSeasonComplete}
+              onAdvanceDay={moveToNextDay}
+            />
+          </aside>
         </section>
-      ) : null}
 
-      <section className="careerHome__panel">
-        <h2 className="careerHome__sectionTitle">Career Debug Tree</h2>
-        <div className="careerHome__accordion">
-          {competitions.map((competition) => (
-            <details className="careerHome__item" key={competition.id}>
-              <summary className="careerHome__summary">
-                {competition.name} ({competition.type}) - {competition.teams.length} teams
-              </summary>
-
-              <div className="careerHome__content">
-                {competition.teams.map((team) => (
-                  <details className="careerHome__item" key={team.id}>
-                    <summary className="careerHome__summary">
-                      {team.teamName} | Overall {team.teamOverall} | {team.stadiumName}
-                    </summary>
-
-                    <div className="careerHome__content">
-                      <div className="careerHome__kitRow">
-                        <div className="careerHome__kitCard">
-                          <p className="careerHome__hint">Home Kit ({team.homeColour})</p>
-                          <ShirtRenderer shirt={team.homeKit} size="small" />
-                        </div>
-                        <div className="careerHome__kitCard">
-                          <p className="careerHome__hint">Away Kit ({team.awayColour})</p>
-                          <ShirtRenderer shirt={team.awayKit} size="small" />
-                        </div>
-                      </div>
-                      <p className="careerHome__hint">Goalkeeper Kit: {team.goalkeeperKit}</p>
-                      <p className="careerHome__hint">
-                        Player Targets: {(team.playerOverallTargets ?? []).join(", ")}
-                      </p>
-
-                      <details className="careerHome__item">
-                        <summary className="careerHome__summary">
-                          Players ({Array.isArray(team.players) ? team.players.length : 0})
-                        </summary>
-
-                        <div className="careerHome__content">
-                          {(Array.isArray(team.players) ? team.players : []).map((player) => (
-                            <details className="careerHome__item" key={player.id}>
-                              <summary className="careerHome__summary">
-                                {player.name} | {player.squadRole} | OVR {player.overall} | {player.influenceRule}
-                              </summary>
-
-                              <div className="careerHome__content">
-                                <p className="careerHome__hint">
-                                  Target: {player.generatedTargetOverall} | Potential: {player.potential} | Appearance:{" "}
-                                  {Array.isArray(player.appearance)
-                                    ? player.appearance.join(", ")
-                                    : "Not available"}
-                                </p>
-                                <pre className="careerHome__json">{JSON.stringify(player.skills, null, 2)}</pre>
-                              </div>
-                            </details>
-                          ))}
-                        </div>
-                      </details>
-                    </div>
-                  </details>
-                ))}
-              </div>
-            </details>
-          ))}
-        </div>
+        <section className="careerHome__panel careerHome__panel--debug">
+          <CareerCalendarDebugPanel
+            generationSummary={generationTotals}
+            calendarDebug={calendarState?.debug}
+            championsCupStructure={calendarState?.championsCupStructure}
+            currentDay={currentDay}
+            visibleMonthLabel={visibleMonth?.label}
+          />
+        </section>
       </section>
 
-      <section className="careerHome__panel">
-        <h2 className="careerHome__sectionTitle">Debug Distribution Data</h2>
-        <pre className="careerHome__json">{JSON.stringify(debug, null, 2)}</pre>
-      </section>
+      <FlashModal
+        isOpen={isFlashOpen}
+        content={
+          <div>
+            <p>New Day Started</p>
+            <p>{flashContent}</p>
+          </div>
+        }
+        durationSeconds={DAY_FLASH_DURATION_SECONDS}
+        onComplete={() => setIsFlashOpen(false)}
+      />
     </PageLayout>
   );
 };

@@ -1,0 +1,162 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.seasonCalendar {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.seasonCalendar--empty {
+  color: rgba($lightText, 0.86);
+}
+
+.seasonCalendar__header {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.seasonCalendar__title {
+  font-size: 1.28rem;
+}
+
+.seasonCalendar__subtitle {
+  color: rgba($lightText, 0.84);
+}
+
+.seasonCalendar__pagination {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.seasonCalendar__weeks {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.seasonCalendar__week {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.2);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.seasonCalendar__weekTitle {
+  font-weight: 700;
+  color: rgba($lightText, 0.9);
+}
+
+.seasonCalendar__dayGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.seasonCalendar__day {
+  min-height: 128px;
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.45rem;
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.seasonCalendar__day--current {
+  border-color: rgba($tertiaryBackground, 0.95);
+  box-shadow: inset 0 0 0 1px rgba($tertiaryBackground, 0.8);
+}
+
+.seasonCalendar__day--match {
+  background: rgba($secondaryBackground, 0.35);
+}
+
+.seasonCalendar__day--cupDraw {
+  background-image: linear-gradient(180deg, rgba($tertiaryBackground, 0.2), rgba($siteBackground, 0.18));
+}
+
+.seasonCalendar__dayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.seasonCalendar__dayName {
+  font-weight: 700;
+}
+
+.seasonCalendar__dayCount {
+  color: rgba($lightText, 0.8);
+  font-size: 0.78rem;
+}
+
+.seasonCalendar__empty {
+  color: rgba($lightText, 0.68);
+  font-size: 0.82rem;
+}
+
+.seasonCalendar__events {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.seasonCalendar__event {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.seasonCalendar__badge {
+  display: inline-block;
+  font-size: 0.67rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15rem 0.4rem;
+  width: fit-content;
+  border: 1px solid rgba($lightText, 0.22);
+}
+
+.seasonCalendar__badge--league_match {
+  background: rgba($primaryBackground, 0.5);
+}
+
+.seasonCalendar__badge--cup_match {
+  background: rgba($secondaryBackground, 0.5);
+}
+
+.seasonCalendar__badge--cup_draw {
+  background: rgba($tertiaryBackground, 0.4);
+  color: $darkText;
+}
+
+.seasonCalendar__badge--playoff_match,
+.seasonCalendar__badge--final {
+  background: rgba($tertiaryBackground, 0.55);
+  color: $darkText;
+}
+
+.seasonCalendar__eventText {
+  font-size: 0.74rem;
+  line-height: 1.25;
+  color: rgba($lightText, 0.9);
+}
+
+@media (max-width: 1120px) {
+  .seasonCalendar__dayGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .seasonCalendar__dayGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

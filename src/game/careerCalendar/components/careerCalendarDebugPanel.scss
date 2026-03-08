@@ -1,0 +1,56 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.careerCalendarDebug {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.careerCalendarDebug__summary {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.careerCalendarDebug__title {
+  font-size: 1.08rem;
+}
+
+.careerCalendarDebug__line {
+  color: rgba($lightText, 0.86);
+}
+
+.careerCalendarDebug__jsonPanels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.careerCalendarDebug__jsonCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  padding: 0.65rem;
+  background: rgba($siteBackground, 0.24);
+  display: grid;
+  gap: 0.35rem;
+
+  h3 {
+    font-size: 0.95rem;
+  }
+
+  pre {
+    margin: 0;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba($lightText, 0.18);
+    background: rgba($siteBackground, 0.45);
+    color: rgba($lightText, 0.92);
+    max-height: 280px;
+    overflow: auto;
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 920px) {
+  .careerCalendarDebug__jsonPanels {
+    grid-template-columns: 1fr;
+  }
+}

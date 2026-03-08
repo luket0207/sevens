@@ -31,6 +31,43 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
   teamSelector: createDefaultTeamSelectorState(),
 });
 
+const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
+  status: "idle",
+  sourceGeneratedAt: "",
+  seasons: [],
+  activeSeasonId: "",
+  currentDayIndex: 0,
+  visibleMonthIndex: 0,
+  pendingFlashDayIndex: null,
+  lastAdvancedAt: "",
+  championsCupStructure: {
+    participants: [],
+    groups: {},
+    quarterFinals: [],
+    semiFinals: [],
+    final: {},
+  },
+  debug: {
+    seasonShape: {
+      totalMonths: 0,
+      totalWeeks: 0,
+      totalDays: 0,
+    },
+    eventTypeCounts: {},
+    totals: {
+      totalScheduledEvents: 0,
+      leagueFixtures: 0,
+      leagueCupEvents: 0,
+      championsCupEvents: 0,
+      playoffEvents: 0,
+      leagueMatchesInCalendar: 0,
+    },
+    leagueFixturePreview: [],
+    cupEventPreview: [],
+    playoffPreview: [],
+  },
+});
+
 const CareerStart = () => {
   const navigate = useNavigate();
   const { gameState, setGameValue } = useGame();
@@ -102,6 +139,7 @@ const CareerStart = () => {
       percent: 0,
       updatedAt: new Date().toISOString(),
     });
+    setGameValue("career.calendar", DEFAULT_CAREER_CALENDAR_RESET);
 
     navigate("/career/generating");
   };

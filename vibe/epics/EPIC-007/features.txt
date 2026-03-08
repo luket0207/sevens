@@ -273,6 +273,7 @@ Feature List
 ----------------------------------------------------------------
 FEAT-701 - Remove Existing Career Home Debug View and Replace Page Structure
 ----------------------------------------------------------------
+Status: done
 
 Description
 Remove the current /career/home debugging content and replace it with the new main game loop page structure.
@@ -294,6 +295,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-702 - Define Season Calendar Data Model
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the core data model for a season calendar.
@@ -320,6 +322,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-703 - Build Calendar Component with Single-Month View
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the visual calendar component used on /career/home.
@@ -348,6 +351,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-704 - Add Calendar Month Pagination
 ----------------------------------------------------------------
+Status: done
 
 Description
 Allow the user to move between the 4 months of the current season calendar.
@@ -367,6 +371,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-705 - Generate League 5 Fixture Schedule
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the player's League 5 season fixture schedule.
@@ -395,6 +400,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-706 - Define Cup Competition Schedule Schemas
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the schedule structure definitions for the League Cup and Champions Cup.
@@ -432,6 +438,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-707 - Insert Cup Draw and Cup Match Events into Calendar
 ----------------------------------------------------------------
+Status: done
 
 Description
 Place cup-related events into the calendar structure.
@@ -455,6 +462,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-708 - Add Playoff and Final Week Event Slots
 ----------------------------------------------------------------
+Status: done
 
 Description
 Represent week 16 special event structure in the calendar.
@@ -476,6 +484,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-709 - Build Career Day Progression System
 ----------------------------------------------------------------
+Status: done
 
 Description
 Allow the player to move through time one day at a time.
@@ -496,6 +505,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-710 - Create Reusable Flash Modal Component
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create a new modal-like component specifically for short forced display messages.
@@ -521,6 +531,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-711 - Trigger Flash Modal on New Day Start
 ----------------------------------------------------------------
+Status: done
 
 Description
 Use the new Flash Modal to announce each new day as time progresses.
@@ -540,6 +551,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-712 - Build Career Control Panel
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the right-hand control panel used to operate the calendar loop.
@@ -560,6 +572,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-713 - Add Bottom Debug Section for Calendar and Schedule Inspection
 ----------------------------------------------------------------
+Status: done
 
 Description
 Provide a debugging area at the bottom of /career/home for schedule inspection and future debug tools.
@@ -577,6 +590,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-714 - Connect Career Calendar to Generated Career Data
 ----------------------------------------------------------------
+Status: done
 
 Description
 Use the generated career/team data from earlier epics as the basis for the season calendar and fixtures.
@@ -595,6 +609,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-715 - Add Calendar Event Types and Display Rules
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create a consistent event model for the different day types shown in the calendar.
@@ -620,6 +635,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-716 - Keep Match Logic Explicitly Out of Scope
 ----------------------------------------------------------------
+Status: done
 
 Description
 Ensure this epic lays schedule foundations without accidentally implementing match-resolution systems.
