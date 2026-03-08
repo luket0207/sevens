@@ -1,0 +1,309 @@
+@use "../../assets/scss/ui/import" as *;
+
+.teamManagement {
+  display: grid;
+  gap: 1rem;
+}
+
+.teamManagement__sectionTitle {
+  font-size: 1.06rem;
+}
+
+.teamManagement__hint {
+  color: rgba($lightText, 0.85);
+}
+
+.teamManagement__tacticBox {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.92);
+  padding: clamp(0.85rem, 1.7vw, 1.25rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(160px, 240px);
+  gap: 0.8rem;
+}
+
+.teamManagement__tacticGroup {
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.18);
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.teamManagement__field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.teamManagement__fieldLabel {
+  font-size: 0.84rem;
+  color: rgba($lightText, 0.88);
+}
+
+.teamManagement__select {
+  border: 1px solid rgba($lightText, 0.22);
+  border-radius: 8px;
+  background: rgba($siteBackground, 0.56);
+  color: $lightText;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.92rem;
+}
+
+.teamManagement__ratingWrap {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.teamManagement__ratingCard {
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.24);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.35rem;
+
+  h3 {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba($lightText, 0.84);
+  }
+
+  p {
+    font-size: 1.65rem;
+    font-weight: 800;
+  }
+}
+
+.teamManagement__main {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 1rem;
+}
+
+.teamManagement__column {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.92);
+  padding: clamp(0.8rem, 1.5vw, 1.1rem);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.teamManagement__columnHead {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.teamManagement__playerList {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+.teamManagement__removeDropZone {
+  border: 1px dashed rgba($lightText, 0.36);
+  border-radius: 10px;
+  min-height: 58px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: rgba($lightText, 0.87);
+  background: rgba($siteBackground, 0.22);
+  padding: 0.4rem;
+}
+
+.teamManagement__playerTile {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.45rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.teamManagement__playerTile--compact {
+  padding: 0.35rem;
+}
+
+.teamManagement__playerTile--draggable {
+  cursor: grab;
+}
+
+.teamManagement__playerTile--draggable:active {
+  cursor: grabbing;
+}
+
+.teamManagement__playerText {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.teamManagement__playerName {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.teamManagement__playerMeta,
+.teamManagement__playerSkills {
+  font-size: 0.76rem;
+  color: rgba($lightText, 0.9);
+  line-height: 1.2;
+}
+
+.teamManagement__ratingBadge {
+  display: inline-block;
+  min-width: 1.8rem;
+  text-align: center;
+  border-radius: 999px;
+  padding: 0.03rem 0.35rem;
+  color: $lightText;
+}
+
+.teamManagement__ratingBadge--1to10 { background: $ratingBand1To10; }
+.teamManagement__ratingBadge--11to20 { background: $ratingBand11To20; }
+.teamManagement__ratingBadge--21to30 { background: $ratingBand21To30; }
+.teamManagement__ratingBadge--31to40 { background: $ratingBand31To40; }
+.teamManagement__ratingBadge--41to50 { background: $ratingBand41To50; color: $darkText; }
+.teamManagement__ratingBadge--51to60 { background: $ratingBand51To60; color: $darkText; }
+.teamManagement__ratingBadge--61to70 { background: $ratingBand61To70; color: $darkText; }
+.teamManagement__ratingBadge--71to80 { background: $ratingBand71To80; color: $darkText; }
+.teamManagement__ratingBadge--81to90 { background: $ratingBand81To90; color: $darkText; }
+.teamManagement__ratingBadge--91to100 { background: $ratingBand91To100; color: $lightText; }
+
+.teamManagement__pitch {
+  position: relative;
+  min-height: 640px;
+  border: 2px solid rgba($lightText, 0.24);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba($primaryBackground, 0.78), rgba($secondaryBackground, 0.8)),
+    repeating-linear-gradient(
+      0deg,
+      rgba($lightText, 0.08) 0px,
+      rgba($lightText, 0.08) 1px,
+      rgba($lightText, 0) 1px,
+      rgba($lightText, 0) 56px
+    );
+  overflow: hidden;
+}
+
+.teamManagement__pitch::before {
+  content: "";
+  position: absolute;
+  inset: 18% 8%;
+  border: 2px solid rgba($lightText, 0.25);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.teamManagement__goalkeeperSlot {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(250px, calc(100% - 1rem));
+  border: 1px solid rgba($lightText, 0.25);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.4);
+  padding: 0.45rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.teamManagement__goalkeeperCard {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.teamManagement__pitchSlot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: min(250px, 36%);
+  border: 1px solid rgba($lightText, 0.24);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.38);
+  padding: 0.35rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.teamManagement__slotLabel {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.72rem;
+  color: rgba($lightText, 0.88);
+
+  span {
+    font-size: 0.68rem;
+    color: rgba($lightText, 0.74);
+  }
+}
+
+.teamManagement__emptySlot {
+  font-size: 0.75rem;
+  color: rgba($lightText, 0.72);
+}
+
+.teamManagement__actions {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.92);
+  padding: clamp(0.8rem, 1.4vw, 1rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.teamManagement__actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.teamManagement__debugPanel {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.92);
+  padding: clamp(0.8rem, 1.5vw, 1rem);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.teamManagement__json {
+  margin: 0;
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.45);
+  padding: 0.6rem;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 1160px) {
+  .teamManagement__tacticBox {
+    grid-template-columns: 1fr;
+  }
+
+  .teamManagement__main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .teamManagement__pitch {
+    min-height: 720px;
+  }
+
+  .teamManagement__pitchSlot {
+    width: min(260px, 70%);
+  }
+}

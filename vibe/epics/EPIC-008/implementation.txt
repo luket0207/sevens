@@ -1,0 +1,97 @@
+EPIC-008 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-801 to FEAT-815 - Team Management Page
+Status: done
+
+What was implemented:
+- Replaced placeholder Team Management route page with full Team Management feature screen and layout:
+  - tactic box at top
+  - player list on the left
+  - pitch on the right
+  - save/cancel action area
+  - bottom debug section
+- Implemented pitch model and visuals:
+  - fixed goalkeeper slot in goal (non-draggable)
+  - 6 outfield slots with role semantics for calculations:
+    - 2 defender slots
+    - 2 midfielder slots
+    - 2 attacker slots
+- Implemented outfield player list and drag/drop arrangement flow:
+  - drag players from available list to pitch slots
+  - drag players between pitch slots
+  - drag players from pitch into dedicated remove/unplace drop-zone to remove from pitch
+  - duplicate-placement prevention via central slot-assignment move/removal utilities
+- Implemented arrangement/completeness state model:
+  - tracks slot assignments
+  - derives unplaced outfield list
+  - computes team completeness when all 6 outfield slots are filled
+- Implemented tactic box UI + state:
+  - defensive width/tactic selection
+  - attacking width/tactic selection
+  - persisted in Team Management local state and included in save payload
+- Implemented tactic calculation engine:
+  - grouped skill totals for DF, MD, AT, ALL from placed outfield players
+  - defence and attack matrix formulas implemented exactly per EPIC spec
+  - DTR and ATR computed via:
+    - sum tactic column formulas
+    - divide by 10
+    - round
+    - clamp 1..100
+- Added DTR/ATR live debug display:
+  - values update whenever tactics or arrangement changes
+- Implemented Save/Cancel confirmation flows using modal system:
+  - Save enabled only when team complete
+  - Save confirms, persists configuration, then returns to `/career/home`
+  - Cancel confirms, discards draft changes, then returns to `/career/home`
+- Persisted saved Team Management state into broader career state:
+  - `career.world.playerTeam.teamManagement`
+  - includes:
+    - slot assignments
+    - tactic settings
+    - DTR/ATR
+    - goalkeeper id
+    - metadata (`version`, `savedAt`)
+- Connected Team Management into career flow:
+  - page already reachable via `/team-management` and Career Home control panel link
+  - added guards:
+    - redirect to `/career/generating` if generation active
+    - redirect to `/career/start` if career world/player team missing
+- Added Team Management debug utilities panel with:
+  - slot assignments
+  - unplaced players
+  - grouped totals (DF/MD/AT/ALL)
+  - selected tactics
+  - DTR/ATR
+  - completeness state
+
+Engine components used:
+- `gameContext` for reading/writing persisted career team-management state.
+- `button` for save/cancel and all page actions.
+- `modal`/`modalContext` for required Save/Cancel confirmation flow.
+
+Engine components not used:
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not required for this UI/arrangement/tactic-calculation slice).
+
+Files changed:
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/teamManagement/utils/teamManagementState.js`
+- `src/game/teamManagement/utils/tacticRatings.js`
+- `src/game/teamManagement/utils/dragPayload.js`
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/components/teamManagementTacticBox.jsx`
+- `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+- `src/game/teamManagement/components/teamManagementPitch.jsx`
+- `src/game/teamManagement/components/teamManagementDebugPanel.jsx`
+- `vibe/epics/EPIC-008/features.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Drag/drop currently uses native HTML5 DnD; if mobile-first interactions are required later, add pointer/touch drag handling.
+- Saved lineup stores slot assignment ids plus tactics/ratings and is ready for future match systems, but no match simulation logic is added in this epic by design.

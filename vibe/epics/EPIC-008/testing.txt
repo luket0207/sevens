@@ -1,0 +1,199 @@
+EPIC-008 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated shared engine/info modules.
+
+Manual verification note:
+- Full browser/manual verification is still pending. The checks below define expected behaviour for each implemented feature.
+
+FEAT-801 - Create Team Management Page Structure
+Manual steps:
+1. Open `/team-management` from Career Home control panel.
+Expected:
+- Page has tactic box at top, player list left, pitch right, save/cancel area, and debug panel.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed on unrelated baseline issues.
+Automated needed:
+- Component/layout test for Team Management structural regions.
+Status: in progress
+
+FEAT-802 - Build Pitch Layout with Fixed Goalkeeper and 6 Role Slots
+Manual steps:
+1. Open Team Management page.
+Expected:
+- Goalkeeper is fixed in goal and not draggable.
+- Six outfield role slots exist (2 DF, 2 MD, 2 AT).
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for fixed GK + six role slot rendering.
+Status: in progress
+
+FEAT-803 - Build Player List for Available Outfield Players
+Manual steps:
+1. Inspect left player list panel.
+Expected:
+- Outfield players are clearly visible with identity/rating info.
+- Players can be picked up (drag start) from list.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for player list rendering and drag-start hooks.
+Status: in progress
+
+FEAT-804 - Implement Player Drag and Drop / Placement Interaction
+Manual steps:
+1. Drag player from list to empty pitch slot.
+2. Drag player from one pitch slot to another.
+3. Drag a pitch player to remove/unplace drop zone.
+Expected:
+- List -> slot placement works.
+- Slot -> slot movement works.
+- Removal/unplacement works and player returns to list.
+- No player duplication occurs.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration tests for list->slot, slot->slot, and slot->unplace flows.
+Status: in progress
+
+FEAT-805 - Track Team Arrangement State and Team Completeness
+Manual steps:
+1. Fill and unfill outfield slots via drag/drop.
+Expected:
+- Slot state updates correctly.
+- Completeness is true only when all 6 slots are filled.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for completeness and unplaced-player derivation.
+Status: in progress
+
+FEAT-806 - Build Tactic Box UI
+Manual steps:
+1. Inspect tactic box controls.
+2. Change each defensive/attacking width and tactic control.
+Expected:
+- All required controls and options are present and selectable.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test for tactic select option sets.
+Status: in progress
+
+FEAT-807 - Store Tactical Settings in Team Management State
+Manual steps:
+1. Change tactic and width values.
+2. Trigger rerenders by moving players.
+Expected:
+- Tactic selections persist in page state and remain current.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit test for tactic state update and persistence in draft state.
+Status: in progress
+
+FEAT-808 - Define Tactic Calculation Input Model
+Manual steps:
+1. Arrange players across DF/MD/AT slots.
+2. Inspect grouped totals in debug panel.
+Expected:
+- DF/MD/AT/ALL grouped skill totals reflect slot role grouping correctly.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests for grouped-total calculations by skill and role.
+Status: in progress
+
+FEAT-809 - Implement Defence Tactic Rating (DTR) Calculation
+Manual steps:
+1. Change defensive tactic with stable player arrangement.
+2. Inspect DTR value and debug grouped totals.
+Expected:
+- DTR changes according to defensive matrix formulas.
+- DTR is divided by 10, rounded, and clamped to 1..100.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests per defensive tactic formula path.
+Status: in progress
+
+FEAT-810 - Implement Attack Tactic Rating (ATR) Calculation
+Manual steps:
+1. Change attacking tactic with stable player arrangement.
+2. Inspect ATR value and debug grouped totals.
+Expected:
+- ATR changes according to attack matrix formulas.
+- ATR is divided by 10, rounded, and clamped to 1..100.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Unit tests per attacking tactic formula path.
+Status: in progress
+
+FEAT-811 - Display DTR and ATR Debug Output
+Manual steps:
+1. Change tactics and slot assignments.
+Expected:
+- DTR and ATR are always visible and update immediately on state changes.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component test asserting live updates for DTR/ATR display.
+Status: in progress
+
+FEAT-812 - Add Save and Cancel Actions with Confirmation
+Manual steps:
+1. Click Save when complete.
+2. Click Cancel at any time.
+Expected:
+- Both actions show confirmation modal.
+- Save only enabled when all 6 outfield slots are filled.
+- Confirmed Save returns to calendar.
+- Confirmed Cancel returns to calendar without persisting draft.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration tests for save/cancel modal-confirmation flow.
+Status: in progress
+
+FEAT-813 - Persist Team Management Changes to Career State
+Manual steps:
+1. Save a modified arrangement/tactic setup.
+2. Re-open Team Management page.
+Expected:
+- Saved slot assignments, tactics, DTR, and ATR are persisted in `career.world.playerTeam.teamManagement`.
+- Re-opened page reflects saved setup.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Integration test for save persistence + reload of saved lineup/tactics.
+Status: in progress
+
+FEAT-814 - Connect Team Management Page to Career Navigation
+Manual steps:
+1. Open Team Management via Career Home.
+2. Exit via Save and Cancel.
+Expected:
+- Page is reachable from career flow.
+- Save/Cancel both return to `/career/home`.
+- Guard redirects work when generation state is invalid.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Route integration tests for reachability and guard redirects.
+Status: in progress
+
+FEAT-815 - Add Team Management Debug/Test Utilities
+Manual steps:
+1. Inspect Team Management debug panel while changing tactics/slots.
+Expected:
+- Debug view includes slot assignments, unplaced players, grouped totals, tactics, DTR, ATR, completeness.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Component snapshot test for debug panel state output.
+Status: in progress

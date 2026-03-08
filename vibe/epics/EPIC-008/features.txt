@@ -1,0 +1,767 @@
+EPIC-008 - Team Management Page
+
+Overview
+The goal of this epic is to build the Team Management page.
+
+This page allows the player to:
+- arrange their 6 outfield players onto the pitch
+- keep the goalkeeper fixed in goal
+- set defensive and attacking tactics
+- calculate the team's tactic ratings:
+  - DTR = Team Defence Tactic Rating
+  - ATR = Team Attack Tactic Rating
+- save or cancel their changes and return to the calendar
+
+This epic is about:
+- squad arrangement UI
+- drag/drop interaction
+- tactic selection
+- tactic rating calculation
+- save/cancel flow
+
+This epic is not about:
+- match simulation
+- width logic during matches
+- opponent tactics
+- stamina, injuries, suspensions, or substitutions
+- validating match outcomes from tactics
+
+================================================================
+Core Page Layout
+================================================================
+
+The Team Management page should have 3 main areas:
+
+1. Tactic Box at the top
+- contains defensive tactic controls
+- contains attacking tactic controls
+
+2. Main team management area below
+- player list on the left
+- pitch on the right
+- pitch takes the main visual focus
+- player list allows drag/pick-up behaviour
+
+3. Bottom or final action area
+- Save button
+- Cancel button
+
+General layout behaviour:
+- the player list should be to the left of the pitch
+- the pitch should be on the right
+- the goalkeeper is fixed in goal
+- there are 6 outfield pitch slots
+- players can be moved from the list to the pitch
+- players can be moved from the pitch back to the list or dropped off the pitch to remove them from the pitch
+- the page should be responsive, but can prioritise desktop layout first
+
+================================================================
+Team Arrangement Rules
+================================================================
+
+The team consists of:
+- 1 goalkeeper
+- 6 outfield players
+
+Goalkeeper rules:
+- the goalkeeper is fixed in goal
+- the user does not drag the goalkeeper around
+- the goalkeeper should always be visible in the goal slot
+
+Outfield player rules:
+- there are 6 pitch slots for outfield players
+- the user can place any outfield player into any of the 6 slots
+- players do not need to be assigned a strict football position here
+- the user is simply arranging their chosen team on the pitch
+
+Interaction rules:
+- players can be picked up from the list and placed on the pitch
+- players can be picked up from the pitch and moved to another pitch slot
+- players can be picked up from the pitch and dropped off the pitch to remove them from the pitch
+- if a player is removed from the pitch, they return to the available pool/list state
+- a player should not exist in two places at once
+
+Team completeness rule:
+- when all 6 outfield slots are filled, the team is complete
+- only a complete team can be saved
+- until then, the player can only exit without saving
+
+================================================================
+Page Navigation Rules
+================================================================
+
+This page only needs 2 navigation buttons:
+- Save
+- Cancel
+
+Save:
+- only available when the team is complete
+- produces an "are you sure" confirmation
+- if confirmed:
+  - save the team changes
+  - return to the calendar page
+
+Cancel:
+- always available
+- produces an "are you sure" confirmation
+- if confirmed:
+  - discard unsaved changes
+  - return to the calendar page
+
+Important behaviour:
+- both Save and Cancel return the player to the calendar
+- Save persists changes
+- Cancel does not persist changes
+
+================================================================
+Tactic Box
+================================================================
+
+Above the pitch and player list there should be a tactic box.
+
+This box controls two main tactic groups:
+- defensive tactic
+- attacking tactic
+
+----------------------------------------------------------------
+Defensive Tactic
+----------------------------------------------------------------
+
+Defensive tactic has 2 settings:
+
+Width
+- Wide
+- Normal
+- Narrow
+
+Tactic
+- Low Block
+- Mid Block
+- High Press
+- Offside Trap
+- Zonal
+
+----------------------------------------------------------------
+Attacking Tactic
+----------------------------------------------------------------
+
+Attacking tactic has 2 settings:
+
+Width
+- Wide
+- Normal
+- Narrow
+
+Tactic
+- Posession
+- Long Ball
+- Wing Play
+- Counter
+- Direct
+
+Width notes:
+- width settings are only being stored/set in this epic
+- width interaction logic will be used later in the match system
+- for now, we only need UI and state for setting the width values
+
+Tactic notes:
+- tactic values must already be used in this epic
+- they are used to calculate:
+  - DTR
+  - ATR
+
+================================================================
+Tactic Rating Outputs
+================================================================
+
+This epic must calculate 2 values:
+
+- Team Defence Tactic Rating (DTR)
+- Team Attack Tactic Rating (ATR)
+
+Rules:
+- both are whole numbers
+- both should be rounded to the nearest whole number
+- both are final values between 1 and 100
+- for now they should be output for debugging/inspection
+
+Calculation process:
+1. work out the relevant skill sums by player group
+2. apply the tactic matrix formulas for the selected tactic
+3. add all formula results in that tactic column
+4. divide the total by 10
+5. round to a whole number
+
+Reasoning:
+- each tactic column has an intended maximum of 1000 before dividing by 10
+- some columns intentionally will not be able to reach 1000 even with perfect skills
+- after dividing by 10 and rounding, the result becomes the 1 to 100 rating scale
+
+================================================================
+Player Group Values Used in Calculations
+================================================================
+
+Use these grouped totals:
+
+DF = Sum of the team's defenders' ratings for a given skill
+MD = Sum of the team's midfielders' ratings for a given skill
+AT = Sum of the team's attackers' ratings for a given skill
+ALL = Sum of the whole team's ratings for a given skill
+
+Important note:
+- these groups refer to the players placed into the team shape on this page
+- the system must know which pitch slots count as defenders, midfielders, and attackers
+- even though the user is just dragging players onto 6 slots, the 6 pitch slots themselves must carry the role meaning needed for calculations
+- therefore the pitch layout should define:
+  - 2 defender slots
+  - 2 midfielder slots
+  - 2 attacker slots
+- the goalkeeper remains fixed and is not part of DF, MD, or AT unless a formula explicitly uses ALL and the agreed implementation includes goalkeeper skill values
+- for this epic, use only the 6 outfield players for DF/MD/AT/ALL in the tactic calculations unless an existing design elsewhere explicitly requires goalkeeper inclusion
+
+Recommended slot structure:
+- 2 defender slots
+- 2 midfielder slots
+- 2 attacker slots
+
+This keeps the drag/drop free enough for the user while still making tactic calculations meaningful.
+
+================================================================
+Tactic Contribution Matrix
+================================================================
+
+Use the following exact matrix.
+
+A "/" means no contribution for that skill/tactic combination.
+
+Defence (DTR) and Attack (ATR) matrix:
+
+	Defence (DTR)					Attack (ATR)
+	Low Block	Mid Block	High Press	Offside Trap	Zonal	Posession	Long Ball	Wing Play	Counter	Direct
+Tackling	DF * 1.5	DF + MD	ALL / 3	/	DF * 2	/	/	/	/	/
+Marking	DF * 1.5	DF + MD	ALL / 3	DF * 2	ALL / 3	/	/	/	/	/
+Passing	/	/	/	/	/	MD + ((DF + AT) / 2)	(MD * 2) + DF	MD	(DF + (MD * 2)) / 2	MD
+Movement	/	/	ALL	DF / 2	/	MD + ((DF + AT) / 2)	AT	AT	AT + MD	/
+Control	DF	(DF + MD) / 2	/	DF * 2	ALL / 2	MD	/	/	/	/
+Dribbling	/	/	/	/	/	/	/	MD	(MD + (AT * 2)) / 2	AT + MD
+Shooting	/	/	/	/	/	/	AT	AT * 2	/	AT + MD
+
+Important correction:
+- where earlier wording used "MF", implement this as "MD"
+- the midfielder group variable used throughout should be MD
+
+Example:
+If Tackling is being evaluated for Low Block:
+- formula = DF * 1.5
+
+If the two defender slot players have Tackling 20 and 30:
+- DF = 50
+- contribution = 50 * 1.5 = 75
+
+================================================================
+DTR and ATR Calculation Rules
+================================================================
+
+Defensive side:
+- take the selected defensive tactic
+- read the column for that tactic from the Defence matrix
+- evaluate every non-empty skill formula in that column
+- add those results together
+- divide by 10
+- round the result
+- output as DTR
+
+Attacking side:
+- take the selected attacking tactic
+- read the column for that tactic from the Attack matrix
+- evaluate every non-empty skill formula in that column
+- add those results together
+- divide by 10
+- round the result
+- output as ATR
+
+For now:
+- output DTR and ATR clearly for debugging
+- no further match logic is needed yet
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-801 - Create Team Management Page Structure
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Build the base Team Management page layout.
+
+Requirements
+- Create the Team Management page/screen.
+- Add the main layout areas:
+  - tactic box at the top
+  - player list on the left
+  - pitch on the right
+  - Save and Cancel actions
+- Keep the page responsive and structurally ready for the rest of the epic.
+- The pitch should visually show:
+  - goalkeeper area
+  - 6 outfield slots
+
+Acceptance Criteria
+- The Team Management page exists.
+- The main page structure matches the intended layout.
+- The page is ready for player arrangement and tactic controls.
+
+----------------------------------------------------------------
+FEAT-802 - Build Pitch Layout with Fixed Goalkeeper and 6 Role Slots
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Create the pitch area used for arranging the team.
+
+Requirements
+- Build a pitch UI on the right side of the page.
+- Include:
+  - 1 fixed goalkeeper slot in goal
+  - 2 defender slots
+  - 2 midfielder slots
+  - 2 attacker slots
+- The goalkeeper should always remain fixed in the goal position.
+- The outfield slots should clearly communicate their slot type for later DTR/ATR calculations.
+- Keep the pitch readable and easy to interact with.
+
+Acceptance Criteria
+- The pitch shows a fixed goalkeeper position.
+- The pitch shows 6 outfield slots.
+- The 6 outfield slots are structured as defender/midfielder/attacker slots.
+- The pitch is suitable for drag/drop arrangement.
+
+----------------------------------------------------------------
+FEAT-803 - Build Player List for Available Outfield Players
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Show the team's available outfield players in a list to the left of the pitch.
+
+Requirements
+- Display the outfield players in a list on the left side of the pitch.
+- The list should show enough information to identify players clearly.
+- Reuse the existing player display approach where sensible, including player image/stat presentation if appropriate.
+- Players in the list must be available to be picked up and placed onto the pitch.
+
+Acceptance Criteria
+- The player list is visible on the left.
+- Available outfield players are clearly displayed.
+- Players can be selected/picked up from the list for placement.
+
+----------------------------------------------------------------
+FEAT-804 - Implement Player Drag and Drop / Placement Interaction
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Allow players to be moved between the list and the pitch.
+
+Requirements
+- Players must be movable by picking them up from:
+  - the player list
+  - the pitch
+- A picked-up player can be:
+  - placed into a valid pitch slot
+  - moved from one pitch slot to another
+  - dropped off the pitch to remove them from the pitch
+- If a player is dropped off the pitch, they are removed from the pitch arrangement and returned to the unplaced state.
+- A player must not appear in multiple locations at the same time.
+- Keep the interaction robust and predictable.
+
+Acceptance Criteria
+- Players can be placed from the list onto the pitch.
+- Players can be moved between pitch slots.
+- Players can be removed from the pitch by dropping them off the pitch.
+- Players return to the available pool/list state when removed.
+- No player duplication occurs.
+
+----------------------------------------------------------------
+FEAT-805 - Track Team Arrangement State and Team Completeness
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Store the current pitch arrangement and determine whether the team is complete.
+
+Requirements
+- Maintain state for:
+  - fixed goalkeeper
+  - which players occupy each of the 6 outfield slots
+  - which players remain unplaced
+- Expose a completion state for whether all 6 outfield slots are filled.
+- A team is complete only when all 6 outfield slots are occupied.
+
+Acceptance Criteria
+- Team arrangement state is stored correctly.
+- The page can determine whether the team is complete.
+- Completeness updates correctly as players are placed or removed.
+
+----------------------------------------------------------------
+FEAT-806 - Build Tactic Box UI
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Create the tactic controls above the player list and pitch.
+
+Requirements
+- Build a tactic box above the main arrangement area.
+- Include controls for:
+  - Defensive Width
+  - Defensive Tactic
+  - Attacking Width
+  - Attacking Tactic
+- Defensive Width options:
+  - Wide
+  - Normal
+  - Narrow
+- Defensive Tactic options:
+  - Low Block
+  - Mid Block
+  - High Press
+  - Offside Trap
+  - Zonal
+- Attacking Width options:
+  - Wide
+  - Normal
+  - Narrow
+- Attacking Tactic options:
+  - Posession
+  - Long Ball
+  - Wing Play
+  - Counter
+  - Direct
+
+Acceptance Criteria
+- The tactic box exists above the pitch/player list.
+- All defensive and attacking controls are present.
+- The user can set both width and tactic values.
+
+----------------------------------------------------------------
+FEAT-807 - Store Tactical Settings in Team Management State
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Persist the selected tactical values within the Team Management page state.
+
+Requirements
+- Store the selected values for:
+  - defensiveWidth
+  - defensiveTactic
+  - attackingWidth
+  - attackingTactic
+- Width values only need to be set and stored for now.
+- Tactic values must also be available for DTR/ATR calculations.
+
+Acceptance Criteria
+- Tactical selections persist correctly in page state.
+- Width and tactic values update when changed.
+- Tactic values are available for later calculations in this epic.
+
+----------------------------------------------------------------
+FEAT-808 - Define Tactic Calculation Input Model
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Create the grouped skill totals needed to evaluate the tactic matrix.
+
+Requirements
+- From the 6 placed outfield players, calculate grouped totals per skill for:
+  - DF
+  - MD
+  - AT
+  - ALL
+- DF = sum of the two defender-slot players for a given skill
+- MD = sum of the two midfielder-slot players for a given skill
+- AT = sum of the two attacker-slot players for a given skill
+- ALL = sum of all 6 placed outfield players for a given skill
+- Support these skills:
+  - Tackling
+  - Marking
+  - Passing
+  - Movement
+  - Control
+  - Dribbling
+  - Shooting
+- Keep this grouped calculation reusable and separate from the display layer.
+
+Acceptance Criteria
+- DF, MD, AT, and ALL grouped totals can be calculated from the arranged team.
+- Grouped totals are correct for each skill.
+- The calculation model is reusable for tactic formulas.
+
+----------------------------------------------------------------
+FEAT-809 - Implement Defence Tactic Rating (DTR) Calculation
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Calculate the Team Defence Tactic Rating using the selected defensive tactic and the defined matrix.
+
+Requirements
+- Implement the Defence matrix exactly as defined in this epic.
+- For the selected defensive tactic:
+  - evaluate each non-empty skill row formula
+  - add the results together
+  - divide by 10
+  - round to a whole number
+- Output the final result as DTR.
+- Keep the formula logic centralised and reusable.
+
+Defence matrix to implement:
+
+Low Block
+- Tackling = DF * 1.5
+- Marking = DF * 1.5
+- Control = DF
+
+Mid Block
+- Tackling = DF + MD
+- Marking = DF + MD
+- Control = (DF + MD) / 2
+
+High Press
+- Tackling = ALL / 3
+- Marking = ALL / 3
+- Movement = ALL
+
+Offside Trap
+- Marking = DF * 2
+- Movement = DF / 2
+- Control = DF * 2
+
+Zonal
+- Tackling = DF * 2
+- Marking = ALL / 3
+- Control = ALL / 2
+
+Acceptance Criteria
+- DTR is calculated from the selected defensive tactic.
+- The matrix formulas are applied correctly.
+- The result is divided by 10 and rounded.
+- The result is available for debugging/display.
+
+----------------------------------------------------------------
+FEAT-810 - Implement Attack Tactic Rating (ATR) Calculation
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Calculate the Team Attack Tactic Rating using the selected attacking tactic and the defined matrix.
+
+Requirements
+- Implement the Attack matrix exactly as defined in this epic.
+- For the selected attacking tactic:
+  - evaluate each non-empty skill row formula
+  - add the results together
+  - divide by 10
+  - round to a whole number
+- Output the final result as ATR.
+- Keep the formula logic centralised and reusable.
+
+Attack matrix to implement:
+
+Posession
+- Passing = MD + ((DF + AT) / 2)
+- Movement = MD + ((DF + AT) / 2)
+- Control = MD
+
+Long Ball
+- Passing = (MD * 2) + DF
+- Movement = AT
+- Shooting = AT
+
+Wing Play
+- Passing = MD
+- Movement = AT
+- Dribbling = MD
+- Shooting = AT * 2
+
+Counter
+- Passing = (DF + (MD * 2)) / 2
+- Movement = AT + MD
+- Dribbling = (MD + (AT * 2)) / 2
+
+Direct
+- Passing = MD
+- Dribbling = AT + MD
+- Shooting = AT + MD
+
+Acceptance Criteria
+- ATR is calculated from the selected attacking tactic.
+- The matrix formulas are applied correctly.
+- The result is divided by 10 and rounded.
+- The result is available for debugging/display.
+
+----------------------------------------------------------------
+FEAT-811 - Display DTR and ATR Debug Output
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Show the calculated tactic ratings clearly for debugging and balancing.
+
+Requirements
+- Display the current DTR value on the page.
+- Display the current ATR value on the page.
+- Update the displayed values when:
+  - team arrangement changes
+  - selected tactics change
+- Keep the output clear and easy to inspect during testing.
+
+Acceptance Criteria
+- DTR and ATR are visible on the page.
+- Both values update when the team or tactics change.
+- The values are useful for debugging the tactic system.
+
+----------------------------------------------------------------
+FEAT-812 - Add Save and Cancel Actions with Confirmation
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Implement the page exit actions.
+
+Requirements
+- Add Save and Cancel buttons.
+- Save:
+  - only usable when the team is complete
+  - must produce an "are you sure" confirmation
+  - if confirmed, save the team changes and return to the calendar
+- Cancel:
+  - always available
+  - must produce an "are you sure" confirmation
+  - if confirmed, discard unsaved changes and return to the calendar
+- Keep this flow clear and reliable.
+
+Acceptance Criteria
+- Save and Cancel buttons exist.
+- Both produce confirmation before exiting.
+- Save persists changes and returns to the calendar.
+- Cancel discards changes and returns to the calendar.
+- Save is only available when the full team is arranged.
+
+----------------------------------------------------------------
+FEAT-813 - Persist Team Management Changes to Career State
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Save the selected arrangement and tactical setup into the wider career/team state.
+
+Requirements
+- On successful Save, persist:
+  - the 6 outfield slot assignments
+  - the fixed goalkeeper context if needed by the saved team model
+  - defensive width
+  - defensive tactic
+  - attacking width
+  - attacking tactic
+  - DTR
+  - ATR if appropriate to persist now
+- Keep the saved structure compatible with future match and team systems.
+- Cancel must not persist any unsaved changes.
+
+Acceptance Criteria
+- Saved changes are written into the broader career/team state.
+- Cancel leaves the saved state unchanged.
+- The saved team structure is ready for later systems.
+
+----------------------------------------------------------------
+FEAT-814 - Connect Team Management Page to Career Navigation
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Integrate the Team Management page into the wider career loop.
+
+Requirements
+- Ensure the page can be reached from the career flow.
+- Ensure Save and Cancel both return the user to the calendar/career home loop.
+- Preserve team state correctly across navigation.
+
+Acceptance Criteria
+- The Team Management page is reachable from the career flow.
+- Exiting via Save or Cancel returns the user to the calendar.
+- Team data continuity is preserved.
+
+----------------------------------------------------------------
+FEAT-815 - Add Team Management Debug/Test Utilities
+----------------------------------------------------------------
+Status: done
+
+
+Description
+Provide lightweight debugging support to inspect arrangement and tactic calculations during development.
+
+Requirements
+- Add development-friendly debugging support for:
+  - slot assignments
+  - unplaced players
+  - grouped skill totals (DF, MD, AT, ALL)
+  - selected tactic values
+  - DTR
+  - ATR
+- Keep it lightweight and useful for validating the matrix logic.
+
+Acceptance Criteria
+- Developers can inspect the internal state used in team management.
+- The matrix calculation inputs and outputs can be verified easily.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The Team Management page exists with the intended layout.
+- The page includes:
+  - tactic box at the top
+  - player list on the left
+  - pitch on the right
+  - Save and Cancel actions
+- The goalkeeper is fixed in goal.
+- There are 6 outfield slots arranged as:
+  - 2 defenders
+  - 2 midfielders
+  - 2 attackers
+- Players can be moved from the list onto the pitch.
+- Players can be moved between pitch slots.
+- Players can be removed from the pitch by dropping them off the pitch.
+- The team is only considered complete when all 6 outfield slots are filled.
+- Defensive and attacking width/tactic settings can be changed.
+- Width values are stored.
+- The selected tactics produce:
+  - DTR
+  - ATR
+- DTR and ATR are calculated using the exact matrix rules from this epic.
+- DTR and ATR are divided by 10, rounded, and displayed for debugging.
+- Save and Cancel both ask for confirmation and return the user to the calendar.
+- Save persists changes.
+- Cancel does not persist changes.
+- The page is integrated into the wider career flow and ready for future match systems.
