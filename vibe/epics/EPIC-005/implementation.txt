@@ -252,3 +252,26 @@ Files changed:
 - `vibe/epics/EPIC-005/bugs.txt`
 - `vibe/epics/EPIC-005/implementation.txt`
 - `vibe/epics/EPIC-005/testing.txt`
+
+BUG-007 - Foreign Teams Need Distinct Foreign-Sounding Names
+Status: fixed
+
+What was implemented:
+- Added dedicated foreign team naming pools so foreign teams no longer draw from the domestic naming set.
+- Updated identity generation to branch by competition type (`domestic` vs `foreign`) while preserving global uniqueness checks.
+- Wired competition type through the generation pipeline so `Foreign Champions Cup` team names use the foreign naming path.
+
+Engine components used:
+- `rng` (existing dependency) for random selection across foreign/domestic naming pools.
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this generation-identity data fix).
+
+Files changed:
+- `src/game/careerGeneration/constants/teamIdentityPools.js`
+- `src/game/careerGeneration/utils/teamIdentityGeneration.js`
+- `src/game/careerGeneration/utils/teamGenerator.js`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`

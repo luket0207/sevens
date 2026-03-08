@@ -59,3 +59,60 @@ Tradeoffs / follow-up tasks:
 - Player image focuses on simplified silhouette readability rather than detailed facial features.
 - Current team selector integration passes team kit from career setup; future screens can pass explicit shirts/teams directly using the reusable component API.
 - No automated unit/component tests were added in this pass; test gaps are listed in `testing.txt`.
+
+----------------------------------------------------------------
+BUGFIX - BUG-001 Replace Curly Hairstyle with Mohawk
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Replaced hairstyle value `4` from curly to mohawk in the appearance parser mapping.
+- Replaced the curly hair visual variant with a mohawk visual variant in player-image styles.
+- Kept existing hair-colour mapping and bald suppression behavior unchanged.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this parser/style-only bug fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is isolated to player-image appearance mapping and styling.
+
+Files changed:
+- `src/game/playerImage/utils/appearanceParser.js`
+- `src/game/playerImage/playerImage.scss`
+- `vibe/epics/EPIC-006/bugs.txt`
+- `vibe/epics/EPIC-006/implementation.txt`
+- `vibe/epics/EPIC-006/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Mohawk shape remains intentionally stylised/lightweight to match existing player-image style direction.
+
+----------------------------------------------------------------
+BUGFIX - BUG-002 Widen and Recenter Mohawk
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Adjusted mohawk visual width to approximately 60% of the head width.
+- Recentered the mohawk after widening so it remains balanced on the head silhouette.
+- Left the rest of hairstyle rendering behavior unchanged.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this SCSS-only visual adjustment.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this change is isolated to player-image styling.
+
+Files changed:
+- `src/game/playerImage/playerImage.scss`
+- `vibe/epics/EPIC-006/bugs.txt`
+- `vibe/epics/EPIC-006/implementation.txt`
+- `vibe/epics/EPIC-006/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Mohawk now has stronger visual presence; if it feels too dominant at `small` size, per-size tuning can be added later.

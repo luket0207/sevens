@@ -1,0 +1,488 @@
+BUG-001 - League tables not showing at career start
+Status: fixed
+
+Repro steps:
+1. Start a new career and complete generation.
+2. Open Career Home.
+3. Check League Table panel.
+
+Expected behavior:
+- League tables render immediately.
+- Player team appears in League 5 with the 7 AI League 5 teams.
+- At season start, table rows are alphabetically ordered with all stat values at 0.
+
+Actual behavior:
+- League table data was missing from live calendar state, so no standings were displayed.
+
+Suspected cause:
+- Calendar initialisation in `careerHome` did not persist `nextCalendarState.simulation` into `gameContext`.
+
+Attempted fixes:
+- Traced calendar state hydration after generation.
+- Verified table creation pipeline already produced initial zeroed standings sorted by tie-break rules.
+
+Final fix:
+- Persisted `simulation` (and new pending day-flow fields) during Career Home calendar bootstrap.
+- Kept start-of-season table values at zero and alphabetical tie ordering via standings sort rules.
+
+BUG-002 - Player match day not triggering match flow
+Status: fixed
+
+Repro steps:
+1. Progress to a day containing the player's fixture.
+2. Click Continue Day.
+
+Expected behavior:
+- User should be routed into match resolution flow for their fixture.
+
+Actual behavior:
+- Player match trigger did not activate because fixture lookups depended on missing simulation state.
+
+Suspected cause:
+- Same missing simulation persistence issue as BUG-001 prevented player fixture detection.
+
+Attempted fixes:
+- Validated day fixture lookup path in `careerHome`.
+- Confirmed pending player fixture state lifecycle in simulation engine and match page.
+
+Final fix:
+- Ensured simulation state is hydrated in calendar state.
+- Player match routing now triggers `/match`, resolves result, then routes through end-of-day results flow.
+
+BUG-003 - Season fixture reveal should use single-expand accordion
+Status: fixed
+
+Repro steps:
+1. Start a new career and progress through day 1 to the season fixture reveal.
+2. Inspect the fixture generation display.
+
+Expected behavior:
+- Fixture generation output is an accordion grouped by league.
+- League groups are sorted by league order.
+- Player's current league panel is expanded by default.
+- Only one panel can be expanded at any time.
+
+Actual behavior:
+- Fixtures were displayed as always-open grouped lists, with no accordion behavior.
+
+Suspected cause:
+- Day-results fixture reveal UI rendered static sections without panel state control.
+
+Attempted fixes:
+- Added league sort ordering for fixture groups.
+- Added controlled accordion expansion state with computed default fallback.
+
+Final fix:
+- Converted day-1 fixture reveal to a single-expand accordion UI.
+- Default panel now resolves to player's current league when present.
+- Clicking a league header switches expansion to that panel only.
+
+BUG-004 - Fixture reveal should be grouped by match day with `Team A v Team B` lines
+Status: fixed
+
+Repro steps:
+1. Start a new career and progress to day 1 fixture reveal.
+2. Expand any league accordion panel.
+3. Inspect fixture ordering and line format.
+
+Expected behavior:
+- Fixtures are grouped under match day headings.
+- Match days are sorted ascending.
+- Each fixture line is formatted as `Team A v Team B`.
+
+Actual behavior:
+- Fixtures were shown as a single flat list inside a league panel.
+- Rows used `MD X: Team A vs Team B` formatting rather than grouped match-day sections.
+
+Suspected cause:
+- Day-results fixture reveal renderer iterated raw fixture rows directly, without match-day grouping.
+
+Attempted fixes:
+- Added fixture grouping utility inside day-results component keyed by `roundNumber`.
+- Sorted grouped match days and sorted fixtures within each group.
+
+Final fix:
+- League panel content now renders:
+  - `Match Day <N>` headings
+  - fixture lists underneath each heading with `Team A v Team B` format.
+
+BUG-005 - Match-day fixture rows should render as paragraphs, not list items
+Status: fixed
+
+Repro steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand any league accordion panel.
+3. Inspect fixture rows under each `Match Day` heading.
+
+Expected behavior:
+- Match rows render as plain paragraph lines (`Team A v Team B`), not inside a `<ul>`.
+
+Actual behavior:
+- Match-day fixture rows were previously styled/structured as list output.
+
+Suspected cause:
+- Earlier fixture reveal implementation used list markup conventions for grouped fixtures.
+
+Attempted fixes:
+- Verified current day-results renderer outputs fixture rows as `<p>` lines.
+- Removed remaining list-specific styling from the fixture reveal panel styles.
+
+Final fix:
+- Day-results fixture reveal now uses paragraph rows for match-day fixtures with no list markup/styling dependency.
+
+BUG-006 - Allow closing an open league accordion panel
+Status: fixed
+
+Repro steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand a league accordion panel.
+3. Click the same league header again.
+
+Expected behavior:
+- Clicking an already-open panel closes it.
+- No league panel remains open after closing the active one.
+
+Actual behavior:
+- Clicking the open header kept that panel open because selection state always resolved to a default panel.
+
+Suspected cause:
+- Accordion expansion state did not support an explicit "no panel selected" state.
+
+Attempted fixes:
+- Added explicit empty-selection handling to accordion state resolution.
+- Updated header click handler to toggle active panel off when clicked again.
+
+Final fix:
+- Season fixture reveal accordion now supports three states:
+  - initial default-open panel
+  - one selected panel
+  - no panel selected (after toggling open panel closed).
+
+
+
+BUG-007 - Highlight player's team in season fixture reveal
+Status: fixed
+
+Repro steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand the player's league accordion panel.
+3. Inspect fixture lines containing the player's team.
+
+Expected behavior:
+- The player's team name is visually highlighted anywhere it appears in fixture lines.
+
+Actual behavior:
+- All team names were rendered with identical styling, so player fixtures were not visually distinct.
+
+Suspected cause:
+- Fixture line rendering did not apply conditional styling for player-team entries.
+
+Attempted fixes:
+- Added player-team match checks in fixture line renderer (team ID first, with name fallback).
+- Added highlight class style using shared SCSS token palette.
+- Included `homeTeamId`/`awayTeamId` in season fixture reveal payload for reliable player-team matching.
+
+Final fix:
+- Day-results fixture reveal now highlights the player's team name in each `Team A v Team B` line.
+
+
+BUG-008 - Add matching Continue buttons at top and bottom of day-results page
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results`.
+2. Inspect available continuation controls on the page.
+
+Expected behavior:
+- A `Continue` button is available at both the top and bottom of the day-results page.
+
+Actual behavior:
+- Only a bottom `Continue` button was present.
+
+Suspected cause:
+- Day-results action controls were rendered in a single bottom actions block.
+
+Attempted fixes:
+- Added a second actions block at the top of the day-results layout using the same button component and click handler.
+
+Final fix:
+- Day-results now renders matching `Continue` buttons at both top and bottom, both wired to the same progression flow.
+
+
+BUG-009 - Match-day results should use inline scoreline format
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results`.
+2. Inspect a completed match row.
+
+Expected behavior:
+- Results render inline in this style: `Team A 2 - 1 Team B`.
+
+Actual behavior:
+- Results were split into separate `Team A vs Team B` and score columns.
+
+Suspected cause:
+- Result row layout used a two-column card style instead of a single inline scoreline.
+
+Attempted fixes:
+- Reworked result row markup to a single centered scoreline per match.
+
+Final fix:
+- Match-day result rows now render as inline scorelines (`Home Team <score> Away Team`) using centered paragraph lines.
+
+BUG-010 - Group result lines by competition without per-match pods
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results`.
+2. Inspect match result layout when multiple competitions are present.
+
+Expected behavior:
+- Results are grouped by competition.
+- Matches are shown as plain paragraph list lines, not `ul/li` items.
+- Text is centered in the result area.
+
+Actual behavior:
+- Each match appeared as its own pod/card and was not grouped into competition sections.
+
+Suspected cause:
+- Results renderer iterated raw result rows directly into `ul/li` match cards.
+
+Attempted fixes:
+- Added competition-grouping utility for day results.
+- Replaced per-match card list with grouped competition sections containing paragraph rows.
+- Center-aligned competition/result line text.
+
+Final fix:
+- Day-results now groups matches by competition and renders centered paragraph scorelines without per-match pods.
+
+BUG-011 - Align score numbers vertically with team names beside them
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results`.
+2. Inspect result lines under any competition group.
+
+Expected behavior:
+- Score values align in one vertical column down the page.
+- Home/away team names sit beside that central score column.
+
+Actual behavior:
+- Scorelines rendered inline, but score numbers did not align consistently between rows.
+
+Suspected cause:
+- Result line layout used centered inline text without fixed score-column alignment.
+
+Attempted fixes:
+- Switched result-line layout to a three-column grid (`home | score | away`).
+- Added fixed minimum width and centered alignment for score column.
+- Added home/right and away/left alignment rules for adjacent team names.
+
+Final fix:
+- Match-day result lines now align score values vertically in a centered score column with team names positioned consistently on both sides.
+
+BUG-012 - Highlight player's team in match-day result lines
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results` on a day where the player's team has played.
+2. Inspect result lines under the relevant competition section.
+
+Expected behavior:
+- The player's team name is highlighted in match-day result rows, similar to fixture reveal highlighting.
+
+Actual behavior:
+- Result rows used uniform styling, so the player's team was not visually distinct.
+
+Suspected cause:
+- Player-team highlight logic was only applied to season fixture reveal rows, not the match-day results renderer.
+
+Attempted fixes:
+- Extended completed-day result payload to include `homeTeamId` and `awayTeamId`.
+- Reused existing player-team detection helper in result-row rendering (ID-first with name fallback).
+- Applied existing highlight class to player-team name spans in result lines.
+
+Final fix:
+- Match-day results now highlight the player's team name wherever it appears in the day-result scoreline list.
+
+BUG-013 - Draw rate too high in simulated results
+Status: fixed
+
+Repro steps:
+1. Simulate multiple career days containing AI fixtures.
+2. Review generated result distribution in day results/debug.
+
+Expected behavior:
+- Simulated outcomes follow the updated MRD matrix with reduced draw rates in lower-MRD bands.
+
+Actual behavior:
+- Draws occurred too frequently under the prior matrix probabilities.
+
+Suspected cause:
+- Existing `MRD_RESULT_MATRIX` values over-weighted draw probabilities in `0-10`, `10-50`, and `50-100` MRD bands.
+
+Attempted fixes:
+- Updated MRD probability rows to the supplied table values:
+  - `0-10`: `8 / 30 / 17 / 35 / 10`
+  - `10-50`: `8 / 24 / 16 / 42 / 10`
+  - `50-100`: `2 / 16 / 12 / 60 / 10`
+  - `100-150`: `0.2 / 5.3 / 9.5 / 70 / 15`
+  - `150-300`: `0.1 / 1.8 / 5.1 / 75 / 18`
+  - `300+`: `0 / 0.8 / 2.8 / 56.4 / 40`
+
+Final fix:
+- Updated simulation matrix probabilities in `src/game/careerSimulation/constants/simulationConstants.js` to use the new chance table.
+
+BUG-014 - Show team match ratings and MRD per match result with positive MRD
+Status: fixed
+
+Repro steps:
+1. Advance to `/career/day-results` on any played day.
+2. Inspect result rows.
+
+Expected behavior:
+- Each match row displays:
+  - home match rating
+  - away match rating
+  - MRD value
+- MRD is always shown as a positive number.
+
+Actual behavior:
+- Day results only showed teams and scorelines; match ratings and MRD were not visible.
+
+Suspected cause:
+- Completed-day presentation payload omitted simulation rating/MRD fields.
+- UI renderer had no metadata row for match simulation details.
+
+Attempted fixes:
+- Extended completed-day payload with `homeMatchRating`, `awayMatchRating`, `mrd`, and `mrdBandId`.
+- Forced MRD to positive via `Math.abs` when mapping presentation data.
+- Added centered metadata line per result row in day-results UI.
+
+Final fix:
+- `/career/day-results` now displays `MR: <home> v <away> | MRD: <value>` for every match, and MRD is always rendered as positive.
+
+
+BUG-015 - Update MRD probability bands and add new split band
+Status: fixed
+
+Repro steps:
+1. Inspect MRD probability matrix used for simulated fixture outcomes.
+2. Compare configured MRD bands to latest requested table.
+
+Expected behavior:
+- MRD matrix uses updated row set:
+  - `0-10`, `10-30`, `30-60`, `60-100`, `100-150`, `150-300`, `300+`
+- Probabilities per row match supplied values.
+
+Actual behavior:
+- Matrix still used older band structure (`10-50`, `50-100`) and did not include separate `30-60` and `60-100` split as requested.
+
+Suspected cause:
+- Simulation constants had not been updated to the latest band definitions.
+
+Attempted fixes:
+- Replaced `10-50` row with `10-30`.
+- Added new `30-60` row.
+- Replaced `50-100` row with `60-100` using requested probabilities.
+- Kept all other rows unchanged per latest table.
+
+Final fix:
+- Updated `src/game/careerSimulation/constants/simulationConstants.js` MRD matrix to:
+  - `0-10`: `8 / 30 / 17 / 35 / 10`
+  - `10-30`: `8 / 24 / 16 / 42 / 10`
+  - `30-60`: `4 / 20 / 14 / 52 / 10`
+  - `60-100`: `2 / 16 / 12 / 60 / 10`
+  - `100-150`: `0.2 / 5.3 / 9.5 / 70 / 15`
+  - `150-300`: `0.1 / 1.8 / 5.1 / 75 / 18`
+  - `300+`: `0 / 0.8 / 2.8 / 56.4 / 40`
+
+
+BUG-016 - Champions Cup knockout draws triggered on match day instead of pre-match Thursday
+Status: fixed
+
+Repro steps:
+1. Simulate through Champions Cup group stages.
+2. Reach a knockout stage draw (quarter-finals, semi-finals, or final).
+3. Observe the day when draw modal appears.
+
+Expected behavior:
+- Champions Cup knockout draws occur on the Thursday before the scheduled knockout fixtures.
+
+Actual behavior:
+- Draw generation for knockout stages happened on the same day as the stage fixtures.
+
+Suspected cause:
+- Draw trigger logic for Champions Cup knockout stages used `stageMeta.weekNumber/dayOfWeek` (fixture day) rather than dedicated draw-day metadata.
+
+Attempted fixes:
+- Added explicit `CHAMPIONS_CUP_DRAW_SLOTS` for knockout stages in cup schedule schema.
+- Stored `drawWeekNumber`/`drawDayOfWeek` in Champions Cup `stageMeta` during simulation-state initialization.
+- Updated draw trigger processing to use draw-day metadata for Champions Cup knockout stages.
+- Added fallback computation for older save states (without draw metadata) to resolve previous-Thursday draw days from fixture slots.
+- Added Champions Cup draw events to season calendar event generation.
+
+Final fix:
+- Champions Cup knockout draws now trigger on Thursday before fixture day, and no longer fire on the same day as knockout matches.
+
+
+BUG-017 - Season completion leaves career flow stuck with disabled continue button
+Status: fixed
+
+Repro steps:
+1. Simulate a season through to the final day.
+2. Return to Career Home.
+3. Inspect Career Controls primary action.
+
+Expected behavior:
+- Primary action changes to `Finish Season`.
+- User can view a season summary page with league winners, cup winners, and promotion/relegation outcomes.
+- User can start a new season with promotion/relegation changes applied, including player-team league movement.
+
+Actual behavior:
+- Primary button became disabled as `Season Complete`.
+- No route existed to finalize and roll into a new season.
+
+Suspected cause:
+- Career Home blocked `onAdvanceDay` when season complete.
+- No season summary/start-next-season flow existed.
+- League simulation setup assumed player team always in League 5, preventing correct post-promotion league placement.
+
+Attempted fixes:
+- Updated Career Control button to show `Finish Season` and remain actionable at season end.
+- Added `/career/season-summary` page with:
+  - league winners
+  - cup winners
+  - promotion/relegation summary
+  - `Start New Season` action.
+- Added season transition utility to apply promotions/relegations to competition membership and rebuild world aggregates.
+- Rebuilt calendar/simulation state from transitioned world when starting next season.
+- Fixed league simulation setup to place player team into their actual `competitionId`, not hardcoded League 5.
+
+Final fix:
+- Season completion now flows through `Finish Season` to a summary page, then into a new season with promotion/relegation changes fully applied for AI and player teams.
+
+BUG-018 - Cups page missing navigation back to calendar
+Status: fixed
+
+Repro steps:
+1. Open `/career/cups` from Career Home.
+2. Attempt to return to calendar view using an in-page action.
+
+Expected behavior:
+- Cups page includes a clear in-page `Back to Calendar` action.
+
+Actual behavior:
+- No dedicated in-page button existed to navigate back to Career Home calendar.
+
+Suspected cause:
+- Cups page action area only showed cup content, with no navigation control block.
+
+Attempted fixes:
+- Added a top action row to Cups page.
+- Reused engine `Button` with route target `/career/home`.
+- Added local styles for the actions row alignment.
+
+Final fix:
+- Cups page now displays a `Back to Calendar` button at the top, routing directly to `/career/home`.

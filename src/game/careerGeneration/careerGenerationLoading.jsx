@@ -249,7 +249,8 @@ const CareerGenerationLoading = () => {
               {completedCompetitionSummaries.map((summary) => (
                 <li className="careerGeneration__leagueItem" key={summary.id}>
                   <strong>{summary.name}</strong> - Teams: {summary.teamCount}, Players:{" "}
-                  {summary.generatedPlayerCount}, OVR range: {summary.minOverall}-{summary.maxOverall}
+                  {summary.generatedPlayerCount}, Managers: {summary.generatedManagerCount ?? 0}, OVR range:{" "}
+                  {summary.minOverall}-{summary.maxOverall}
                 </li>
               ))}
             </ul>

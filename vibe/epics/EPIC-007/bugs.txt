@@ -1,0 +1,105 @@
+BUG-001 - Calendar Month UI Shows Week Sections Instead of Single 7x4 Block
+
+Repro steps:
+1. Open `/career/home`.
+2. Inspect the calendar panel for the visible month.
+3. Observe the rendered month layout.
+
+Expected behavior:
+- The month renders as one continuous 28-day calendar block in a `7 x 4` grid.
+- No visible week section labels should appear in the calendar UI.
+
+Actual behavior (before fix):
+- The month rendered as four separate week sections.
+- Week headers (for example `Week X`) were visible, visually splitting the month.
+
+Suspected cause:
+- `SeasonCalendar` rendered `visibleMonth.weeks` as separate containers and explicitly displayed week titles.
+- Styles were organized around week wrappers (`seasonCalendar__weeks`, `seasonCalendar__week`, `seasonCalendar__weekTitle`) instead of a unified month grid.
+
+Attempted fixes:
+- Flattened the month data at render time: `visibleMonth.weeks -> visibleMonthDays`.
+- Replaced per-week section rendering with a single month grid render pass.
+- Updated styles to use a single `seasonCalendar__monthGrid` and removed week-wrapper/title styles.
+- Removed responsive behavior that changed the day grid to 4/2 columns, keeping a visual 7-column month block.
+
+Final fix:
+- Updated `src/game/careerCalendar/components/seasonCalendar.jsx`:
+  - flatten month days and render one unified day grid
+  - remove visible week-section UI and week labels
+- Updated `src/game/careerCalendar/components/seasonCalendar.scss`:
+  - remove week container/title styles
+  - add single month-grid styling preserving 7-column calendar structure
+
+Status: fixed
+
+
+BUG-002
+
+The calendar grid must be responsive and all day tiles must remain the same height and width.
+
+Repro steps:
+1. Open `/career/home`.
+2. Inspect day cards in the visible month across desktop and narrow viewport widths.
+3. Compare tile sizing between days with no events and days with many events.
+
+Expected behavior:
+- Day tiles remain consistent in size (same width and height ratio) across the month grid.
+- The calendar layout remains responsive while preserving uniform tile dimensions.
+
+Actual behavior (before fix):
+- Tiles could visually vary in height based on content volume.
+- Responsive behavior did not explicitly enforce uniform width/height ratio across all day cards.
+
+Suspected cause:
+- `seasonCalendar__day` used content-driven height with only `min-height`.
+- Event list growth inside a tile could push visual size inconsistently.
+
+Attempted fixes:
+- Enforced square tiles with `aspect-ratio: 1 / 1`.
+- Set tile layout to `grid-template-rows: auto 1fr` so content area uses remaining space.
+- Added internal overflow handling for events list to prevent tile expansion.
+- Kept month layout responsive while maintaining equal day-card dimensions.
+
+Final fix:
+- Updated `src/game/careerCalendar/components/seasonCalendar.scss`:
+  - `seasonCalendar__day`: square ratio + fixed internal layout + overflow control
+  - `seasonCalendar__events`: scrollable internal event region instead of expanding tile size
+
+Status: fixed
+
+BUG-003
+
+The days of the calendar are still have a wider width than their container, so it is producing a scroll bar. The width of the day tiles shouldn't ever exceed the width of the container.
+
+Repro steps:
+1. Open `/career/home`.
+2. Inspect the calendar month grid in the left panel.
+3. Observe horizontal scrollbar behavior in the calendar container.
+
+Expected behavior:
+- Day tiles always fit within the calendar container width.
+- The month grid should not force horizontal scrolling.
+
+Actual behavior (before fix):
+- The month grid could exceed container width and show a horizontal scrollbar.
+
+Suspected cause:
+- `seasonCalendar__monthGrid` used a forced minimum tile width (`minmax(132px, 1fr)`) plus `min-width: 950px`.
+- Wrapper used `overflow-x: auto`, allowing layout overflow instead of fitting the container.
+
+Attempted fixes:
+- Removed forced month-grid minimum width and switched to container-fitted columns.
+- Removed horizontal overflow behavior from the grid wrapper.
+- Added `min-width: 0` containment to wrapper/grid/day tiles.
+- Added safe text wrapping for event lines to avoid content-driven width expansion.
+
+Final fix:
+- Updated `src/game/careerCalendar/components/seasonCalendar.scss`:
+  - `seasonCalendar__gridWrap`: container-fit layout (no horizontal scroll)
+  - `seasonCalendar__monthGrid`: `repeat(7, minmax(0, 1fr))`, removed fixed `min-width`
+  - `seasonCalendar__day`: added `min-width: 0`
+  - `seasonCalendar__eventText`: added `overflow-wrap: anywhere`
+
+Status: fixed
+

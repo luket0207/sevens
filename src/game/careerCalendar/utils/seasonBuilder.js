@@ -1,16 +1,13 @@
 import { CALENDAR_EVENT_TYPES } from "../constants/calendarConstants";
+import { CHAMPIONS_CUP_DRAW_SLOTS, CHAMPIONS_CUP_MATCH_SLOTS } from "../constants/cupScheduleSchema";
 import {
   addEventToSeasonDay,
   createSeasonScaffold,
   getMonthIndexFromDayIndex,
   sortSeasonEvents,
 } from "./calendarModel";
-import {
-  buildChampionsCupEvents,
-  buildLeagueCupEvents,
-  buildPlayoffPlaceholderEvents,
-} from "./cupScheduleGeneration";
-import { buildLeagueFiveFixtures } from "./fixtureGeneration";
+import { buildLeagueCupEvents, buildPlayoffPlaceholderEvents } from "./cupScheduleGeneration";
+import { buildInitialCareerSimulationState } from "../../careerSimulation";
 
 const buildEventTypeCounts = (season) => {
   return season.days.reduce((counts, day) => {
@@ -44,7 +41,42 @@ const insertEventsIntoSeason = ({ dayLookup, events }) => {
   });
 };
 
-const buildCalendarDebug = ({ season, leagueFixtures, leagueCupEvents, championsCupEvents, playoffEvents }) => {
+const buildChampionsCupCalendarEvents = () => {
+  const drawEvents = CHAMPIONS_CUP_DRAW_SLOTS.map((slot) => ({
+    id: slot.id,
+    type: CALENDAR_EVENT_TYPES.CUP_DRAW,
+    competitionId: "champions-cup",
+    competitionName: "Champions Cup",
+    stageLabel: slot.stageLabel,
+    label: slot.stageLabel,
+    weekNumber: slot.weekNumber,
+    dayOfWeek: slot.dayOfWeek,
+  }));
+
+  const matchEvents = CHAMPIONS_CUP_MATCH_SLOTS.map((slot) => ({
+    id: slot.id,
+    type: slot.eventType,
+    competitionId: "champions-cup",
+    competitionName: "Champions Cup",
+    stageLabel: slot.stageLabel,
+    opponent: "Various",
+    isHome: true,
+    label: slot.stageLabel,
+    weekNumber: slot.weekNumber,
+    dayOfWeek: slot.dayOfWeek,
+  }));
+
+  return [...drawEvents, ...matchEvents];
+};
+
+const buildCalendarDebug = ({
+  season,
+  leagueFixtures,
+  leagueCupEvents,
+  championsCupEvents,
+  playoffEvents,
+  simulationState,
+}) => {
   const leagueMatchCount = season.days.reduce((total, day) => {
     const dayLeagueMatches = day.events.filter(
       (event) => event.type === CALENDAR_EVENT_TYPES.LEAGUE_MATCH
@@ -62,6 +94,7 @@ const buildCalendarDebug = ({ season, leagueFixtures, leagueCupEvents, champions
     totals: {
       totalScheduledEvents: season.days.reduce((total, day) => total + day.events.length, 0),
       leagueFixtures: leagueFixtures.length,
+      simulatedLeagueFixtures: simulationState?.league?.fixtureCount ?? 0,
       leagueCupEvents: leagueCupEvents.length,
       championsCupEvents: championsCupEvents.length,
       playoffEvents: playoffEvents.length,
@@ -70,6 +103,7 @@ const buildCalendarDebug = ({ season, leagueFixtures, leagueCupEvents, champions
     leagueFixturePreview: buildInsertedEventSummary(leagueFixtures),
     cupEventPreview: buildInsertedEventSummary([...leagueCupEvents, ...championsCupEvents]),
     playoffPreview: buildInsertedEventSummary(playoffEvents),
+    simulation: simulationState?.debug ?? {},
   };
 };
 
@@ -79,10 +113,10 @@ export const buildCareerCalendarState = ({ careerWorld }) => {
     seasonNumber: 1,
   });
 
-  const leagueFixtures = buildLeagueFiveFixtures({ careerWorld });
+  const simulationState = buildInitialCareerSimulationState({ careerWorld });
+  const leagueFixtures = simulationState?.league?.playerCalendarEvents ?? [];
   const leagueCupEvents = buildLeagueCupEvents();
-  const championsCupResult = buildChampionsCupEvents({ careerWorld });
-  const championsCupEvents = championsCupResult.events;
+  const championsCupEvents = buildChampionsCupCalendarEvents();
   const playoffEvents = buildPlayoffPlaceholderEvents();
   const allEvents = [...leagueFixtures, ...leagueCupEvents, ...championsCupEvents, ...playoffEvents];
 
@@ -100,13 +134,18 @@ export const buildCareerCalendarState = ({ careerWorld }) => {
     currentDayIndex: initialCurrentDayIndex,
     visibleMonthIndex: getMonthIndexFromDayIndex(initialCurrentDayIndex),
     pendingFlashDayIndex: null,
-    championsCupStructure: championsCupResult.structure,
+    pendingDayResults: null,
+    pendingCupDraw: null,
+    seasonFixturesRevealed: false,
+    championsCupStructure: simulationState?.cups?.competitions?.championsCup ?? {},
+    simulation: simulationState,
     debug: buildCalendarDebug({
       season,
       leagueFixtures,
       leagueCupEvents,
       championsCupEvents,
       playoffEvents,
+      simulationState,
     }),
   };
 };

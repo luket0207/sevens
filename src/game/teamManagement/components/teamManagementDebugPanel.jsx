@@ -7,6 +7,7 @@ const TeamManagementDebugPanel = ({
   tactics,
   dtr,
   atr,
+  tacticCompatibility,
   teamComplete,
 }) => {
   const debugState = {
@@ -17,6 +18,7 @@ const TeamManagementDebugPanel = ({
     tactics,
     dtr,
     atr,
+    tacticCompatibility,
     teamComplete,
   };
 
@@ -35,6 +37,7 @@ TeamManagementDebugPanel.propTypes = {
   tactics: PropTypes.object.isRequired,
   dtr: PropTypes.number.isRequired,
   atr: PropTypes.number.isRequired,
+  tacticCompatibility: PropTypes.number.isRequired,
   teamComplete: PropTypes.bool.isRequired,
 };
 

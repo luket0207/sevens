@@ -35,14 +35,6 @@ const getGoalkeeperAndOutfieldPlayers = (playerTeam) => {
   };
 };
 
-const createFilledAssignmentsFromOutfieldOrder = (outfieldPlayers) => {
-  const assignments = createEmptySlotAssignments();
-  TEAM_MANAGEMENT_SLOT_LAYOUT.forEach((slot, slotIndex) => {
-    assignments[slot.id] = outfieldPlayers[slotIndex]?.id ?? null;
-  });
-  return assignments;
-};
-
 const normalizeSlotAssignments = ({ sourceAssignments, outfieldPlayers }) => {
   const normalizedAssignments = createEmptySlotAssignments();
   const usedPlayerIds = new Set();
@@ -59,15 +51,6 @@ const normalizeSlotAssignments = ({ sourceAssignments, outfieldPlayers }) => {
     usedPlayerIds.add(candidatePlayerId);
   });
 
-  const remainingPlayerIds = outfieldPlayers
-    .map((player) => player.id)
-    .filter((playerId) => !usedPlayerIds.has(playerId));
-  TEAM_MANAGEMENT_SLOT_LAYOUT.forEach((slot) => {
-    if (!normalizedAssignments[slot.id]) {
-      normalizedAssignments[slot.id] = remainingPlayerIds.shift() ?? null;
-    }
-  });
-
   return normalizedAssignments;
 };
 
@@ -81,9 +64,8 @@ const normalizeTactics = (savedTactics) => {
 export const createInitialTeamManagementDraft = ({ playerTeam }) => {
   const savedTeamManagement = playerTeam?.teamManagement ?? null;
   const { goalkeeper, outfieldPlayers, outfieldById } = getGoalkeeperAndOutfieldPlayers(playerTeam);
-  const fallbackAssignments = createFilledAssignmentsFromOutfieldOrder(outfieldPlayers);
   const slotAssignments = normalizeSlotAssignments({
-    sourceAssignments: savedTeamManagement?.slotAssignments ?? fallbackAssignments,
+    sourceAssignments: savedTeamManagement?.slotAssignments ?? createEmptySlotAssignments(),
     outfieldPlayers,
   });
 

@@ -1,33 +1,57 @@
 import PropTypes from "prop-types";
 import { getRatingDisplayMeta } from "../../playerGeneration";
 import PlayerImage from "../../playerImage/components/playerImage";
+import PlayerSkillsetBars from "../../shared/playerSkillsetBars/playerSkillsetBars";
 
-const formatSkillSummary = (player) => {
-  const passing = Number(player?.skills?.Passing) || 0;
-  const movement = Number(player?.skills?.Movement) || 0;
-  const control = Number(player?.skills?.Control) || 0;
-  return `PAS ${passing} | MOV ${movement} | CON ${control}`;
-};
+const PITCH_PILL_GROUPS = Object.freeze(["GK", "DF", "MD", "AT"]);
 
-const TeamManagementPlayerTile = ({ player, teamKit, compact, draggable, onDragStart, className }) => {
+const TeamManagementPlayerTile = ({
+  player,
+  teamKit,
+  compact,
+  draggable,
+  onDragStart,
+  onDragEnd,
+  className,
+  variant,
+  positionGroup,
+  isPlaced,
+  placedSlotLabel,
+}) => {
   if (!player) {
     return null;
   }
 
+  const overallValue = Math.round(Number(player.overall) || 0);
   const overallMeta = getRatingDisplayMeta(player.overall) ?? {
     bandKey: "1to10",
-    value: Math.round(Number(player.overall) || 0),
+    value: overallValue,
   };
+  const normalizedPositionGroup = PITCH_PILL_GROUPS.includes(positionGroup) ? positionGroup : "DF";
   const rootClassName = [
     "teamManagement__playerTile",
     compact ? "teamManagement__playerTile--compact" : "",
+    variant === "pitch" ? "teamManagement__playerTile--pitch" : "",
+    isPlaced ? "teamManagement__playerTile--placed" : "",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
+  if (variant === "pitch") {
+    return (
+      <article className={rootClassName} draggable={draggable} onDragEnd={onDragEnd} onDragStart={onDragStart}>
+        <PlayerImage appearance={player.appearance} playerType={player.playerType} size="small" teamKit={teamKit} />
+        <p className={`teamManagement__pitchPill teamManagement__pitchPill--${normalizedPositionGroup}`}>
+          {player.name} | OVR {overallValue}
+        </p>
+      </article>
+    );
+  }
+
   return (
-    <article className={rootClassName} draggable={draggable} onDragStart={onDragStart}>
+    <article className={rootClassName} draggable={draggable} onDragEnd={onDragEnd} onDragStart={onDragStart}>
+      {isPlaced && placedSlotLabel ? <p className="teamManagement__playerPlacement">{placedSlotLabel}</p> : null}
       <PlayerImage appearance={player.appearance} playerType={player.playerType} size="small" teamKit={teamKit} />
       <div className="teamManagement__playerText">
         <p className="teamManagement__playerName">{player.name}</p>
@@ -38,7 +62,7 @@ const TeamManagementPlayerTile = ({ player, teamKit, compact, draggable, onDragS
           </span>{" "}
           | {player.influenceRule}
         </p>
-        {!compact ? <p className="teamManagement__playerSkills">{formatSkillSummary(player)}</p> : null}
+        {!compact ? <PlayerSkillsetBars className="teamManagement__playerSkills" skills={player?.skills} /> : null}
       </div>
     </article>
   );
@@ -50,7 +74,12 @@ TeamManagementPlayerTile.propTypes = {
   compact: PropTypes.bool,
   draggable: PropTypes.bool,
   onDragStart: PropTypes.func,
+  onDragEnd: PropTypes.func,
   className: PropTypes.string,
+  variant: PropTypes.oneOf(["list", "pitch"]),
+  positionGroup: PropTypes.oneOf(["GK", "DF", "MD", "AT"]),
+  isPlaced: PropTypes.bool,
+  placedSlotLabel: PropTypes.string,
 };
 
 TeamManagementPlayerTile.defaultProps = {
@@ -59,7 +88,12 @@ TeamManagementPlayerTile.defaultProps = {
   compact: false,
   draggable: false,
   onDragStart: undefined,
+  onDragEnd: undefined,
   className: "",
+  variant: "list",
+  positionGroup: "DF",
+  isPlaced: false,
+  placedSlotLabel: "",
 };
 
 export default TeamManagementPlayerTile;

@@ -1,0 +1,423 @@
+EPIC-009 - Manager Generation and Team Assignment
+
+Overview
+The goal of this epic is to generate managers for every non-player team in the career and assign each manager to a team at the start of the career.
+
+Managers should be procedurally generated alongside the rest of the career data and saved into the game state as part of career generation.
+
+For now:
+- every other team in the game needs a manager
+- managers stay fixed to their assigned team for the whole career
+- manager movement between teams is out of scope
+- manager preferences are not yet used to actively run matches, but they must be generated and stored now so later systems can use them
+
+This epic is about:
+- manager data model
+- procedural manager generation
+- manager-to-team assignment
+- persistence in career state
+- exposing the data for debugging
+
+This epic is not about:
+- manager movement between teams
+- manager hiring/firing
+- manager contracts
+- manager names or portraits unless already easy to support
+- tactical AI behaviour in matches
+- manager history across seasons
+
+================================================================
+Core Manager Purpose
+================================================================
+
+Managers exist so that AI teams have tactical preferences.
+
+These preferences will later be used in the match system to determine the opposition tactics used by that team in a match.
+
+For this epic, we only need to:
+- generate the managers
+- assign them to teams
+- store their tactical preference values
+- make them available in career data for later use
+
+================================================================
+Which Teams Need Managers
+================================================================
+
+Every other team in the game needs a manager.
+
+For this epic, that means:
+- all generated AI teams need a manager
+- the user-controlled team does not need an AI manager for this feature unless the existing model already benefits from having one as a placeholder
+
+In practice this should include:
+- League 5 AI teams
+- League 4 teams
+- League 3 teams
+- League 2 teams
+- League 1 teams
+- Foreign teams / Champions Cup teams
+
+Managers should be created during career generation and assigned immediately to their team.
+
+================================================================
+Manager Data Model
+================================================================
+
+Each manager holds the following values:
+
+- preferredDefensiveTactics
+- unpreferredDefensiveTactics
+- preferredAttackingTactics
+- unpreferredAttackingTactics
+
+Defensive tactic pool:
+- Low Block
+- Mid Block
+- High Press
+- Offside Trap
+- Zonal
+
+Attacking tactic pool:
+- Posession
+- Long Ball
+- Wing Play
+- Counter
+- Direct
+
+Rules for manager preferences:
+
+Preferred Defensive Tactics
+- choose 2 or 3 defensive tactics
+
+Unpreferred Defensive Tactics
+- choose 1 or 2 defensive tactics
+
+Preferred Attacking Tactics
+- choose 2 or 3 attacking tactics
+
+Unpreferred Attacking Tactics
+- choose 1 or 2 attacking tactics
+
+Important logic constraints:
+- preferred and unpreferred selections for the same tactic type must not overlap
+- a tactic cannot appear in both preferred and unpreferred for the same manager
+- a manager does not need to explicitly rate every tactic, only store these chosen preference groups
+
+================================================================
+Generation Rules
+================================================================
+
+Manager generation should be procedural and randomised.
+
+For each generated manager:
+- choose 2 or 3 preferred defensive tactics
+- choose 1 or 2 unpreferred defensive tactics
+- choose 2 or 3 preferred attacking tactics
+- choose 1 or 2 unpreferred attacking tactics
+
+Selection rules:
+- choices should come from the valid tactic lists only
+- selections should be unique within each list
+- preferred and unpreferred sets must not overlap within the same tactic category
+
+The system does not need to simulate personality or style beyond these preference lists yet, but the output should be robust enough to support that later.
+
+================================================================
+Assignment Rules
+================================================================
+
+Each generated AI team gets exactly one manager.
+
+For now:
+- the manager is permanently assigned to that team for the career
+- no reassignment or movement logic is needed
+- no managerless AI teams should exist after career generation completes
+
+The manager should be saved as part of the team data or linked team data structure in a way that is easy for future match logic to consume.
+
+================================================================
+Career Generation Integration
+================================================================
+
+This epic should integrate with the career generation flow built in earlier epics.
+
+Manager generation should happen:
+- during career creation
+- after or alongside AI team generation
+- before the career is considered fully generated and saved
+
+The generated managers and their assignments should be stored in gameContext as part of the saved career state.
+
+================================================================
+Future Usage Context
+================================================================
+
+This epic does not yet need to implement tactical decision logic in matches.
+
+However, the manager preference data must be structured so that later systems can use it to decide:
+- which defensive tactic an AI team is likely to choose
+- which attacking tactic an AI team is likely to choose
+
+This means the stored format should be clean, explicit, and easy to consume later.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-901 - Define Manager Data Model
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the core manager data structure used by AI teams.
+
+Requirements
+- Define a manager model/object shape.
+- It must include:
+  - preferredDefensiveTactics
+  - unpreferredDefensiveTactics
+  - preferredAttackingTactics
+  - unpreferredAttackingTactics
+- Keep the structure clean and future-proof for later expansion.
+- Use clear naming consistent with the codebase.
+
+Acceptance Criteria
+- A reusable manager data model exists.
+- The model supports all required tactical preference fields.
+- The structure is suitable for storing in career state.
+
+----------------------------------------------------------------
+FEAT-902 - Define Valid Tactic Pools for Manager Preferences
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the source tactic pools used for generating manager preferences.
+
+Requirements
+- Define the valid defensive tactic list:
+  - Low Block
+  - Mid Block
+  - High Press
+  - Offside Trap
+  - Zonal
+- Define the valid attacking tactic list:
+  - Posession
+  - Long Ball
+  - Wing Play
+  - Counter
+  - Direct
+- Keep these tactic pools centralised and reusable.
+- Do not duplicate them across multiple parts of the code.
+
+Acceptance Criteria
+- Defensive and attacking tactic pools are defined in a shared location.
+- Manager generation can use these pools directly.
+- The valid tactic options match the current game tactic system exactly.
+
+----------------------------------------------------------------
+FEAT-903 - Build Procedural Manager Generator
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the shared generator that procedurally creates a manager.
+
+Requirements
+- Build a reusable manager generation utility/module.
+- For each generated manager:
+  - choose 2 or 3 preferred defensive tactics
+  - choose 1 or 2 unpreferred defensive tactics
+  - choose 2 or 3 preferred attacking tactics
+  - choose 1 or 2 unpreferred attacking tactics
+- Ensure tactic choices are unique within each list.
+- Ensure preferred and unpreferred tactic lists do not overlap within the same tactic category.
+- Keep the logic randomised but valid every time.
+
+Acceptance Criteria
+- A manager can be generated procedurally.
+- Generated managers always have valid preference counts.
+- Preferred and unpreferred tactic lists never overlap for the same tactic type.
+- The generator is reusable.
+
+----------------------------------------------------------------
+FEAT-904 - Add Preference Validation Rules for Managers
+----------------------------------------------------------------
+Status: done
+
+Description
+Ensure all generated manager preference sets are internally valid.
+
+Requirements
+- Validate that:
+  - preferred defensive tactics count is 2 or 3
+  - unpreferred defensive tactics count is 1 or 2
+  - preferred attacking tactics count is 2 or 3
+  - unpreferred attacking tactics count is 1 or 2
+- Validate that no tactic appears in both preferred and unpreferred for the same category.
+- Keep validation logic reusable and separate from UI.
+
+Acceptance Criteria
+- Generated managers always pass the required preference validation rules.
+- Invalid overlapping or duplicated preference outputs are prevented.
+
+----------------------------------------------------------------
+FEAT-905 - Generate Managers for All AI Teams During Career Creation
+----------------------------------------------------------------
+Status: done
+
+Description
+Generate managers for every non-player team as part of career generation.
+
+Requirements
+- During career generation, create one manager for every AI team.
+- Ensure all generated AI teams receive a manager.
+- This should cover all generated non-player teams in the career structure.
+- The user-controlled team does not need an AI manager for this feature unless the broader architecture explicitly benefits from a placeholder manager entry.
+
+Acceptance Criteria
+- Every AI team in the generated career has a manager.
+- No AI team is left without a manager.
+- Manager generation is part of the career creation flow.
+
+----------------------------------------------------------------
+FEAT-906 - Assign Managers to Teams
+----------------------------------------------------------------
+Status: done
+
+Description
+Attach each generated manager to a specific AI team.
+
+Requirements
+- Each AI team must have exactly one manager assigned.
+- The assignment should happen during career generation.
+- The manager should be stored on the team object or linked in a clear and easily retrievable way.
+- Keep the data structure easy for later match systems to consume.
+
+Acceptance Criteria
+- Every AI team has exactly one assigned manager.
+- Manager assignment is saved in the career data structure.
+- The assignment model is easy to read and reuse later.
+
+----------------------------------------------------------------
+FEAT-907 - Persist Manager Data in gameContext Career State
+----------------------------------------------------------------
+Status: done
+
+Description
+Save the generated managers and their team assignments into the active career state.
+
+Requirements
+- Persist manager data as part of the generated career in gameContext.
+- Ensure the stored structure includes the full tactical preference data for each manager.
+- Ensure this data remains available after career generation completes.
+
+Acceptance Criteria
+- Manager data is saved in gameContext with the generated career.
+- Team-to-manager assignment persists in the active career state.
+- Later systems can read manager preferences from saved career data.
+
+----------------------------------------------------------------
+FEAT-908 - Expose Manager Data in Career Debug Views
+----------------------------------------------------------------
+Status: done
+
+Description
+Add manager information to the existing career debug output so the generated data can be inspected.
+
+Requirements
+- Update relevant debug views to show manager data for AI teams.
+- At minimum, display:
+  - preferred defensive tactics
+  - unpreferred defensive tactics
+  - preferred attacking tactics
+  - unpreferred attacking tactics
+- Keep the display readable and useful for verifying generation.
+
+Acceptance Criteria
+- AI team manager data is visible in the career debug output.
+- The preference lists can be inspected clearly.
+- Manager generation can be verified during development.
+
+----------------------------------------------------------------
+FEAT-909 - Keep Manager Assignments Fixed for the Whole Career
+----------------------------------------------------------------
+Status: done
+
+Description
+Lock manager-to-team assignments for now so they do not change during the career.
+
+Requirements
+- Once a manager is assigned to a team at career generation, keep that assignment fixed.
+- Do not add any movement, replacement, dismissal, or reassignment logic.
+- Ensure the career state does not accidentally regenerate or move managers after the initial assignment.
+
+Acceptance Criteria
+- Managers remain attached to their assigned teams for the career.
+- No reassignment logic exists in this epic.
+- The implementation is stable and clearly scoped.
+
+----------------------------------------------------------------
+FEAT-910 - Prepare Manager Preferences for Future Match Tactic Usage
+----------------------------------------------------------------
+Status: done
+
+Description
+Structure the stored preference data so later match systems can use it to choose AI tactics.
+
+Requirements
+- Keep the manager preference data explicit and easy to query.
+- Make it straightforward for future systems to ask:
+  - which defensive tactics this manager prefers
+  - which defensive tactics this manager dislikes
+  - which attacking tactics this manager prefers
+  - which attacking tactics this manager dislikes
+- Do not implement the actual match tactic selection logic yet.
+
+Acceptance Criteria
+- Manager preference data is stored in a way that future match systems can use directly.
+- This epic does not yet implement tactic decision logic in matches.
+
+----------------------------------------------------------------
+FEAT-911 - Add Manager Generation Debug/Test Utilities
+----------------------------------------------------------------
+Status: done
+
+Description
+Provide lightweight development support for verifying manager generation and assignment.
+
+Requirements
+- Add development-friendly support for inspecting:
+  - generated managers
+  - preference counts
+  - overlap correctness
+  - team assignment coverage
+- Keep the tooling lightweight and useful for verifying the generation rules.
+
+Acceptance Criteria
+- Developers can verify manager generation validity and team assignment coverage.
+- Debug support makes it easy to inspect tactical preference outputs.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- A manager data model exists.
+- Valid tactic pools for manager generation are defined centrally.
+- A procedural manager generator exists.
+- Every AI team in the generated career receives exactly one manager.
+- Managers are generated during career creation.
+- Each manager stores:
+  - preferred defensive tactics
+  - unpreferred defensive tactics
+  - preferred attacking tactics
+  - unpreferred attacking tactics
+- Preferred and unpreferred tactics never overlap within the same category.
+- Manager assignments are saved into gameContext as part of the career state.
+- Manager data is visible in debug output for inspection.
+- Managers remain fixed to their assigned teams for the whole career for now.
+- The stored preference data is ready for later use in match tactic selection systems.

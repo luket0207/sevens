@@ -32,6 +32,14 @@
   gap: 0.65rem;
 }
 
+.careerHome__panel--leagueTable {
+  display: grid;
+}
+
+.careerHome__panel--simulating {
+  border-color: rgba($tertiaryBackground, 0.6);
+}
+
 @media (max-width: 1040px) {
   .careerHome__topRow {
     grid-template-columns: 1fr;

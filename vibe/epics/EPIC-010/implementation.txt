@@ -1,0 +1,614 @@
+EPIC-010 Implementation Log
+Date: 2026-03-08
+
+FEAT-1001 to FEAT-1018 - League/Cup World Simulation and Player Match Debug Flow
+Status: done
+
+What was implemented:
+- Added a reusable career simulation layer under `src/game/careerSimulation/`:
+  - match rating calculation (`(OV * 2) + DTR + ATR + TC`)
+  - MRD band resolver and probability matrix outcome selection
+  - scoreline generation for draw/normal win/big win
+  - league table model, sorting, and result application rules
+  - domestic double round-robin fixture generation for League 5 to League 1
+  - League Cup state and progression (32-team knockout across 5 rounds)
+  - Champions Cup state, seeded group allocation, group simulation, and knockout progression
+  - season-end promotion/relegation/playoff/qualification outcome resolver.
+- Integrated simulation into calendar state generation:
+  - `buildCareerCalendarState` now seeds league/cup simulation state and attaches it to `career.calendar.simulation`.
+  - player league fixtures are inserted into season calendar events for visibility.
+- Upgraded Career Home progression flow:
+  - Continue Day now simulates non-player fixtures on the current day.
+  - on player fixture days, day flow routes to `/match` with pending fixture state.
+  - added match-day processing loading feedback.
+- Replaced placeholder `/match` page with temporary debug resolution page:
+  - shows fixture details
+  - Home Win / Draw / Away Win actions
+  - applies generated scoreline, updates world state, and returns to career flow.
+- Added Cups page at `/career/cups`:
+  - shows League Cup and Champions Cup structures
+  - displays fixtures/results by stage
+  - remains inspectable regardless of player participation.
+- Added League Table panel to Career Home:
+  - default league is player's league
+  - player row marked with icon
+  - dropdown switch across all domestic leagues
+  - full table stat columns.
+- Extended debug support:
+  - simulation day/fixture logs stored in career calendar simulation debug
+  - exposed in Career Calendar debug panel.
+- Extended calendar default/reset state shapes in:
+  - `gameContext`
+  - `careerStart`
+  so simulation state persists and resets safely.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for persistent world simulation state in active career.
+- `button` for control actions on Career Home, Match, and Cups pages.
+- `rng` for fixture pairing randomisation, MRD outcome rolls, and scoreline generation.
+
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required directly for this simulation-focused implementation.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `src/game/careerSimulation/utils/leagueTable.js`
+- `src/game/careerSimulation/utils/matchSimulation.js`
+- `src/game/careerSimulation/utils/teamMatchProfile.js`
+- `src/game/careerSimulation/utils/leagueSimulationState.js`
+- `src/game/careerSimulation/utils/cupSimulationState.js`
+- `src/game/careerSimulation/utils/cupStandings.js`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `src/game/careerSimulation/index.js`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.scss`
+- `src/game/careerCalendar/index.js`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerHome/careerHome.scss`
+- `src/game/match/match.jsx`
+- `src/game/match/match.scss`
+- `src/game/cups/cups.jsx`
+- `src/game/cups/cups.scss`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/routes.jsx`
+- `vibe/epics/EPIC-010/features.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+- `vibe/epicOverview.txt`
+
+Tradeoffs / follow-up tasks:
+- Champions Cup and League Cup use this season's available team pools; future seasons should switch to outcome-driven reseeding logic.
+- Calendar currently displays player fixtures plus cup schedule markers, not every individual AI fixture card, to keep the month grid readable.
+- Add targeted unit tests for matrix resolution and standings transitions before adding more advanced match modelling.
+
+FEAT-1019 to FEAT-1021 + BUG-001/BUG-002 - Day-End Flow, Fixture Reveal, and Cup Draw Resolution
+Status: done
+
+What was implemented:
+- Fixed calendar bootstrap persistence bug:
+  - `careerHome` now writes generated `calendar.simulation` into game state when building a new calendar.
+  - this unblocked league tables and player fixture detection.
+- Added end-of-day results flow (`FEAT-1019`):
+  - new route/page `/career/day-results`
+  - shown whenever a day resolves one or more fixtures
+  - shown after player match resolution days and AI-only match days
+  - Continue button returns to calendar flow and advances day.
+- Added day-1 season fixture reveal (`FEAT-1020`):
+  - day 1 end-of-day now shows full season league fixture output
+  - fixtures are grouped/sorted by league and persisted in simulation state.
+- Added cup draw resolution flow (`FEAT-1021`):
+  - draw-day processing now emits pending draw payloads
+  - `/cup-draw` replaced with working draw screen
+  - supports reveal game-by-game or reveal all
+  - draw pairings are stored in cup competition state and used in next round fixtures.
+- Updated match flow:
+  - player result selection now routes through end-of-day result flow (instead of direct calendar return).
+- Added new calendar flow state fields:
+  - `pendingDayResults`
+  - `pendingCupDraw`
+  - `seasonFixturesRevealed`
+  in calendar defaults/resets and season builder output.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `gameContext` for persisted day-flow state.
+- `button` for results and draw actions.
+- `rng` for existing simulation and draw generation behavior.
+
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were still not required for this pass.
+
+Files changed:
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/match/match.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/cupDraw/cupDraw.scss`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerSimulation/index.js`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/routes.jsx`
+- `vibe/epics/EPIC-010/features.txt`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Day-1 fixture reveal currently presents the already-generated season schedule in persisted state; if strict deferred generation is needed, shift fixture creation itself into explicit day-1 transition logic.
+- Add focused integration tests for day-results and cup-draw branching to prevent route regressions.
+
+BUG-003 - Season fixture reveal should use single-expand accordion
+Status: done
+
+What was implemented:
+- Updated day-results fixture reveal rendering to an accordion grouped by league.
+- Added explicit league ordering for the fixture groups.
+- Default expanded panel now resolves to the player's current league.
+- Accordion behavior now enforces one expanded panel at a time.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `slidePanel`.
+
+Engine components used:
+- `button` (existing UI action controls in the results page).
+- `gameContext` (existing source for player team league id, no schema change required).
+
+Engine components not used:
+- `modal`, `slidePanel` were not needed because the requested interaction is inline page accordion behavior.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Accordion currently keeps one panel open and does not support collapsing all; this matches current bug requirement.
+
+BUG-004 - Fixture reveal grouped by match day with `Team A v Team B` format
+Status: done
+
+What was implemented:
+- Updated season fixture reveal rendering inside the day-results accordion content.
+- Added grouping by match day (`roundNumber`) and ensured ascending match-day order.
+- Changed fixture line output to `Home Team v Away Team`.
+- Kept league accordion behavior from BUG-003 unchanged (single expanded panel).
+
+Engine components considered:
+- `gameContext`, `button`, `slidePanel`, `modal`.
+
+Engine components used:
+- `button` (existing interaction controls in the day-results UI).
+
+Engine components not used:
+- `gameContext`, `slidePanel`, `modal` needed no additional changes for this bug fix.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Fixture row ordering inside each match day is alphabetic by home/away team name for readability; if strict fixture-seed order is required later, use fixture IDs instead.
+
+BUG-005 - Match-day fixture rows should render as paragraphs
+Status: done
+
+What was implemented:
+- Confirmed match-day fixture rows in day-results render as paragraph lines (`<p>`), not list items.
+- Removed obsolete list-specific styling from fixture reveal styles to align implementation with requested paragraph-only output.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- None newly used for this styling/markup compliance fix.
+
+Engine components not used:
+- No additional engine components were required because this bug was presentation-only.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None.
+
+BUG-007 - Highlight player's team in season fixture reveal
+Status: done
+
+What was implemented:
+- Added player-team highlighting in day-results season fixture lines (`Team A v Team B`).
+- Highlight matching uses player team ID when available, with team-name fallback for compatibility with older payload shapes.
+- Extended season fixture reveal data to include `homeTeamId` and `awayTeamId` for deterministic player-team detection.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `slidePanel`.
+
+Engine components used:
+- `gameContext` (existing source of player team identity data).
+
+Engine components not used:
+- `button`, `modal`, `slidePanel` required no changes for this bug fix.
+
+Files changed:
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Highlight style currently focuses on text color + weight; if stronger contrast is required later, add chip/pill styling around team names.
+
+BUG-008 - Add matching Continue buttons at top and bottom of day-results page
+Status: done
+
+What was implemented:
+- Added a second `Continue` action block at the top of the day-results page.
+- Top and bottom buttons now share the same existing `continueToNextDay` handler for identical behavior.
+
+Engine components considered:
+- `button`, `gameContext`, `slidePanel`, `modal`.
+
+Engine components used:
+- `button` (existing action control component, reused for top and bottom placement).
+- `gameContext` (existing day progression state update flow through shared handler).
+
+Engine components not used:
+- `slidePanel`, `modal` were not relevant for this navigation-control layout fix.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None.
+
+BUG-009 - Match-day results should use inline scoreline format
+Status: done
+
+What was implemented:
+- Reworked day-results match rows to render inline scoreline text in the format `Team A 2 - 1 Team B`.
+- Kept existing score formatting helper so penalties continue to display with `(pens)` suffix where applicable.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- None newly used; this fix is presentation/layout-only in day-results view.
+
+Engine components not used:
+- No additional engine components were required.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None.
+
+BUG-010 - Group result lines by competition without per-match pods
+Status: done
+
+What was implemented:
+- Added result grouping by competition for the day-results summary.
+- Removed per-match pod/card list layout and replaced it with grouped sections of centered paragraph lines.
+- Updated result styling to match requested plain-list presentation (no `ul/li` match rows).
+
+Engine components considered:
+- `button`, `gameContext`, `modal`, `slidePanel`.
+
+Engine components used:
+- None newly used; this is local render/state-derivation logic within the existing day-results page.
+
+Engine components not used:
+- `button`, `gameContext`, `modal`, `slidePanel` required no additional changes.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Result lines are sorted by home-team name inside each competition for stable readability.
+
+BUG-011 - Align score numbers vertically with team names beside them
+Status: done
+
+What was implemented:
+- Updated grouped result-line layout to a centered three-column grid (`home | score | away`).
+- Added a fixed-width central score column so scores align vertically row-to-row.
+- Added side alignment rules for team names so names sit next to the aligned score column.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- None newly used; this was a presentation-only adjustment in the existing day-results component.
+
+Engine components not used:
+- No additional engine components were required.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Team names use ellipsis truncation when very long so score alignment remains stable.
+
+BUG-012 - Highlight player's team in match-day result lines
+Status: done
+
+What was implemented:
+- Extended completed day-result payloads with `homeTeamId` and `awayTeamId` to support deterministic player-team matching.
+- Reused existing player-team matching helper in result-line rendering.
+- Applied existing highlight class to player team names in result rows so player fixtures stand out in day results.
+
+Engine components considered:
+- `gameContext`, `button`.
+
+Engine components used:
+- `gameContext` (existing source for player team ID/name used in highlight matching).
+
+Engine components not used:
+- `button` required no additional changes for this presentation-only bug fix.
+
+Files changed:
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Name fallback remains in place for compatibility with older result payloads that may not include team IDs.
+
+BUG-013 - Draw rate too high in simulated results
+Status: done
+
+What was implemented:
+- Updated MRD result matrix probabilities to the new chance table to reduce draw frequency in lower-MRD bands.
+- Kept higher-MRD band values aligned to the supplied table.
+
+Engine components considered:
+- `rng`, `gameContext`.
+
+Engine components used:
+- `rng` (existing weighted roll path now consumes updated matrix values).
+
+Engine components not used:
+- `gameContext` required no structural change for this probability-table update.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Outcome balance should be re-observed over larger sample sizes to confirm target draw-rate behavior.
+
+BUG-014 - Show team match ratings and MRD per match result with positive MRD
+Status: done
+
+What was implemented:
+- Extended completed day-result payload with `homeMatchRating`, `awayMatchRating`, `mrd`, and `mrdBandId`.
+- Ensured MRD is normalized to positive values in presentation mapping.
+- Added metadata display line under each result scoreline on `/career/day-results`: `MR: <home> v <away> | MRD: <value>`.
+
+Engine components considered:
+- `gameContext`, `button`.
+
+Engine components used:
+- `gameContext` (existing source path for rendering career/day result state with enriched payload).
+
+Engine components not used:
+- `button` required no changes for this bug fix.
+
+Files changed:
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Ratings/MRD are currently shown for all result rows; if needed later, add an optional compact toggle.
+
+BUG-015 - Update MRD probability bands and add new split band
+Status: done
+
+What was implemented:
+- Updated MRD matrix band structure to include `10-30`, `30-60`, and `60-100` in place of the prior wider bands.
+- Applied latest supplied probability values for all rows while keeping existing weighted-outcome flow unchanged.
+
+Engine components considered:
+- `rng`, `gameContext`.
+
+Engine components used:
+- `rng` (existing weighted outcome resolver consumes updated matrix values).
+
+Engine components not used:
+- `gameContext` required no change for this constants update.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Re-run larger simulation samples to verify long-run distribution against expected balance targets.
+
+BUG-006 - Allow closing an open league accordion panel
+Status: done
+
+What was implemented:
+- Updated day-results league accordion state handling to support an explicit "none open" state.
+- Kept default player-league expansion for first render, but now clicking an open panel header toggles it closed.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- None newly used for this interaction-state fix.
+
+Engine components not used:
+- No additional engine components were required; this fix is local UI state logic.
+
+Files changed:
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None.
+
+BUG-016 - Champions Cup draws moved to Thursday before knockout fixtures
+Status: done
+
+What was implemented:
+- Added explicit Champions Cup knockout draw slots (`quarter-finals`, `semi-finals`, `final`) in cup schedule schema.
+- Extended Champions Cup stage metadata with `drawWeekNumber` and `drawDayOfWeek`.
+- Updated Champions Cup draw-day processing to trigger draws using draw metadata instead of fixture day metadata.
+- Added backward-compatible fallback draw-day calculation (previous Thursday) for existing saves without draw metadata.
+- Added Champions Cup draw events into calendar season event generation so draw timing is visible in calendar data.
+
+Engine components considered:
+- `gameContext`, `rng`, `button`.
+
+Engine components used:
+- `rng` (existing draw fixture randomisation path reused; no new RNG utility introduced).
+- `gameContext` (existing persisted simulation/calendar state now carries updated draw metadata).
+
+Engine components not used:
+- `button` required no changes for this scheduling bug.
+
+Files changed:
+- `src/game/careerCalendar/constants/cupScheduleSchema.js`
+- `src/game/careerCalendar/utils/cupScheduleGeneration.js`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/game/careerSimulation/utils/cupSimulationState.js`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Champions Cup draw slots are currently explicit constants; if cup schedule weeks change later, keep draw slots aligned with match slots.
+
+BUG-017 - Season completion flow, summary page, and next-season transition
+Status: done
+
+What was implemented:
+- Changed season-end primary control behavior:
+  - `Season Complete` disabled state replaced with actionable `Finish Season`.
+  - Career Home now routes season-complete action to `/career/season-summary`.
+- Added new Season Summary page:
+  - shows league winners
+  - shows League Cup / Champions Cup winners
+  - shows promotions/relegations by league
+  - includes `Start New Season` action.
+- Added season transition utility that:
+  - applies promotion/relegation moves to domestic team league assignments
+  - updates player team league assignment when promoted/relegated
+  - rebuilds competitions, totals, and debug summaries
+  - returns updated career world state.
+- Start New Season now rebuilds calendar/simulation from transitioned world state.
+- Fixed league simulation setup to place player team in its actual competition (not hardcoded `league-5`) so promoted/relegated player teams are scheduled correctly next season.
+
+Engine components considered:
+- `gameContext`, `button`, `rng`.
+
+Engine components used:
+- `gameContext` (persisted world/calendar transition and next-season bootstrap).
+- `button` (finish season and start next season actions).
+
+Engine components not used:
+- `rng` was not needed for this flow/control update.
+
+Files changed:
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerSimulation/utils/leagueSimulationState.js`
+- `src/game/careerSeasonSummary/careerSeasonSummary.jsx`
+- `src/game/careerSeasonSummary/careerSeasonSummary.scss`
+- `src/game/careerSeasonSummary/utils/seasonTransition.js`
+- `src/routes.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Season summary currently reports winners/movements from stored simulation outcomes only; if richer post-season analytics are needed later, extend summary model rather than deriving ad hoc in component.
+
+BUG-018 - Add Back to Calendar action on Cups page
+Status: done
+
+What was implemented:
+- Added a top action section on `/career/cups` with a `Back to Calendar` button.
+- Reused engine button routing to navigate directly to `/career/home`.
+- Added lightweight Cups page action-row styling for alignment/spacing.
+
+Engine components considered:
+- `button`, `gameContext`, `modal`.
+
+Engine components used:
+- `button` (existing shared UI button component for route navigation).
+
+Engine components not used:
+- `gameContext`, `modal` were not required for this navigation-only UI fix.
+
+Files changed:
+- `src/game/cups/cups.jsx`
+- `src/game/cups/cups.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None.

@@ -1,0 +1,57 @@
+BUG-001 - Replace Curly Hairstyle with Mohawk
+
+Repro steps:
+1. Open `/career/start`.
+2. In the player image debug gallery, inspect hairstyle value `4`.
+3. Compare the rendered hairstyle against desired art direction.
+
+Expected behavior:
+- Hairstyle value `4` should render as a mohawk.
+
+Actual behavior (before fix):
+- Hairstyle value `4` rendered as curly hair.
+
+Suspected cause:
+- Appearance parser mapped hairstyle value `4` to `curly`.
+- Styling implemented a `.playerImage__hair--curly` visual variant.
+
+Attempted fixes:
+- Updated hairstyle value `4` parser mapping from `curly` to `mohawk`.
+- Replaced curly style variant with a mohawk-specific style variant.
+
+Final fix:
+- Updated `src/game/playerImage/utils/appearanceParser.js`:
+  - hairstyle value `4` now maps to key/label `mohawk`/`Mohawk`
+- Updated `src/game/playerImage/playerImage.scss`:
+  - replaced `.playerImage__hair--curly` with `.playerImage__hair--mohawk`
+
+Status: fixed
+
+BUG-002
+
+Can we make the visual representaton of the mohawk a bit wider. like 60% and then adjust so it is still in the centre.
+
+Repro steps:
+1. Open `/career/start`.
+2. Open the player image debug gallery.
+3. Inspect hairstyle value `4` (mohawk).
+
+Expected behavior:
+- Mohawk should be wider (around 60% of head width) and remain centered.
+
+Actual behavior (before fix):
+- Mohawk rendered too narrow.
+
+Suspected cause:
+- Mohawk style used a narrow width (`32%`) with corresponding offset.
+
+Attempted fixes:
+- Updated mohawk width to `60%`.
+- Re-centered mohawk by adjusting the left offset.
+
+Final fix:
+- Updated `src/game/playerImage/playerImage.scss`:
+  - `.playerImage__hair--mohawk` width changed to `60%`
+  - `.playerImage__hair--mohawk` left changed to `20%` for centering
+
+Status: fixed

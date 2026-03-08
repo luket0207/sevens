@@ -95,3 +95,424 @@ Files changed:
 Tradeoffs / follow-up tasks:
 - Drag/drop currently uses native HTML5 DnD; if mobile-first interactions are required later, add pointer/touch drag handling.
 - Saved lineup stores slot assignment ids plus tactics/ratings and is ready for future match systems, but no match simulation logic is added in this epic by design.
+
+----------------------------------------------------------------
+BUGFIX - BUG-001 Simplify Pitch Cards and Add Position-Coded Pills/Shirt Shadows
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Added a pitch-specific player-tile render mode that shows only player image plus a name/overall pill.
+- Added position-colour mapping for pills:
+  - GK orange
+  - DF yellow
+  - MD blue
+  - AT red
+- Replaced empty-slot text UI with shirt-shadow placeholders containing role labels.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this presentation/layout-only bugfix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix only changes team-management UI rendering/styling.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/components/teamManagementPitch.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `src/assets/scss/ui/colours.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Added position colour tokens for team-management pills; if reused elsewhere, consider consolidating as broader role-colour tokens.
+
+----------------------------------------------------------------
+BUGFIX - BUG-002 Keep All Outfield Players in List and Mark Placed State
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Changed initial team-management draft behavior so, when no saved placement exists, all outfield slots start empty.
+- Changed list rendering to always show all outfield players, not only unplaced ones.
+- Added placement-state visual treatment and placement label in list tiles for players currently assigned on pitch.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this state-shape/list-render bugfix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is local to Team Management feature draft/state utilities and UI composition.
+
+Files changed:
+- `src/game/teamManagement/utils/teamManagementState.js`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Existing saved team-management states continue to load, but now partially filled states remain partial instead of auto-filling remaining slots.
+
+----------------------------------------------------------------
+BUGFIX - BUG-003 Drag Preview Uses Player Image Only
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Added explicit drag-image selection from the tile's `.playerImage` node.
+- Applied drag-image behavior to both list-origin and slot-origin drags.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this drag-preview behavior fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is isolated to Team Management drag-start handling.
+
+Files changed:
+- `src/game/teamManagement/teamManagement.jsx`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Drag-image support depends on browser HTML5 DnD behavior; future touch/mobility work may need a custom pointer-driven drag layer.
+
+----------------------------------------------------------------
+BUGFIX - BUG-004 Show Full Skillset in List Entries
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated player list tile rendering to display all numeric skills from `player.skills`.
+- Added safe wrapping for long skill lines.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this list-detail rendering fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is isolated to Team Management tile presentation.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- A dedicated reusable skillset component can be extracted later if this display pattern is needed in additional game screens.
+
+----------------------------------------------------------------
+BUGFIX - BUG-005 Remove Dedicated Unplace Zone and Support Off-Slot Removal
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Removed dedicated "drop here to remove" zone from list panel.
+- Added slot drag-end removal behavior: if a slot-origin drag is dropped anywhere not a slot, player is removed from pitch assignments.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this drag-end state fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is local to Team Management drag/drop handlers and view composition.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current behavior intentionally treats any non-slot drop as unplace for slot-origin drags, including outside pitch/list.
+
+----------------------------------------------------------------
+BUGFIX - BUG-006 Keep Slot Position Visible in Filled Slots
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Added a persistent top-centered role tag (`DF`/`MD`/`AT`) to each slot.
+- Tag remains visible for both empty and filled states.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this slot-label presentation fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix only affects slot markup/styling in Team Management.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPitch.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If full role names are preferred later, slot tag text can switch from abbreviations to longer labels with responsive typography tuning.
+
+----------------------------------------------------------------
+BUGFIX - BUG-007 Use Engine Bars for Player Skillset Display
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Added reusable `PlayerSkillsetBars` component that renders all numeric skills using engine `Bars`.
+- Replaced Team Management list skill rendering with `PlayerSkillsetBars`.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` for skill visualization rows in player list entries.
+
+Engine components not used (and why):
+- `gameContext`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this display-focused bugfix.
+
+Files changed:
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current display renders all numeric skills; if ordering rules change per role, ordering can be adjusted centrally in shared component.
+
+----------------------------------------------------------------
+BUGFIX - BUG-008 Keep Goalkeeper Visible in Player List
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated Team Management list input to include goalkeeper plus all outfield players.
+- Kept goalkeeper entry non-draggable and labeled as fixed while still showing full stats.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this data wiring/list behavior fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix is local to Team Management list data composition and tile behavior.
+
+Files changed:
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Goalkeeper is intentionally shown as fixed/reference in list; if preferred, a dedicated badge style can be added later.
+
+----------------------------------------------------------------
+BUGFIX - BUG-009 Make Skill Bars Continuous and Value-Coloured
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Switched skill bars from segmented to continuous rendering.
+- Added value-band-based fill colouring using existing global rating tokens.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` (unsegmented mode) with Team Management-specific value-band styling.
+
+Engine components not used (and why):
+- `gameContext`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix only adjusts skill bar rendering/styling.
+
+Files changed:
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Colour bands currently map by deciles; if a different visual scale is desired, update shared mapping in one place.
+
+----------------------------------------------------------------
+BUGFIX - BUG-010 Equal 50/50 Layout and Scrollable Player List
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Changed Team Management main two-column layout to a strict 50/50 split on desktop.
+- Removed pitch panel heading/subheading text block from pitch component.
+- Ensured pitch/list columns align from the top.
+- Added max-height and vertical scrolling to player list container to prevent excessive panel growth.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this layout/presentation bugfix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix only updates Team Management component markup and SCSS layout behavior.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPitch.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current list max-height uses viewport-based cap for desktop; mobile layout remains single-column via existing responsive breakpoint.
+
+----------------------------------------------------------------
+BUGFIX - BUG-011 Keep Pitch and Player List at Matching Height
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Applied a shared responsive height to both the player-list column and pitch column.
+- Updated players column row sizing so the list fills available height beneath its header.
+- Updated pitch container to fill full column height.
+- Kept player-list overflow behavior internal via vertical scroll.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this layout/styling bugfix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this change is limited to Team Management panel sizing/styling behavior.
+
+Files changed:
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Desktop uses a viewport-capped shared height for stable layout; existing mobile breakpoint returns to auto-height single-column flow.
+
+----------------------------------------------------------------
+FEAT-816 - Add Position Markers and Sorting to the Players List
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated slot labels to explicit left/right position markers used by list entries:
+  - Left DF, Right DF, Left MD, Right MD, Left AT, Right AT.
+- Added deterministic list sorting so positioned players are promoted to the top in this order:
+  - GK, Left DF, Right DF, Left MD, Right MD, Left AT, Right AT.
+- Unplaced players remain below positioned players while preserving their original fallback order.
+- Updated goalkeeper placed marker text in list to `GK`.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this Team Management list ordering/label feature.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this feature only updates Team Management constants and local list derivation/rendering.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+- `vibe/epics/EPIC-008/features.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Ordering is currently driven by slot-layout order and goalkeeper type; if future formations add extra slots, this ordering map should be revisited.
+
+----------------------------------------------------------------
+BUGFIX - BUG-012 Make Position Label Obvious in Top-Right of List Card
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Moved list-card position marker to a dedicated top-right badge placement.
+- Updated badge styling to be clearly visible (pill, stronger contrast, border, subtle shadow).
+- Kept marker text as the direct position label (`GK`, `Left DF`, etc.).
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this list-card visual bugfix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this change is isolated to Team Management tile markup/styling.
+
+Files changed:
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Badge styling currently applies to all placed list entries; if role-specific badge colours are desired, add mapping by position label.
+
+----------------------------------------------------------------
+FEAT-817 - Add Defensive vs Attacking Tactic Compatibility Value
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Added centralized tactic compatibility matrix in Team Management constants.
+- Added reusable `calculateTacticCompatibility` utility that resolves matrix value from selected defensive/attacking tactics only.
+- Extended tactic ratings output with `tacticCompatibility`.
+- Displayed tactic compatibility alongside DTR/ATR in tactic output cards.
+- Included tactic compatibility in Team Management debug panel output.
+- Persisted tactic compatibility into saved Team Management state and included it in save confirmation copy.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `gameContext` for persisting tactic compatibility value in saved team-management state.
+- `modal`/`modalContext` for save-confirmation text showing the new value.
+
+Engine components not used (and why):
+- `bars`, `button`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this matrix-based calculation and display extension.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/teamManagement/utils/tacticRatings.js`
+- `src/game/teamManagement/components/teamManagementTacticBox.jsx`
+- `src/game/teamManagement/components/teamManagementDebugPanel.jsx`
+- `src/game/teamManagement/teamManagement.jsx`
+- `vibe/epics/EPIC-008/features.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Compatibility matrix currently uses direct tactic-name keys; if tactic IDs are introduced later, map by IDs to decouple display labels from calculation keys.

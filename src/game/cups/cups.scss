@@ -1,0 +1,90 @@
+@use "../../assets/scss/ui/import" as *;
+
+.cupsPage {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cupsPage__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.cupsPage__competitionCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.9);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cupsPage__competitionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cupsPage__stageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.55rem;
+}
+
+.cupsPage__stageCard {
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.6rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.cupsPage__stageMeta {
+  color: rgba($lightText, 0.82);
+  font-size: 0.78rem;
+}
+
+.cupsPage__fixtureList {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.cupsPage__fixture {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.cupsPage__empty {
+  color: rgba($lightText, 0.82);
+}
+
+.cupsPage__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.45rem;
+}
+
+.cupsPage__groupCard {
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: rgba($siteBackground, 0.3);
+  display: grid;
+  gap: 0.3rem;
+
+  ul {
+    margin: 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.15rem;
+    font-size: 0.8rem;
+  }
+}

@@ -48,6 +48,56 @@ export const TEAM_NAME_EXTRA_SUFFIXES = Object.freeze([
   "Association",
 ]);
 
+export const FOREIGN_TEAM_NAME_PREFIXES = Object.freeze([
+  "Valencia",
+  "Porto",
+  "Sevilla",
+  "Torino",
+  "Lyon",
+  "Napoli",
+  "Braga",
+  "Basel",
+  "Prague",
+  "Zagreb",
+  "Bucharest",
+  "Riga",
+  "Tallinn",
+  "Split",
+  "Vienna",
+  "Malmo",
+  "Aarhus",
+  "Bilbao",
+  "Genoa",
+  "Lugano",
+  "Katowice",
+  "Odense",
+]);
+
+export const FOREIGN_TEAM_NAME_SUFFIXES = Object.freeze([
+  "Atletico",
+  "Deportivo",
+  "Calcio",
+  "Sporting",
+  "Dynamo",
+  "Lokomotiv",
+  "Olympique",
+  "Internacional",
+  "Union",
+  "Vitoria",
+  "Rapid",
+  "Slavia",
+]);
+
+export const FOREIGN_TEAM_NAME_EXTRA_SUFFIXES = Object.freeze([
+  "CF",
+  "FK",
+  "SK",
+  "AC",
+  "SC",
+  "1905",
+  "1910",
+]);
+
 export const STADIUM_PREFIXES = Object.freeze([
   "River",
   "Crown",
@@ -83,4 +133,3 @@ export const STADIUM_SUFFIXES = Object.freeze([
   "Dome",
   "Court",
 ]);
-

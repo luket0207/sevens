@@ -1,0 +1,40 @@
+@use "../../assets/scss/ui/import" as *;
+
+.careerSeasonSummary {
+  display: grid;
+  gap: 1rem;
+}
+
+.careerSeasonSummary__panel,
+.careerSeasonSummary__actions {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.24);
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.careerSeasonSummary__panel h2 {
+  font-size: 1.05rem;
+}
+
+.careerSeasonSummary__movementRow {
+  border-top: 1px solid rgba($lightText, 0.15);
+  padding-top: 0.55rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.careerSeasonSummary__movementRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.careerSeasonSummary__movementRow h3 {
+  font-size: 0.95rem;
+}
+
+.careerSeasonSummary__actions {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}

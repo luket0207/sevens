@@ -12,6 +12,9 @@ import CupDraw from "./game/cupDraw/cupDraw";
 import PreMatch from "./game/preMatch/preMatch";
 import Match from "./game/match/match";
 import PostMatch from "./game/postMatch/postMatch";
+import Cups from "./game/cups/cups";
+import CareerDayResults from "./game/careerDayResults/careerDayResults";
+import CareerSeasonSummary from "./game/careerSeasonSummary/careerSeasonSummary";
 
 const NotFound = () => <div>404</div>;
 
@@ -30,6 +33,9 @@ export default function AppRoutes() {
       <Route path="/pre-match" element={<PreMatch />} />
       <Route path="/match" element={<Match />} />
       <Route path="/post-match" element={<PostMatch />} />
+      <Route path="/career/cups" element={<Cups />} />
+      <Route path="/career/day-results" element={<CareerDayResults />} />
+      <Route path="/career/season-summary" element={<CareerSeasonSummary />} />
 
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<Navigate to="/404" replace />} />

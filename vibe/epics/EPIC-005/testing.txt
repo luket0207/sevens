@@ -349,3 +349,21 @@ Automated needed:
 - Unit test asserting `foreign-champions-cup` schema `teamCount` is `12`.
 - Integration test verifying generated world totals include `51` AI teams and `12` foreign teams.
 Status: in progress
+
+BUG-007 - Foreign teams have distinct foreign-sounding names
+Manual steps:
+1. Open `/career/start` and complete setup requirements.
+2. Click `Start Career` and wait for generation to complete.
+3. Open `/career/home` debug view and inspect team names in `Foreign Champions Cup`.
+4. Compare against team names in domestic leagues (`League 5` to `League 1`).
+Expected:
+- Foreign competition team names use clearly foreign-style naming patterns.
+- Domestic team names continue using existing domestic naming style.
+- Name generation remains unique across generated teams.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-007.
+Automated needed:
+- Unit test for competition-type-aware `nextTeamName` behavior (domestic vs foreign pools).
+- Integration test ensuring generated foreign competition names differ from domestic naming pool patterns.
+Status: in progress

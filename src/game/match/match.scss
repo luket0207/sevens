@@ -1,0 +1,43 @@
+@use "../../assets/scss/ui/import" as *;
+
+.matchDebug {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.matchDebug__card {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: rgba($secondaryBackground, 0.9);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.matchDebug__meta {
+  color: rgba($lightText, 0.84);
+}
+
+.matchDebug__teams {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.matchDebug__vs {
+  color: rgba($lightText, 0.65);
+  font-weight: 500;
+}
+
+.matchDebug__note {
+  color: rgba($lightText, 0.86);
+}
+
+.matchDebug__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+

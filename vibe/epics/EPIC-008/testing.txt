@@ -48,11 +48,11 @@ FEAT-804 - Implement Player Drag and Drop / Placement Interaction
 Manual steps:
 1. Drag player from list to empty pitch slot.
 2. Drag player from one pitch slot to another.
-3. Drag a pitch player to remove/unplace drop zone.
+3. Drag a pitch player and drop anywhere that is not a valid slot.
 Expected:
 - List -> slot placement works.
 - Slot -> slot movement works.
-- Removal/unplacement works and player returns to list.
+- Off-slot drop removal works and player returns to list.
 - No player duplication occurs.
 Automated completed:
 - `npm run build`: passed.
@@ -197,3 +197,250 @@ Automated completed:
 Automated needed:
 - Component snapshot test for debug panel state output.
 Status: in progress
+
+----------------------------------------------------------------
+BUG-001 Regression Test - Pitch Cards Simplified and Position-Coloured Pills
+Manual steps:
+1. Open `/team-management`.
+2. Place players into DF, MD, and AT slots.
+3. Inspect fixed goalkeeper card and outfield cards on pitch.
+4. Inspect at least one empty slot.
+Expected:
+- Filled pitch slots show image + one name/overall pill only.
+- GK pill is orange, DF yellow, MD blue, AT red.
+- Empty slots show shirt-shadow placeholders with position label inside.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual/component regression test for pitch tile variants and role-colour class mapping.
+Status: passed
+
+----------------------------------------------------------------
+BUG-002 Regression Test - Player List Always Shows All Outfield Players
+Manual steps:
+1. Open `/team-management` with no saved team-management state.
+2. Confirm all outfield players are shown in list initially.
+3. Place several players on pitch.
+4. Re-check list visibility and placement indicators.
+Expected:
+- All outfield players remain visible in list at all times.
+- Placed players are visually altered and show placement label.
+- Team can still be completed/saved through drag/drop workflow.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Unit tests for initial empty slot draft behavior and list-placement mapping.
+- Integration test ensuring placed players remain rendered in list with visual state.
+Status: passed
+
+----------------------------------------------------------------
+BUG-003 Regression Test - Drag Preview Should Be Player Image Only
+Manual steps:
+1. Open `/team-management`.
+2. Start dragging a player from list.
+3. Start dragging a player from pitch.
+Expected:
+- Drag preview in both cases is only the player image.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Browser-level drag-and-drop test for custom drag image rendering.
+Status: passed
+
+----------------------------------------------------------------
+BUG-004 Regression Test - Full Skillset Visible in List Entries
+Manual steps:
+1. Open `/team-management`.
+2. Inspect each outfield player row in list.
+Expected:
+- List entry shows full available skillset values, not only a partial subset.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Component test asserting full-skill text rendering from `player.skills` object.
+Status: passed
+
+----------------------------------------------------------------
+BUG-005 Regression Test - Off-Slot Drop Removes Placed Player
+Manual steps:
+1. Place a player in a pitch slot.
+2. Drag that player and drop anywhere that is not a valid slot.
+3. Confirm player is unplaced and pitch slot clears.
+4. Confirm dedicated remove drop-zone is no longer present.
+Expected:
+- Player is removed from slot on non-slot drop.
+- No explicit "Drop a pitch player here to remove from pitch" area exists.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Integration test for slot drag-end non-slot drop removal behavior.
+Status: passed
+
+----------------------------------------------------------------
+BUG-006 Regression Test - Slot Position Label Remains Visible When Filled
+Manual steps:
+1. Place players into DF/MD/AT slots.
+2. Inspect the top center area of each filled slot.
+Expected:
+- Slot position label remains visible in top center for both empty and filled slots.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual/component test for persistent slot-tag visibility across slot states.
+Status: passed
+
+----------------------------------------------------------------
+BUG-007 Regression Test - Skillset Uses Engine Bars
+Manual steps:
+1. Open `/team-management`.
+2. Inspect one or more player entries in the list.
+Expected:
+- Each skill row uses engine bar UI (track + fill + value).
+- Full numeric skillset is visible in bar form for list entries.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Component test for `PlayerSkillsetBars` rendering all numeric skills with bar rows.
+Status: passed
+
+----------------------------------------------------------------
+BUG-008 Regression Test - Goalkeeper Visible in Player List
+Manual steps:
+1. Open `/team-management`.
+2. Inspect left player list for goalkeeper row.
+3. Attempt to drag goalkeeper from list.
+Expected:
+- Goalkeeper appears in list with stats visible.
+- Goalkeeper list entry is non-draggable and marked as fixed/reference.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Integration test that list player source includes goalkeeper while slot drag eligibility stays outfield-only.
+Status: passed
+
+----------------------------------------------------------------
+BUG-009 Regression Test - Skill Bars Continuous and Value-Coloured
+Manual steps:
+1. Open `/team-management`.
+2. Inspect skill bars for low, mid, and high values.
+Expected:
+- Bars are continuous (no segment dividers).
+- Fill colour changes by value band, using rating scale colours.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Component/visual regression test asserting no segmented class and correct band class-to-colour mapping.
+Status: passed
+
+----------------------------------------------------------------
+BUG-010 Regression Test - 50/50 Layout, No Pitch Header, Scrollable List
+Manual steps:
+1. Open `/team-management` on desktop width.
+2. Compare width of player list panel and pitch panel.
+3. Inspect pitch panel top area for heading text.
+4. Verify pitch panel starts at top alignment.
+5. Verify player list content scrolls internally when it exceeds max height.
+Expected:
+- Player list and pitch panels each occupy roughly half of the main row width.
+- Pitch header/subheading text is not rendered.
+- Pitch/list columns align to top.
+- Player list has controlled max height with vertical scrollbar when needed.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual regression test for 50/50 layout proportions and absence of pitch header text.
+- Component/style test for list overflow behavior (`max-height` + `overflow-y`).
+Status: passed
+
+----------------------------------------------------------------
+BUG-011 Regression Test - Pitch and List Maintain Matching Height
+Manual steps:
+1. Open `/team-management` on desktop width.
+2. Compare full panel heights of player list and pitch.
+3. Scroll player list with enough content and re-check panel heights.
+Expected:
+- Player list and pitch panels remain the same height.
+- Player list content scrolls internally without changing overall panel height.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual regression test asserting equal column heights at desktop breakpoint.
+- Component/style test for column height sync plus internal list overflow behavior.
+Status: passed
+
+----------------------------------------------------------------
+FEAT-816 - Position Markers and Ordered Placed Players in List
+Manual steps:
+1. Open `/team-management`.
+2. Place players into Left DF, Right DF, Left MD, Right MD, Left AT, Right AT slots.
+3. Inspect player list ordering and each placed entry label.
+Expected:
+- Player list entries for placed players show position marker labels.
+- Positioned players are sorted at top in this order:
+  - GK
+  - Left DF
+  - Right DF
+  - Left MD
+  - Right MD
+  - Left AT
+  - Right AT
+- Unplaced players remain below positioned players.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Integration test asserting ordered list output after slot assignments are changed.
+- Component test asserting placed marker text mapping for GK and left/right outfield slots.
+Status: passed
+
+----------------------------------------------------------------
+BUG-012 Regression Test - Position Marker Badge is Top-Right and Obvious
+Manual steps:
+1. Open `/team-management`.
+2. Place at least one outfield player and inspect that list entry.
+3. Inspect goalkeeper entry in list.
+Expected:
+- Position marker is clearly visible as a badge.
+- Badge is anchored at the top-right of each placed/fixed list card.
+- Marker text shows the position label (for example `GK`, `Left DF`, etc.).
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual regression test asserting top-right placement of marker badge.
+- Component test asserting marker badge text rendering for placed players.
+Status: passed
+
+----------------------------------------------------------------
+FEAT-817 - Defensive vs Attacking Tactic Compatibility Value
+Manual steps:
+1. Open `/team-management`.
+2. Set defensive tactic and attacking tactic to a known matrix pair.
+3. Verify displayed compatibility value against matrix.
+4. Change either tactic and verify compatibility updates immediately.
+Expected:
+- A third tactic output appears alongside DTR and ATR.
+- Value is taken only from tactic pair matrix (not player skill changes).
+- Example checks:
+  - Low Block + Counter => 80
+  - Offside Trap + Direct => 80
+  - Mid Block + Direct => 10
+- Debug output includes `tacticCompatibility`.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Unit tests for `calculateTacticCompatibility` matrix lookup coverage.
+- Integration test for live compatibility value updates when tactic selects change.
+Status: passed

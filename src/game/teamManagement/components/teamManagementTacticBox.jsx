@@ -28,7 +28,7 @@ OptionSelect.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-const TeamManagementTacticBox = ({ tactics, dtr, atr, onUpdateTactic }) => {
+const TeamManagementTacticBox = ({ tactics, dtr, atr, tacticCompatibility, onUpdateTactic }) => {
   return (
     <section className="teamManagement__tacticBox">
       <div className="teamManagement__tacticGroup">
@@ -72,6 +72,10 @@ const TeamManagementTacticBox = ({ tactics, dtr, atr, onUpdateTactic }) => {
           <h3>ATR</h3>
           <p>{atr}</p>
         </article>
+        <article className="teamManagement__ratingCard">
+          <h3>Tactic Compatibility</h3>
+          <p>{tacticCompatibility}</p>
+        </article>
       </div>
     </section>
   );
@@ -86,6 +90,7 @@ TeamManagementTacticBox.propTypes = {
   }).isRequired,
   dtr: PropTypes.number.isRequired,
   atr: PropTypes.number.isRequired,
+  tacticCompatibility: PropTypes.number.isRequired,
   onUpdateTactic: PropTypes.func.isRequired,
 };
 

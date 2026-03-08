@@ -1,0 +1,388 @@
+EPIC-010 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated engine/info modules.
+
+FEAT-1001, FEAT-1002, FEAT-1008 - League Table UI + Standings Data/Updates
+Manual steps:
+1. Start a new career and wait for generation completion.
+2. Open Career Home.
+3. Verify League Table panel is visible and defaults to player's league.
+4. Switch leagues from dropdown and inspect columns: position, team, played, won, drawn, lost, GF, GA, GD, points.
+5. Advance through at least one league match day.
+Expected:
+- Player row is marked with icon.
+- Table sorting and values update after simulated match days.
+
+FEAT-1003, FEAT-1004, FEAT-1005, FEAT-1006, FEAT-1007 - Match Rating + MRD Matrix + Scoreline + AI Day Simulation + Loading State
+Manual steps:
+1. On Career Home, click Continue Day across multiple match and non-match days.
+2. During simulation days, confirm loading feedback appears.
+3. Open debug panel and inspect simulation logs for:
+   - home/away match ratings
+   - MRD and band
+   - selected result type
+   - generated scoreline.
+Expected:
+- AI fixtures resolve automatically when no player fixture intervention is needed.
+- Debug output shows matrix-driven resolution values.
+
+FEAT-1009, FEAT-1010, FEAT-1011, FEAT-1012, FEAT-1013 - Cup Structures, Simulation, and Cups Page
+Manual steps:
+1. Open `/career/cups` from Career Home controls.
+2. Verify League Cup stages and fixtures/results are visible.
+3. Verify Champions Cup groups, staged fixtures, and results are visible.
+4. Continue days through cup matchdays and re-check Cups page.
+Expected:
+- Cup fixtures resolve and progression stages populate over the season.
+- Cup state remains inspectable even without player cup participation.
+
+FEAT-1014, FEAT-1015 - Player Match-Day Routing and Temporary Match Resolution
+Manual steps:
+1. Advance to a day with player fixture.
+2. Click Continue Day.
+3. Verify app routes to `/match` instead of skipping day.
+4. Select each resolution option (Home Win / Draw / Away Win in separate runs).
+5. Return to Career Home and inspect standings/debug.
+Expected:
+- Player fixture is not auto-simulated before user selection.
+- Selected outcome produces valid scoreline and persists into world state.
+- Career flow continues after resolution.
+
+FEAT-1016, FEAT-1017, FEAT-1018 - Season Outcomes Persistence and Debug/Inspection
+Manual steps:
+1. Continue day progression to season completion.
+2. Inspect `career.calendar.simulation.seasonOutcomes` in debug JSON.
+3. Confirm promotion/relegation/playoff results and League 1 top-4 qualification are present.
+4. Reload/navigate away and back, then re-check simulation state.
+Expected:
+- End-of-season outcomes are stored in career state.
+- League/cup fixtures, results, and debug traces remain persisted.
+
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues.
+
+Automated still needed:
+- Unit tests for MRD band selection and weighted outcome resolution.
+- Unit tests for standings application and tie-break sorting.
+- Integration tests for day simulation pipeline (AI fixtures + player routing).
+- Integration tests for League Cup/Champions Cup stage progression and persistence.
+- Integration tests for season-end promotion/relegation/playoff outcome generation.
+
+Test status: passed
+
+BUG-018 - Cups page includes Back to Calendar button
+Manual steps:
+1. Navigate to `/career/cups`.
+2. Confirm a `Back to Calendar` button is visible at the top of the page.
+3. Click `Back to Calendar`.
+Expected:
+- Navigation returns directly to `/career/home`.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-016 - Champions Cup knockout draws occur on Thursday before fixtures
+Manual steps:
+1. Simulate through Champions Cup group stages to qualify teams for knockout rounds.
+2. Advance day-by-day around quarter-final, semi-final, and final draw windows.
+3. Confirm cup-draw screen appears on Thursday before each knockout matchday.
+4. Continue to knockout fixture day and confirm no same-day draw trigger appears.
+Expected:
+- Draw days trigger on Thursday before knockout fixtures.
+- Knockout fixtures are still created and played on their scheduled match days.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-017 - Season completion flow and next-season transition
+Manual steps:
+1. Simulate through season end and return to Career Home.
+2. Verify primary action reads `Finish Season` and is enabled.
+3. Click `Finish Season` and confirm `/career/season-summary` opens.
+4. Verify summary sections render:
+   - league winners
+   - cup winners
+   - promotions/relegations.
+5. Click `Start New Season`.
+6. Verify return to `/career/home` with a rebuilt season calendar and fresh simulation state.
+7. If player team was promoted/relegated, verify player team league/table context matches the moved league.
+Expected:
+- Season-end no longer blocks progression.
+- Summary page is shown before next season.
+- New season starts with promotion/relegation changes applied to AI and player teams.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-005 - Match-day fixture rows rendered as paragraphs
+Manual steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand a league accordion panel.
+3. Inspect fixture rows under each `Match Day` section.
+Expected:
+- Rows appear as plain text lines (`Team A v Team B`) rendered from paragraph elements.
+- No bullet list styling appears for match-day fixture rows.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-006 - Accordion panel can be toggled closed
+Manual steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand any league accordion panel.
+3. Click the same league header again.
+4. Confirm no league panel content is visible.
+5. Click a different league header and confirm that panel opens.
+Expected:
+- Open panel toggles closed when clicked again.
+- Accordion supports a no-open-panels state.
+- Clicking another league opens that league panel normally.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-007 - Player team highlighted in fixture reveal
+Manual steps:
+1. Start a new career and continue to day 1 fixture reveal.
+2. Expand the player's league accordion panel.
+3. Locate fixtures involving the player's team.
+4. Expand a non-player league panel and compare team-name styling.
+Expected:
+- Player team name is highlighted in fixture rows.
+- Non-player teams keep the default fixture-row styling.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-008 - Matching Continue buttons top and bottom
+Manual steps:
+1. Advance to `/career/day-results` via normal career flow.
+2. Verify a `Continue` button is visible at the top of the page.
+3. Verify a second matching `Continue` button is visible at the bottom.
+4. Click the top button and confirm day progression behaves as expected.
+5. Re-run and click the bottom button to confirm identical behavior.
+Expected:
+- Top and bottom `Continue` buttons are both present.
+- Both buttons execute the same day-advance/navigation behavior.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-009 - Match-day result scoreline inline format
+Manual steps:
+1. Advance to `/career/day-results` with at least one completed fixture.
+2. Inspect a result row.
+Expected:
+- Each row is formatted inline as `Team A 2 - 1 Team B`.
+- Score appears between home and away team names on one centered line.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-010 - Group results by competition using centered paragraph lines
+Manual steps:
+1. Advance to `/career/day-results` on a day with results from multiple competitions.
+2. Verify result lines are grouped under competition headings.
+3. Confirm each match is shown as a plain paragraph line (no bullet list / no per-match pod card).
+4. Confirm result text is centered.
+Expected:
+- Competition grouping is present.
+- Matches render as centered paragraph list lines.
+- Per-match pod styling is removed.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-011 - Score column alignment in grouped results
+Manual steps:
+1. Advance to `/career/day-results` with several completed fixtures under one competition.
+2. Inspect the score values across rows.
+3. Confirm home and away team names sit on either side of the score values.
+Expected:
+- Score values align in a consistent vertical center column.
+- Team names are positioned beside the aligned score column (home on left side, away on right side).
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-012 - Player team highlighted in match-day result rows
+Manual steps:
+1. Advance to `/career/day-results` on a day including the player's fixture.
+2. Open the relevant competition group in the results section.
+3. Inspect the home/away team names in the player's result row.
+Expected:
+- Player team name is highlighted in the result line.
+- Non-player team names keep the default result-line style.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-013 - Updated MRD chance table to reduce draws
+Manual steps:
+1. Simulate multiple career days with AI fixtures.
+2. Review day-result distributions and compare draw frequency to previous behavior.
+3. Spot-check several MRD bands in simulation logs/debug.
+Expected:
+- Draw outcomes are less frequent in lower-MRD bands according to updated matrix values.
+- Other outcome categories still resolve without errors.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-014 - Display match ratings and positive MRD for each played match
+Manual steps:
+1. Advance to `/career/day-results` on any day with completed fixtures.
+2. Inspect each result row.
+3. Confirm metadata line displays `MR: <home> v <away> | MRD: <value>`.
+4. Confirm MRD is always non-negative.
+Expected:
+- Every result row includes both team match ratings and MRD.
+- MRD is shown as a positive value.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-015 - Updated MRD band split and probability table
+Manual steps:
+1. Simulate multiple career days across mixed team-strength fixtures.
+2. Inspect debug/result distributions to confirm outcomes follow the updated MRD bands:
+   - `0-10`, `10-30`, `30-60`, `60-100`, `100-150`, `150-300`, `300+`.
+3. Verify no runtime issues occur when MRD falls in newly split ranges (`30-60`, `60-100`).
+Expected:
+- Outcome resolution works for all revised bands.
+- Draw frequency reflects the updated row probabilities.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-004 - Match-day grouped fixture reveal format
+Manual steps:
+1. Start a new career and advance to day 1 fixture reveal.
+2. Expand a league accordion panel.
+3. Verify fixtures are grouped under `Match Day N` headings.
+4. Verify each fixture row is shown as `Team A v Team B`.
+5. Verify match day groups are shown in ascending order.
+Expected:
+- Fixture reveal is grouped by match day.
+- Fixture line format matches requested `Team A v Team B`.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-003 - Season fixture reveal accordion behavior
+Manual steps:
+1. Start a new career and advance through day 1 to the season fixture reveal screen.
+2. Verify fixture groups are presented as league accordion panels.
+3. Confirm player's current league panel is expanded by default.
+4. Click a different league panel header.
+5. Confirm only the clicked panel is expanded and the previous panel collapses.
+Expected:
+- League groups are sorted and rendered as an accordion.
+- Exactly one panel is expanded at any moment.
+- Player league is the default expanded panel.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+FEAT-1019 - End-of-Day Results Screen
+Manual steps:
+1. Advance to a day where only AI fixtures are played.
+2. Click Continue Day.
+3. Verify `/career/day-results` opens and lists all completed matches for the day.
+4. Click Continue and confirm return to Career Home on the next day.
+Expected:
+- Results screen appears for match days.
+- Continue exits results view and advances calendar flow.
+
+FEAT-1020 - Day-1 Season Fixture Generation/Display
+Manual steps:
+1. Start a fresh season and click Continue Day on day 1.
+2. Verify end-of-day screen includes full season fixture list grouped by league.
+3. Click Continue and verify normal calendar progression resumes.
+Expected:
+- Day-1 flow displays season fixture schedule sorted by league.
+- Fixture schedule remains persisted and is used for later match simulation.
+
+FEAT-1021 - Cup Draw Resolution Flow
+Manual steps:
+1. Advance to a calendar day with `Cup Draw` event.
+2. Verify app routes to `/cup-draw`.
+3. Use `Reveal Next Fixture` repeatedly for one draw, then `Reveal All` on another draw.
+4. Click Continue and verify flow returns to pending day-results (if any) or advances to next calendar day.
+Expected:
+- Draw pairings are displayed clearly.
+- User can reveal fixtures incrementally or all at once.
+- Generated pairings remain stored and are used for future cup rounds.
+
+BUG-001 / BUG-002 Regression Verification
+Manual steps:
+1. Generate a new career.
+2. Confirm League Table appears immediately on Career Home.
+3. Confirm League 5 includes player team plus seven AI teams and zeroed stats.
+4. Progress to first player fixture and verify match page trigger.
+Expected:
+- League table renders correctly from season start.
+- Player match day reliably routes to `/match`.
+
+Command checks run after this update:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing baseline repository lint issues (engine/info modules), with no new EPIC-010-specific lint failures.
+
+Automated still needed (additional):
+- Integration test for day-results route branching after AI-only and player-match days.
+- Integration test for cup draw reveal flow (`/cup-draw`) and continuation transitions.
+- Integration test for day-1 fixture reveal output.
+
+Test status: passed

@@ -31,40 +31,32 @@
   flex-wrap: wrap;
 }
 
-.seasonCalendar__weeks {
-  display: grid;
-  gap: 0.8rem;
+.seasonCalendar__gridWrap {
+  width: 100%;
+  min-width: 0;
 }
 
-.seasonCalendar__week {
-  border: 1px solid rgba($lightText, 0.2);
-  border-radius: 10px;
-  background: rgba($siteBackground, 0.2);
-  padding: 0.7rem;
-  display: grid;
-  gap: 0.55rem;
-}
-
-.seasonCalendar__weekTitle {
-  font-weight: 700;
-  color: rgba($lightText, 0.9);
-}
-
-.seasonCalendar__dayGrid {
+.seasonCalendar__monthGrid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .seasonCalendar__day {
-  min-height: 128px;
+  min-height: 0;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
   border: 1px solid rgba($lightText, 0.18);
   border-radius: 10px;
   background: rgba($siteBackground, 0.35);
   padding: 0.45rem;
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: 0.35rem;
-  align-content: start;
+  align-content: stretch;
+  overflow: hidden;
 }
 
 .seasonCalendar__day--current {
@@ -106,6 +98,9 @@
   padding-left: 0;
   list-style: none;
   display: grid;
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
   gap: 0.3rem;
 }
 
@@ -147,16 +142,5 @@
   font-size: 0.74rem;
   line-height: 1.25;
   color: rgba($lightText, 0.9);
-}
-
-@media (max-width: 1120px) {
-  .seasonCalendar__dayGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .seasonCalendar__dayGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  overflow-wrap: anywhere;
 }

@@ -1,0 +1,970 @@
+EPIC-010 - League Tables, Fixture Simulation, Cup Simulation, and Player Match Result Flow
+
+Overview
+The goal of this epic is to start simulating the wider football world around the player.
+
+This epic introduces:
+- league tables on the calendar page
+- simulation of all non-player fixtures on match days
+- updating league tables from results
+- season-end promotion/relegation/playoff handling
+- simulation of cup fixtures and cup progression
+- a Cups page to inspect cup fixtures and results
+- a temporary player match resolution page for debugging so the world can progress correctly
+
+The user's actual playable match engine is still out of scope.
+For the player's own scheduled matches, this epic will use a temporary debug result-entry flow.
+
+This epic is about:
+- league structure progression
+- fixture result simulation
+- standings updates
+- cup progression
+- season-end placement outcomes
+- temporary user match-result handling
+
+This epic is not yet about:
+- full playable match engine
+- minute-by-minute simulation
+- tactical UI inside matches
+- advanced score modelling
+- live match presentation
+- transfers or squad changes between fixtures
+
+================================================================
+Core World Simulation Goal
+================================================================
+
+Now that teams and managers exist, the game should simulate the rest of the football world as time passes.
+
+On match days:
+- AI matches should be simulated
+- league tables should update
+- cup results should update
+- competition progress should advance
+
+For the user:
+- if it is not the user team's match day, the career continues normally
+- if it is the user team's match day, progression should route to a temporary match-result page instead of simply advancing the day
+
+================================================================
+League Table Requirements
+================================================================
+
+A new component called League Table must be added to the calendar page.
+
+Requirements:
+- by default it shows the player's current league
+- the player's team should be visually marked with an icon
+- the player can switch to the other 4 leagues using a dropdown
+- it should display normal football table columns, including at minimum:
+  - position
+  - team name
+  - played
+  - won
+  - drawn
+  - lost
+  - goals for
+  - goals against
+  - goal difference
+  - points
+
+This component should update as the season progresses.
+
+================================================================
+Match Simulation Inputs
+================================================================
+
+To simulate a match, each team needs these values:
+
+- Team Overall Value (OV)
+- Team Defence Tactic Rating (DTR)
+- Team Attack Tactic Rating (ATR)
+- Team Tactic Compatibility (TC)
+
+The team's Match Rating is calculated as:
+
+Match Rating = (OV * 2) + DTR + ATR + TC
+
+This produces a value from 0 to 500.
+
+For each match:
+- calculate both teams' Match Rating
+- compare them
+- calculate the Match Rating Difference (MRD)
+
+MRD is then used in the result-type matrix below.
+
+================================================================
+Match Result Type Matrix
+================================================================
+
+Use the exact matrix below.
+
+Difference of	Lower Rating Team Big Win	Lower Rating Team Win	Draw	Higher Rating Team Win	Higher Rating Team Big Team Win
+0-10	5	30	30	30	5
+10-50	5	25	30	35	5
+50-100	2	18	20	50	10
+100-150	0.2	5.3	9.5	70	15
+150-300	0.1	1.8	5.1	75	18
+300+	0	0.8	2.8	56.4	40
+
+Interpretation:
+- determine which team has the higher Match Rating
+- determine the MRD band
+- roll against the probabilities for that band
+- outcome determines:
+  - lower-rated team big win
+  - lower-rated team win
+  - draw
+  - higher-rated team win
+  - higher-rated team big win
+
+Result definitions:
+- normal win = winning team scores 2 goals or fewer
+- big win = winning team wins by 3 goals or more
+
+This epic should generate a sensible final scoreline consistent with the chosen result type.
+
+================================================================
+League Table Update Rules
+================================================================
+
+After all matches for a league match day are completed:
+- update the league tables
+- update all standard table values
+- continue the career
+
+The simulation can display a loading state while match results are being generated and applied.
+
+================================================================
+Season-End League Outcome Rules
+================================================================
+
+When all league matches for the season are complete, apply the promotion/relegation/playoff structure.
+
+League 5
+- top team promoted automatically
+- 2nd vs 3rd playoff
+- playoff winner promoted
+
+League 4
+- top team promoted automatically
+- 2nd vs 3rd playoff
+- playoff winner promoted
+- bottom 2 relegated
+
+League 3
+- top team promoted automatically
+- 2nd vs 3rd playoff
+- playoff winner promoted
+- bottom 2 relegated
+
+League 2
+- top team promoted automatically
+- 2nd vs 3rd playoff
+- playoff winner promoted
+- bottom 2 relegated
+
+League 1
+- bottom 2 relegated
+- no promotion above League 1
+- top 4 qualify for the Champions Cup next season
+
+For this epic, these outcomes should be calculated and stored at season end.
+Where future-season league regeneration depends on them later, store the outcome structure cleanly now.
+
+================================================================
+Cup Competition Requirements
+================================================================
+
+Cup matches must also be simulated using the same match-rating-based result system.
+
+----------------------------------------------------------------
+League Cup
+----------------------------------------------------------------
+
+Structure:
+- all teams from Leagues 4 to 1
+- total 32 teams
+- 5 round knockout tournament
+
+The tournament should support:
+- fixtures
+- results
+- progression to next round
+
+----------------------------------------------------------------
+Champions Cup
+----------------------------------------------------------------
+
+Structure:
+- top 4 teams from League 1 from the previous season
+- plus all 12 foreign teams
+- total 16 teams
+
+Group stage:
+- 4 groups of 4
+- groups should be random
+- the 4 League 1 teams must be spread across the 4 groups so none of them meet in the group stage
+
+Knockout qualification:
+- winner and runner-up from each group qualify
+
+Quarter-finals:
+- QF1 = Winner Group A vs Runner-up Group D
+- QF2 = Winner Group B vs Runner-up Group C
+- QF3 = Winner Group C vs Runner-up Group B
+- QF4 = Winner Group D vs Runner-up Group A
+
+Semi-finals:
+- drawn at random from the quarter-final winners
+- home team / ordering randomised
+
+Final:
+- drawn at random from the semi-final winners
+- home team / ordering randomised
+
+This structure must be simulated and advanced through the season calendar.
+
+================================================================
+Cups Page
+================================================================
+
+Add a new page called Cups.
+
+Purpose:
+- show League Cup information
+- show Champions Cup information
+- show current and past cup fixtures/results
+- show this regardless of whether the user's team is in the cup
+
+Requirements:
+- display fixtures
+- display results of past games
+- make the competition structures inspectable
+- keep the page readable and useful as a world-state page
+
+================================================================
+Player Match Debug Resolution Flow
+================================================================
+
+Because the user's own match engine is not in scope yet, we still need a way to resolve the user's matches so the season can progress.
+
+Rule:
+- when the current scheduled day contains the player's match
+- the Continue Day button should take the user to the Match page instead of simply progressing
+
+Temporary Match page requirements:
+- show the details of the match
+- show the teams involved
+- provide 3 buttons:
+  - Home Win
+  - Draw
+  - Away Win
+
+When one of those buttons is clicked:
+- generate a random scoreline consistent with that chosen result type
+- save it as the official result of the player's match
+- update all relevant league/cup data
+- return the user back into the career flow
+
+This is a temporary debug resolution path only.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1001 - Add League Table Component to Calendar Page
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the league table component shown on the calendar page.
+
+Requirements
+- Add a League Table component to the calendar page.
+- By default, it should show the player's current league.
+- The player's team should be marked with a visual icon.
+- The user must be able to switch between the 5 domestic leagues using a dropdown.
+- Display normal table columns including:
+  - position
+  - team
+  - played
+  - won
+  - drawn
+  - lost
+  - goals for
+  - goals against
+  - goal difference
+  - points
+- Keep the table readable and updateable throughout the season.
+
+Acceptance Criteria
+- A league table is visible on the calendar page.
+- The player's league is shown by default.
+- The player's team is visually marked.
+- The user can switch between all 5 domestic leagues.
+- The table displays normal football standings values.
+
+----------------------------------------------------------------
+FEAT-1002 - Define League Table Data Model and Update Rules
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the standings model used to store league table state.
+
+Requirements
+- Define a reusable league table entry model.
+- Track, at minimum:
+  - team identity
+  - played
+  - won
+  - drawn
+  - lost
+  - goalsFor
+  - goalsAgainst
+  - goalDifference
+  - points
+- Define update rules for applying a completed match result to the standings.
+- Keep the model reusable across all domestic leagues.
+
+Acceptance Criteria
+- League standings can be stored in a clear reusable structure.
+- A match result can update the standings correctly.
+- Goal difference and points update correctly.
+
+----------------------------------------------------------------
+FEAT-1003 - Build Team Match Rating Calculation Utility
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the shared calculation for team match rating.
+
+Requirements
+- For a given team, calculate Match Rating as:
+  - (OV * 2) + DTR + ATR + TC
+- Input values:
+  - OV
+  - DTR
+  - ATR
+  - TC
+- Output a value from 0 to 500.
+- Keep the logic centralised and reusable for league and cup simulation.
+
+Acceptance Criteria
+- A team's Match Rating can be calculated from OV, DTR, ATR, and TC.
+- The calculation matches the exact formula.
+- The utility is reusable across the simulation systems.
+
+----------------------------------------------------------------
+FEAT-1004 - Build Match Result Type Resolver from MRD Matrix
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Resolve the type of match outcome using the Match Rating Difference matrix.
+
+Requirements
+- For any match:
+  - calculate both teams' Match Ratings
+  - determine the higher-rated team
+  - determine the Match Rating Difference (MRD)
+  - place the MRD into the correct band
+  - roll against the exact probability matrix
+- Use the exact matrix defined in this epic.
+- Return one of:
+  - lower-rated team big win
+  - lower-rated team win
+  - draw
+  - higher-rated team win
+  - higher-rated team big win
+- Keep the logic centralised and reusable.
+
+Acceptance Criteria
+- Match outcomes are selected using the exact MRD matrix.
+- MRD bands are applied correctly.
+- The resolver returns a valid result type for every match.
+
+----------------------------------------------------------------
+FEAT-1005 - Generate Final Scorelines from Match Result Type
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Convert the resolved match result type into an actual football scoreline.
+
+Requirements
+- Generate a final scoreline consistent with the resolved result type.
+- Rules:
+  - draw = both teams same score
+  - normal win = winning team wins with both teams scoring 2 or fewer
+  - big win = winning team wins by 3 or more goals
+- Keep the scoreline generation believable and varied.
+- Ensure the winning/losing side matches the chosen result type correctly.
+
+Acceptance Criteria
+- Every resolved result type can be converted into a valid scoreline.
+- Normal wins always stay within the defined scoring constraint.
+- Big wins always have a margin of 3 or more.
+- Generated scorelines are believable enough for debug world simulation.
+
+----------------------------------------------------------------
+FEAT-1006 - Simulate Non-Player League Fixtures on Match Days
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Simulate all AI league fixtures that occur on a league match day.
+
+Requirements
+- On league match days, simulate all non-player league matches.
+- Use the team Match Rating system and MRD matrix result flow.
+- Exclude the player's own fixture from automatic resolution.
+- Save the generated results.
+- Apply the results to the league standings once the match day simulation is complete.
+
+Acceptance Criteria
+- AI league fixtures are simulated on league match days.
+- The player's own match is not auto-simulated here.
+- Results are saved and applied to standings correctly.
+
+----------------------------------------------------------------
+FEAT-1007 - Add Match-Day Simulation Loading State
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Show a loading state while match-day simulations are being processed.
+
+Requirements
+- When AI fixtures are being simulated and standings updated, show the user a loading indicator/screen.
+- The loading state should communicate that match results are being generated/applied.
+- Keep the flow clear so the user understands that the world is progressing.
+
+Acceptance Criteria
+- A loading state appears during match-day simulation.
+- The user receives visible feedback that processing is happening.
+- The career continues once simulation is complete.
+
+----------------------------------------------------------------
+FEAT-1008 - Update League Tables After Simulated Match Days
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Apply match results to the standings after all fixtures for the match day are complete.
+
+Requirements
+- After all league fixtures for a given match day are resolved:
+  - update all relevant league tables
+- Update:
+  - played
+  - won
+  - drawn
+  - lost
+  - goals for
+  - goals against
+  - goal difference
+  - points
+- Ensure league table ordering updates correctly after results.
+
+Acceptance Criteria
+- League tables update correctly after a simulated match day.
+- Table sorting reflects the latest results.
+- Standard standings values remain accurate.
+
+----------------------------------------------------------------
+FEAT-1009 - Build League Cup Competition State and Fixture Structure
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the data model and fixture structure for the League Cup.
+
+Requirements
+- Model the League Cup as:
+  - 32 teams
+  - 5 round knockout competition
+- Use all teams from Leagues 4 to 1.
+- Create round structures and fixtures for:
+  - round 1
+  - round 2
+  - round 3
+  - round 4
+  - final
+- Ensure the fixture structure can store:
+  - pairings
+  - result
+  - winner progression
+- Keep the competition structure reusable and inspectable.
+
+Acceptance Criteria
+- The League Cup competition structure exists.
+- It supports 32 teams and 5 knockout rounds.
+- Fixtures and progression can be stored cleanly.
+
+----------------------------------------------------------------
+FEAT-1010 - Build Champions Cup Competition State and Group Allocation
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the data model and initial group allocation for the Champions Cup.
+
+Requirements
+- Model the Champions Cup as:
+  - 16 teams
+  - 4 groups of 4
+  - group stage
+  - knockout stage
+- Populate it with:
+  - top 4 teams from League 1 from the previous season
+  - 12 foreign teams
+- Group draw rules:
+  - random groups
+  - the 4 League 1 teams must be spread across the 4 groups
+  - no two of those 4 teams can share the same group
+- Store group membership and group fixtures cleanly.
+
+Acceptance Criteria
+- The Champions Cup structure exists.
+- Teams are assigned into 4 valid groups of 4.
+- The 4 League 1 teams are separated across the 4 groups.
+- The structure is ready for simulation and display.
+
+----------------------------------------------------------------
+FEAT-1011 - Build Champions Cup Knockout Progression Structure
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create the progression structure from Champions Cup groups into the knockout rounds.
+
+Requirements
+- After group stage completion, qualify:
+  - winner of each group
+  - runner-up of each group
+- Create quarter-finals as:
+  - QF1 = Winner Group A vs Runner-up Group D
+  - QF2 = Winner Group B vs Runner-up Group C
+  - QF3 = Winner Group C vs Runner-up Group B
+  - QF4 = Winner Group D vs Runner-up Group A
+- Semi-finals:
+  - random draw from quarter-final winners
+  - home team / ordering randomised
+- Final:
+  - random draw/order from semi-final winners
+- Keep the progression structure explicit and reusable.
+
+Acceptance Criteria
+- Champions Cup qualifiers can advance from groups to quarter-finals correctly.
+- Quarter-final pairings match the required structure.
+- Semi-finals and final can be drawn randomly from winners.
+
+----------------------------------------------------------------
+FEAT-1012 - Simulate Cup Fixtures and Progress Competition State
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Simulate League Cup and Champions Cup matches using the same match rating system as league fixtures.
+
+Requirements
+- Simulate cup matches using:
+  - Match Rating
+  - MRD matrix
+  - scoreline generation
+- Apply results to:
+  - knockout progression in League Cup
+  - group standings and knockout progression in Champions Cup
+- Support the correct advancement of teams through both competitions.
+- Store fixtures, results, and qualified/progressed teams as the season moves on.
+
+Acceptance Criteria
+- Cup fixtures can be simulated using the shared match result system.
+- League Cup rounds progress correctly.
+- Champions Cup groups and knockouts progress correctly.
+- Cup results are saved and inspectable.
+
+----------------------------------------------------------------
+FEAT-1013 - Add Cups Page
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Create a new page called Cups to display cup competition information.
+
+Requirements
+- Add a Cups page to the career flow.
+- Display information for:
+  - League Cup
+  - Champions Cup
+- Show:
+  - fixtures
+  - past results
+  - current competition structure/state
+- Display cup information whether or not the user’s team is in the cup.
+- Keep the page readable and useful as a world-state page.
+
+Acceptance Criteria
+- A Cups page exists.
+- It shows League Cup and Champions Cup information.
+- It displays fixtures and past results.
+- It can be used to inspect cup progress during the season.
+
+----------------------------------------------------------------
+FEAT-1014 - Route Player Match Days to Temporary Match Page
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Interrupt normal day progression when the current day contains the player’s own match.
+
+Requirements
+- When the current scheduled day contains the player's match:
+  - the Continue Day action should route to the Match page instead of simply advancing past the day
+- This should work for the player’s league and cup matches as applicable.
+- The player’s match should not be auto-simulated by the AI simulation system.
+
+Acceptance Criteria
+- Player match days route to the Match page.
+- The player’s fixture is not silently simulated by the AI system.
+- Normal non-player days continue through the usual progression flow.
+
+----------------------------------------------------------------
+FEAT-1015 - Create Temporary Player Match Resolution Page
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Build the temporary debug match page used to resolve the player's match result.
+
+Requirements
+- Create a Match page for this temporary flow.
+- Show match details, including at minimum:
+  - home team
+  - away team
+  - competition
+  - relevant fixture context
+- Add 3 buttons:
+  - Home Win
+  - Draw
+  - Away Win
+- When a button is clicked:
+  - generate a random scoreline consistent with that selected outcome
+  - save the result as the player's official result
+  - update all relevant standings / cup progression
+  - return the player to the career flow
+
+Acceptance Criteria
+- The Match page exists for temporary user result resolution.
+- The player can choose Home Win, Draw, or Away Win.
+- A valid scoreline is generated from the chosen result type.
+- The resulting match updates the world state correctly.
+
+----------------------------------------------------------------
+FEAT-1016 - Apply Season-End Promotion, Relegation, and Playoffs
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Resolve the league placement outcomes once all regular season matches are complete.
+
+Requirements
+- At the end of the season, determine final standings for all leagues.
+- Apply:
+  - automatic promotions
+  - relegations
+  - playoff participants
+  - playoff winners
+- League rules:
+  - League 5: top 1 auto-promoted, 2nd vs 3rd playoff winner promoted
+  - League 4: top 1 auto-promoted, 2nd vs 3rd playoff winner promoted, bottom 2 relegated
+  - League 3: top 1 auto-promoted, 2nd vs 3rd playoff winner promoted, bottom 2 relegated
+  - League 2: top 1 auto-promoted, 2nd vs 3rd playoff winner promoted, bottom 2 relegated
+  - League 1: bottom 2 relegated, top 4 qualify for next Champions Cup
+- Playoff matches should be simulated using the shared match result flow.
+- Store all resulting promotion/relegation outcomes cleanly for later season-transition work.
+
+Acceptance Criteria
+- Season-end league outcomes can be resolved.
+- Promotions, relegations, and playoff winners are determined correctly.
+- League 1 top 4 qualification for next Champions Cup is recorded.
+- The results are stored in career state for later use.
+
+----------------------------------------------------------------
+FEAT-1017 - Persist Simulated Fixture Results and Competition State
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Save all simulated results and updated competition state into the active career state.
+
+Requirements
+- Persist:
+  - league fixtures and results
+  - league tables
+  - cup fixtures and results
+  - group standings where applicable
+  - knockout progression
+  - season-end league outcomes
+- Ensure the active career state remains consistent after each simulated day and at season end.
+
+Acceptance Criteria
+- Simulated world state persists in career data.
+- League and cup progression survive navigation and continued play.
+- Competition state remains internally consistent.
+
+----------------------------------------------------------------
+FEAT-1018 - Add Debug and Inspection Support for Fixture Simulation
+Status: done
+
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for verifying the world simulation systems.
+
+Requirements
+- Add development-friendly inspection support for:
+  - match ratings
+  - MRD values
+  - result-type selection
+  - generated scorelines
+  - league table updates
+  - cup progression
+  - player match temporary resolution outcomes
+- Keep this support lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can inspect the internal logic of fixture simulation.
+- The key values behind simulated results can be verified during testing.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The calendar page includes a League Table component.
+- The player's current league is shown by default and the player's team is marked.
+- The user can switch between all 5 domestic leagues.
+- Team Match Ratings are calculated using:
+  - (OV * 2) + DTR + ATR + TC
+- Match outcomes are resolved using the exact MRD matrix from this epic.
+- Valid scorelines are generated from the resolved result types.
+- AI league fixtures are simulated on match days.
+- League tables update correctly after simulated results.
+- The League Cup is modelled as a 32-team, 5-round knockout competition.
+- The Champions Cup is modelled with 4 groups of 4 and the required knockout structure.
+- Cup fixtures and results are simulated and stored.
+- A Cups page exists and displays fixtures/results for both cups.
+- On player match days, Continue Day routes to a temporary Match page instead of auto-simulating the user’s game.
+- The temporary Match page allows Home Win / Draw / Away Win result selection and generates a valid scoreline.
+- Season-end promotion, relegation, playoffs, and next Champions Cup qualification are calculated and stored.
+- League and cup world state persists in the active career data.
+- The world now progresses around the user in a believable simulated way, even though the real playable match engine is still not implemented.
+
+----------------------------------------------------------------
+FEAT-1019 - Add End-of-Day Results Screen
+----------------------------------------------------------------
+Status: done
+
+Description
+Add a results screen that appears at the end of a match day and shows the outcomes of all matches played that day.
+
+Requirements
+- On any match day, once all matches for that day have been resolved, show a dedicated results screen.
+- This should happen:
+  - after the user’s match if the user had a match that day
+  - or at the end of the day even if the user did not play
+- The screen should show the results for all matches played that day.
+- Include enough information to understand the match results clearly, such as:
+  - home team
+  - away team
+  - final score
+  - competition
+- Add a single Continue button on the results screen.
+- Clicking Continue should:
+  - complete the end-of-day flow
+  - advance back into the calendar flow
+  - move onward to the next day
+
+Acceptance Criteria
+- A results screen appears at the end of match days.
+- The screen shows all results from that day.
+- It appears after the player’s match if the player had one.
+- It still appears on match days where only AI matches were played.
+- The screen has a Continue button that returns the user to the calendar flow and proceeds to the next day.
+
+----------------------------------------------------------------
+FEAT-1020 - Generate and Display Season Fixtures on Day 1
+----------------------------------------------------------------
+Status: done
+
+Description
+Generate the season’s league fixtures on day 1 of each season and display them to the player.
+
+Requirements
+- On day 1 of every season, run fixture generation at the end of the day.
+- Generate all league fixtures for the season at that point.
+- These fixtures are the ones that will then be played out across the season calendar.
+- After generation, show the fixtures to the player.
+- Display the fixtures sorted by league.
+- Keep the fixture output readable and suitable for inspection.
+- Ensure the generated fixtures are stored in the career state for use throughout the season.
+
+Acceptance Criteria
+- On day 1 of each season, league fixtures are generated at the end of the day.
+- The generated fixtures are saved into career state.
+- The player is shown the generated fixtures after they are created.
+- Fixtures are sorted by league in the display.
+- These fixtures become the schedule used for the rest of the season.
+
+----------------------------------------------------------------
+FEAT-1021 - Add Cup Draw Resolution Flow
+----------------------------------------------------------------
+Status: done
+
+Description
+Resolve cup draws on the calendar days already marked for cup draw events.
+
+Requirements
+- Use the existing cup draw days already marked on the calendar.
+- On those draw days, perform any cup draws that are needed for the next round of fixtures.
+- Support cup draws for the relevant competitions and rounds that require them.
+- Store the resulting pairings into the cup competition state so they can later be played.
+- Show the draw results to the player in a readable way.
+
+Interaction requirements
+- Allow the player to simulate the draw:
+  - game by game
+  - or the whole cup at once
+- The draw flow should make it clear which fixtures have been created.
+
+Acceptance Criteria
+- Cup draws are triggered on the correct calendar draw days.
+- Required next-round fixtures are generated and saved into cup state.
+- The player can reveal/simulate the draw one game at a time or for the whole cup at once.
+- The resulting cup pairings are clearly displayed.
+- The generated draw results are then used for the next cup fixtures.
+
+----------------------------------------------------------------
+FEAT-1022 - Add Team Form and Home Advantage to Match Simulation
+----------------------------------------------------------------
+
+Description
+Add team form and home advantage as additional factors in match simulation.
+
+Team form is based on the results of the last 5 matches a team has played.
+It should be stored as a rolling array and used to slightly adjust match outcome probabilities when simulating a match.
+
+Home advantage gives the home team a small additional likelihood of winning.
+
+This feature adds realistic momentum and home-field advantage to the match simulation system.
+
+Requirements
+- Every team must have a form array.
+- The form array must represent the last 5 matches that team has played.
+- Store the form as a rolling 5-result sequence.
+- Results only need to distinguish wins for this feature, but the array should still represent real recent results clearly.
+- Example form arrays:
+  - WWLDW
+  - WLDDD
+- The array should always reflect the most recent 5 matches once enough matches have been played.
+
+Form interpretation
+- Team form strength is measured by the number of wins in the last 5 matches.
+- Example:
+  - WWLDW = 3 wins
+  - WLDDD = 1 win
+- In this case the first team has 2 more wins in form and should gain a match simulation advantage.
+
+Form effect on match simulation
+- When simulating a match, compare the number of wins in each team's form array.
+- Calculate the difference in number of wins.
+- Use that difference to adjust the match result likelihoods in favour of the team with the better form.
+
+Use this exact mapping:
+- Same wins in form array:
+  - no change
+- One team has 1 more win:
+  - that team is 1% more likely to win the match
+- One team has 2 more wins:
+  - that team is 4% more likely to win the match
+- One team has 3 more wins:
+  - that team is 7% more likely to win the match
+- One team has 4 or more wins:
+  - that team is 10% more likely to win the match
+
+Home advantage
+- The home team should receive a 2% increased chance of winning the match.
+- This modifier is applied in addition to the form modifier.
+- This advantage should only apply to the home team.
+
+Implementation guidance
+- Apply the form modifier and home advantage modifier after the base match result chances have been determined from Match Rating Difference.
+- The team with stronger form gains the form-based advantage.
+- The home team gains the home advantage modifier.
+- Ensure the total probability distribution remains valid after applying both adjustments.
+- Keep the probability adjustment logic centralised and reusable.
+
+Form storage and updating
+- Every team should carry a form array in persistent career state.
+- After each completed match, update that team's form array.
+- Keep only the most recent 5 results.
+- Once a team has played at least 5 matches, it should always have a full rolling 5-match form array.
+- Form must carry over from season to season.
+- Do not reset team form automatically at the start of a new season.
+
+Foreign teams
+- Foreign teams should start with a randomly generated form array at career creation.
+- This is because they do not begin with a domestic league schedule generating their form.
+- After initial generation, their form should then be updated based on their Champions Cup matches.
+
+Domestic teams
+- Domestic teams should build and maintain form through their played matches.
+- After the first 5 matches in the game, all domestic teams should have a full form array all the time.
+
+Scope notes
+- This feature is about form storage and its effect on match simulation probability.
+- It is not about displaying form in all UI yet unless useful for debugging.
+- It should, however, be stored and accessible for future use in tables, fixtures, and match previews.
+
+Acceptance Criteria
+- Every team has a form array in career state.
+- Form is stored as a rolling last-5-match result sequence.
+- Match simulation compares the number of wins in each team’s form array.
+- The exact form difference mapping is implemented:
+  - 0 difference = 0%
+  - 1 difference = 1%
+  - 2 difference = 4%
+  - 3 difference = 7%
+  - 4+ difference = 10%
+- The team with better form receives the corresponding increased chance to win.
+- The home team receives an additional 2% win probability advantage.
+- Form updates after every completed match.
+- Form persists across seasons rather than resetting.
+- Foreign teams begin with a randomly generated form array.
+- After their initial form is created, foreign team form updates from Champions Cup matches.
+- The implementation is centralised and reusable within the match simulation system.

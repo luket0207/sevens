@@ -1,0 +1,77 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.leagueTablePanel {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.24);
+  padding: 0.7rem;
+}
+
+.leagueTablePanel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  h2 {
+    font-size: 1rem;
+    margin-right: auto;
+  }
+}
+
+.leagueTablePanel__selectorLabel {
+  font-size: 0.82rem;
+  color: rgba($lightText, 0.82);
+}
+
+.leagueTablePanel__selector {
+  border: 1px solid rgba($lightText, 0.28);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  background: rgba($siteBackground, 0.5);
+  color: $lightText;
+}
+
+.leagueTablePanel__tableWrap {
+  overflow-x: auto;
+}
+
+.leagueTablePanel__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.35rem 0.4rem;
+    border-bottom: 1px solid rgba($lightText, 0.15);
+    font-size: 0.78rem;
+  }
+
+  thead th {
+    color: rgba($lightText, 0.82);
+    font-weight: 700;
+  }
+}
+
+.leagueTablePanel__row--player {
+  background: rgba($tertiaryBackground, 0.22);
+}
+
+.leagueTablePanel__teamCell {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.leagueTablePanel__playerMarker {
+  color: rgba($tertiaryBackground, 0.95);
+}
+
+.leagueTablePanel__empty {
+  color: rgba($lightText, 0.84);
+}
+

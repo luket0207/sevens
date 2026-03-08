@@ -2,6 +2,7 @@ import { randomInt } from "../../../engine/utils/rng/rng";
 import { GOALKEEPER_KIT_OPTIONS } from "../../careerStart/kit/goalkeeperKits";
 import { randomiseFullKitSet } from "../../careerStart/kit/kitRandomizer";
 import { generatePlayer } from "../../playerGeneration";
+import { generateTeamManager } from "./managerGeneration";
 import { buildTeamRolePlan } from "./playerRolePlan";
 import { generatePlayerOverallTargets } from "./playerOverallTargets";
 
@@ -10,12 +11,13 @@ const pickRandom = (items) => items[randomInt(0, items.length - 1)];
 export const generateCareerTeam = ({
   competitionId,
   competitionName,
+  competitionType = "domestic",
   teamIndex,
   teamOverall,
   identityGenerator,
 }) => {
   const teamId = `${competitionId}-team-${String(teamIndex + 1).padStart(2, "0")}`;
-  const teamName = identityGenerator.nextTeamName();
+  const teamName = identityGenerator.nextTeamName({ competitionType });
   const stadiumName = identityGenerator.nextStadiumName();
   const kitSet = randomiseFullKitSet();
   const playerOverallTargets = generatePlayerOverallTargets(teamOverall);
@@ -41,6 +43,9 @@ export const generateCareerTeam = ({
 
     return playerWithRole;
   });
+  const manager = generateTeamManager({
+    teamId,
+  });
 
   return {
     id: teamId,
@@ -55,6 +60,7 @@ export const generateCareerTeam = ({
     awayColour: kitSet.awayColour,
     goalkeeperKit: pickRandom(GOALKEEPER_KIT_OPTIONS).value,
     players,
+    manager,
     playerOverallTargets,
     rolePlan,
   };

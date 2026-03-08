@@ -1,6 +1,7 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import { CALENDAR_EVENT_TYPES, DAY_INDEX } from "../constants/calendarConstants";
 import {
+  CHAMPIONS_CUP_DRAW_SLOTS,
   CHAMPIONS_CUP_GROUP_IDS,
   CHAMPIONS_CUP_MATCH_SLOTS,
   CHAMPIONS_CUP_QUARTER_FINAL_PAIRINGS,
@@ -115,7 +116,18 @@ export const buildLeagueCupEvents = () => {
 export const buildChampionsCupEvents = ({ careerWorld }) => {
   const championsCupStructure = buildChampionsCupStructure(careerWorld);
 
-  const events = CHAMPIONS_CUP_MATCH_SLOTS.map((slot) => ({
+  const drawEvents = CHAMPIONS_CUP_DRAW_SLOTS.map((slot) => ({
+    id: slot.id,
+    type: CALENDAR_EVENT_TYPES.CUP_DRAW,
+    competitionId: CHAMPIONS_CUP_ID,
+    competitionName: "Champions Cup",
+    stageLabel: slot.stageLabel,
+    label: slot.stageLabel,
+    weekNumber: slot.weekNumber,
+    dayOfWeek: slot.dayOfWeek,
+  }));
+
+  const matchEvents = CHAMPIONS_CUP_MATCH_SLOTS.map((slot) => ({
     id: slot.id,
     type: slot.eventType,
     competitionId: CHAMPIONS_CUP_ID,
@@ -129,7 +141,7 @@ export const buildChampionsCupEvents = ({ careerWorld }) => {
   }));
 
   return {
-    events,
+    events: [...drawEvents, ...matchEvents],
     structure: championsCupStructure,
   };
 };

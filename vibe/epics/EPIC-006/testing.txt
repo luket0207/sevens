@@ -146,3 +146,37 @@ Automated completed:
 Automated needed:
 - Component test for debug gallery section rendering and item counts.
 Status: in progress
+
+----------------------------------------------------------------
+BUG-001 Regression Test - Hairstyle Value 4 Should Render Mohawk
+Manual steps:
+1. Open `/career/start`.
+2. Open the player image debug gallery.
+3. In `Hairstyle (Value 3)`, inspect the card for value `4`.
+4. Confirm value `1` still shows no hair (bald) and other styles still render.
+Expected:
+- Value `4` renders as a mohawk (not curly hair).
+- Bald suppression and hair-colour mapping behavior remain intact.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info modules.
+Automated needed:
+- Unit test for hairstyle parser mapping (`4 -> mohawk`) and component class mapping.
+Status: passed
+
+----------------------------------------------------------------
+BUG-002 Regression Test - Mohawk Should Be Wider and Centered
+Manual steps:
+1. Open `/career/start`.
+2. Open the player image debug gallery.
+3. Inspect hairstyle value `4` in the hairstyle row and compare with short/long styles.
+4. Confirm mohawk appears wider while still centered on the head.
+Expected:
+- Mohawk has a visibly wider footprint (around 60% width).
+- Mohawk remains centered and visually balanced.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info modules.
+Automated needed:
+- Visual regression test for mohawk geometry across `small`, `medium`, and `large` player-image sizes.
+Status: passed

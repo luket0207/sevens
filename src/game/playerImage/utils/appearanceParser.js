@@ -57,7 +57,7 @@ const HAIRSTYLE_MAPPING = Object.freeze({
   1: Object.freeze({ key: "bald", label: "Bald" }),
   2: Object.freeze({ key: "short", label: "Short" }),
   3: Object.freeze({ key: "short-spikey", label: "Short Spikey" }),
-  4: Object.freeze({ key: "curly", label: "Curly" }),
+  4: Object.freeze({ key: "mohawk", label: "Mohawk" }),
   5: Object.freeze({ key: "long", label: "Long" }),
 });
 
@@ -91,4 +91,3 @@ export const parsePlayerAppearance = (appearance) => {
     isBald: hairstyle.key === "bald",
   };
 };
-

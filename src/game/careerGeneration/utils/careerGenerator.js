@@ -1,8 +1,8 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import {
   CAREER_COMPETITION_SCHEMA,
-  CAREER_TOTAL_AI_PLAYERS,
   CAREER_TOTAL_AI_TEAMS,
+  CAREER_TOTAL_AI_PLAYERS,
 } from "../constants/careerCompetitionSchema";
 import { buildCareerGenerationDebugSummary } from "./careerGenerationDebug";
 import { generateCareerTeam } from "./teamGenerator";
@@ -13,6 +13,7 @@ export const CAREER_GENERATION_PHASES = Object.freeze({
   GENERATING_COMPETITIONS: "generatingCompetitions",
   GENERATING_TEAMS: "generatingTeams",
   GENERATING_PLAYERS: "generatingPlayers",
+  GENERATING_MANAGERS: "generatingManagers",
   FINALISING: "finalising",
   SAVING: "saving",
 });
@@ -22,6 +23,7 @@ const PHASE_LABELS = Object.freeze({
   [CAREER_GENERATION_PHASES.GENERATING_COMPETITIONS]: "Generating leagues",
   [CAREER_GENERATION_PHASES.GENERATING_TEAMS]: "Generating teams",
   [CAREER_GENERATION_PHASES.GENERATING_PLAYERS]: "Generating players",
+  [CAREER_GENERATION_PHASES.GENERATING_MANAGERS]: "Generating managers",
   [CAREER_GENERATION_PHASES.FINALISING]: "Finalising career",
   [CAREER_GENERATION_PHASES.SAVING]: "Saving to game state",
 });
@@ -40,6 +42,8 @@ const buildPlayerTeamState = (careerSetup) => {
   return {
     id: "player-team",
     isPlayerTeam: true,
+    competitionId: "league-5",
+    competitionName: "League 5",
     teamName: careerSetup?.teamName || "Player Club",
     stadiumName: careerSetup?.teamStadium || "Home Ground",
     homeKit: careerSetup?.homeKit ?? null,
@@ -140,6 +144,7 @@ const buildCompetitionData = ({ schemaCompetition, teams }) => {
 
 const buildCompetitionSummary = (competition) => {
   const generatedPlayerCount = competition.teams.reduce((total, team) => total + team.players.length, 0);
+  const generatedManagerCount = competition.teams.filter((team) => Boolean(team.manager)).length;
   const overallValues = competition.teams.map((team) => team.teamOverall);
   const minOverall = overallValues.length > 0 ? Math.min(...overallValues) : 0;
   const maxOverall = overallValues.length > 0 ? Math.max(...overallValues) : 0;
@@ -150,6 +155,7 @@ const buildCompetitionSummary = (competition) => {
     type: competition.type,
     teamCount: competition.teams.length,
     generatedPlayerCount,
+    generatedManagerCount,
     minOverall,
     maxOverall,
   };
@@ -164,6 +170,10 @@ const buildCareerWorldState = ({ careerSetup, competitions }) => {
       count + competition.teams.reduce((teamTotal, team) => teamTotal + team.players.length, 0),
     0
   );
+  const aiManagerCount = competitions.reduce(
+    (count, competition) => count + competition.teams.filter((team) => Boolean(team.manager)).length,
+    0
+  );
 
   return {
     generatedAt: getNowIso(),
@@ -175,6 +185,7 @@ const buildCareerWorldState = ({ careerSetup, competitions }) => {
       competitionCount: competitions.length,
       aiTeamCount,
       aiPlayerCount,
+      aiManagerCount,
     },
     debug: buildCareerGenerationDebugSummary(competitions),
   };
@@ -192,6 +203,7 @@ export const generateCareerWorldData = async ({
     CAREER_COMPETITION_SCHEMA.length +
     CAREER_TOTAL_AI_TEAMS +
     CAREER_TOTAL_AI_PLAYERS +
+    CAREER_TOTAL_AI_TEAMS +
     1 +
     1;
   const progress = createProgressEmitter({ totalUnits, onProgress });
@@ -266,6 +278,7 @@ export const generateCareerWorldData = async ({
       const team = generateCareerTeam({
         competitionId: schemaCompetition.id,
         competitionName: schemaCompetition.name,
+        competitionType: schemaCompetition.type,
         teamIndex,
         teamOverall,
         identityGenerator,
@@ -275,6 +288,11 @@ export const generateCareerWorldData = async ({
         phase: CAREER_GENERATION_PHASES.GENERATING_PLAYERS,
         detail: `${team.teamName}: generated ${team.players.length} players.`,
         increment: team.players.length,
+      });
+      progress.emit({
+        phase: CAREER_GENERATION_PHASES.GENERATING_MANAGERS,
+        detail: `${team.teamName}: generated manager preferences.`,
+        increment: 1,
       });
       debug({
         type: "team:complete",

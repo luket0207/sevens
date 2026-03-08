@@ -765,3 +765,92 @@ This epic is complete when:
 - Save persists changes.
 - Cancel does not persist changes.
 - The page is integrated into the wider career flow and ready for future match systems.
+
+
+----------------------------------------------------------------
+FEAT-816 - Add Position Markers and Sorting to the Players list
+----------------------------------------------------------------
+Status: done
+
+Description
+Add explicit position markers in player-list entries and sort placed players to the top in a fixed position order.
+
+Requirements
+- When a player has been placed, show their position marker in the player-list entry.
+- Players with position markers are sorted above unplaced players.
+- Top sort order must be:
+  - GK
+  - Left DF
+  - Right DF
+  - Left MD
+  - Right MD
+  - Left AT
+  - Right AT
+
+Acceptance Criteria
+- Placed players show position labels in list entries.
+- List ordering follows the required sequence for positioned players.
+- Unplaced players remain below positioned players.
+
+
+----------------------------------------------------------------
+FEAT-817 - Add Defensive vs Attacking Tactic Compatibility Value
+----------------------------------------------------------------
+Status: done
+
+Description
+Add a third tactical output alongside DTR and ATR.
+
+This new value is a tactic compatibility / interaction value that is calculated purely by comparing the currently selected defensive tactic against the currently selected attacking tactic.
+
+It is not based on player skills.
+It is based only on the chosen tactic pair.
+
+Requirements
+- Add a new tactical output value alongside:
+  - DTR
+  - ATR
+- This new value must be a whole number from 0 to 100.
+- Calculate it by comparing:
+  - the selected defensive tactic
+  - the selected attacking tactic
+- Use the exact matrix below to determine the value.
+- The value should update whenever either the defensive tactic or attacking tactic changes.
+- The value should be displayed together with DTR and ATR for debugging/inspection.
+
+Matrix to implement:
+
+	Posession	Long Ball	Wing Play	Counter	Direct
+Low Block	20	70	40	80	40
+Mid Block	70	60	60	10	10
+High Press	70	10	10	70	50
+Offside Trap	10	50	60	20	80
+Zonal	80	70	50	20	50
+
+Calculation rules
+- Select the row using the chosen defensive tactic.
+- Select the column using the chosen attacking tactic.
+- The intersecting matrix value is the result.
+- No further formula is needed.
+- The result is already the final value.
+
+Suggested naming
+- Use a clear name such as:
+  - tacticCompatibility
+  - tacticMatchupRating
+  - tacticInteractionRating
+- Keep the final naming consistent with the rest of the codebase.
+
+Implementation notes
+- Keep the matrix centralised in reusable config/constants rather than embedding the values directly in the UI.
+- The calculation should be separate from the display logic.
+- This value should be recalculated from tactic state, just like DTR and ATR depend on tactic/team state.
+- This feature does not replace DTR or ATR; it sits alongside them.
+
+Acceptance Criteria
+- A third tactical output value exists alongside DTR and ATR.
+- The value is calculated only from the selected defensive tactic and attacking tactic.
+- The exact matrix values above are implemented correctly.
+- Changing either tactic updates the value immediately.
+- The value is displayed with DTR and ATR for debugging/inspection.
+- The implementation is centralised and reusable.

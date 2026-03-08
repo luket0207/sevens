@@ -1,5 +1,8 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import {
+  FOREIGN_TEAM_NAME_EXTRA_SUFFIXES,
+  FOREIGN_TEAM_NAME_PREFIXES,
+  FOREIGN_TEAM_NAME_SUFFIXES,
   STADIUM_PREFIXES,
   STADIUM_SUFFIXES,
   TEAM_NAME_EXTRA_SUFFIXES,
@@ -10,9 +13,9 @@ import {
 const pickRandom = (items) => items[randomInt(0, items.length - 1)];
 
 const createUniqueNameFactory = ({ buildName, usedNames, fallbackLabel }) => {
-  return () => {
+  return (options = {}) => {
     for (let attempt = 0; attempt < 100; attempt += 1) {
-      const candidate = buildName(attempt);
+      const candidate = buildName(attempt, options);
       if (!usedNames.has(candidate)) {
         usedNames.add(candidate);
         return candidate;
@@ -32,10 +35,16 @@ export const createTeamIdentityGenerator = () => {
   const nextTeamName = createUniqueNameFactory({
     usedNames: usedTeamNames,
     fallbackLabel: "Club",
-    buildName: (attempt) => {
-      const prefix = pickRandom(TEAM_NAME_PREFIXES);
-      const suffix = pickRandom(TEAM_NAME_SUFFIXES);
-      const extra = attempt > 30 || randomInt(0, 5) === 0 ? ` ${pickRandom(TEAM_NAME_EXTRA_SUFFIXES)}` : "";
+    buildName: (attempt, options) => {
+      const isForeignCompetition = options.competitionType === "foreign";
+      const prefix = isForeignCompetition
+        ? pickRandom(FOREIGN_TEAM_NAME_PREFIXES)
+        : pickRandom(TEAM_NAME_PREFIXES);
+      const suffix = isForeignCompetition
+        ? pickRandom(FOREIGN_TEAM_NAME_SUFFIXES)
+        : pickRandom(TEAM_NAME_SUFFIXES);
+      const extraPool = isForeignCompetition ? FOREIGN_TEAM_NAME_EXTRA_SUFFIXES : TEAM_NAME_EXTRA_SUFFIXES;
+      const extra = attempt > 30 || randomInt(0, 5) === 0 ? ` ${pickRandom(extraPool)}` : "";
       return `${prefix} ${suffix}${extra}`;
     },
   });
@@ -51,4 +60,3 @@ export const createTeamIdentityGenerator = () => {
     nextStadiumName,
   };
 };
-

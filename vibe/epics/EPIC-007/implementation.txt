@@ -96,3 +96,88 @@ Tradeoffs / follow-up tasks:
 - Champions Cup participant ordering is structural/randomized placeholder logic until standings/history systems exist.
 - Calendar currently initializes one active season, but the state shape supports later multi-season extension.
 - No match simulation, result resolution, or competition advancement is implemented in this epic by design.
+
+----------------------------------------------------------------
+BUGFIX - BUG-001 Calendar Month Visual Flattening
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated calendar rendering so each month appears as one continuous `7 x 4` day block (28 days), rather than four visually separated week sections.
+- Removed visible week labels from the calendar UI.
+- Kept functional week-based model data intact for scheduling logic; changed only display composition/styling.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `button` (existing month pagination controls in `SeasonCalendar` remain in use).
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this UI-only rendering/layout bug fix.
+
+Files changed:
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `vibe/epics/EPIC-007/bugs.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- The month grid now preserves a fixed 7-column visual structure with horizontal scrolling on narrower screens.
+
+----------------------------------------------------------------
+BUGFIX - BUG-002 Responsive Uniform Day-Tile Sizing
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated calendar day-card styling so all day tiles keep a consistent width/height ratio.
+- Added square card enforcement (`aspect-ratio: 1 / 1`) and internal overflow behavior for event lists.
+- Kept month grid responsive while preserving uniform tile sizing across all day cards.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this styling-only fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this change is isolated to calendar SCSS layout behavior.
+
+Files changed:
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `vibe/epics/EPIC-007/bugs.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- High-event days now use internal scrolling inside the tile instead of expanding card height.
+
+----------------------------------------------------------------
+BUGFIX - BUG-003 Calendar Grid Overflow Removal
+Date: 2026-03-08
+Status: done
+
+What was implemented:
+- Updated month-grid sizing so the 7-column layout always fits the calendar container width.
+- Removed forced minimum month-grid width and wrapper horizontal scrolling.
+- Added containment/wrapping guards so content cannot push tiles beyond container width.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this styling-only fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this change is isolated to calendar SCSS layout behavior.
+
+Files changed:
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `vibe/epics/EPIC-007/bugs.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- On very narrow screens tiles can become visually tighter since the grid now strictly fits within container width without horizontal scrolling.

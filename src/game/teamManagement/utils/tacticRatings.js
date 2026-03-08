@@ -1,6 +1,7 @@
 import {
   ATTACKING_TACTIC_OPTIONS,
   DEFENSIVE_TACTIC_OPTIONS,
+  TACTIC_COMPATIBILITY_MATRIX,
   TACTIC_SKILLS,
   TEAM_MANAGEMENT_SLOT_LAYOUT,
 } from "../constants/teamManagementConstants";
@@ -105,6 +106,17 @@ const calculateAttackRawTotal = ({ groupedSkillTotals, attackingTactic }) => {
   }
 };
 
+export const calculateTacticCompatibility = ({ defensiveTactic, attackingTactic }) => {
+  const matrixRow = TACTIC_COMPATIBILITY_MATRIX?.[defensiveTactic];
+  const rawValue = Number(matrixRow?.[attackingTactic]);
+
+  if (!Number.isFinite(rawValue)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(rawValue)));
+};
+
 export const calculateTacticRatings = ({ slotAssignments, playersById, tactics }) => {
   const safeDefensiveTactic = DEFENSIVE_TACTIC_OPTIONS.includes(tactics?.defensiveTactic)
     ? tactics.defensiveTactic
@@ -128,6 +140,10 @@ export const calculateTacticRatings = ({ slotAssignments, playersById, tactics }
 
   const dtr = clampRating(Math.round(defenceRawTotal / 10));
   const atr = clampRating(Math.round(attackRawTotal / 10));
+  const tacticCompatibility = calculateTacticCompatibility({
+    defensiveTactic: safeDefensiveTactic,
+    attackingTactic: safeAttackingTactic,
+  });
 
   return {
     groupedSkillTotals,
@@ -135,5 +151,6 @@ export const calculateTacticRatings = ({ slotAssignments, playersById, tactics }
     attackRawTotal,
     dtr,
     atr,
+    tacticCompatibility,
   };
 };

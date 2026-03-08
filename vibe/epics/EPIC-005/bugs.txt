@@ -199,3 +199,36 @@ Final fix:
   - changed foreign `teamCount` from `7` to `12`
 
 Status: fixed
+
+
+BUG-007 - Foreign Teams Need Distinct Foreign-Sounding Names
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. After generation completes, inspect `Foreign Champions Cup` team names on `/career/home` debug view.
+
+Expected behavior:
+- Foreign competition teams should have noticeably foreign-style names, clearly distinguishable from domestic team naming.
+
+Actual behavior:
+- Foreign teams were generated from the same domestic name pool, making them look similar to domestic clubs.
+
+Suspected cause:
+- Team identity generation used one shared team-name pool for all competitions regardless of competition type.
+
+Attempted fixes:
+- Added dedicated foreign team-name prefix/suffix/extra pools in identity constants.
+- Extended team identity generator to support `competitionType` input and select domestic vs foreign naming pool.
+- Passed `competitionType` from schema into team generation so foreign competition teams use foreign naming mode.
+
+Final fix:
+- Updated `src/game/careerGeneration/constants/teamIdentityPools.js`:
+  - added foreign-specific team name pools (`FOREIGN_TEAM_NAME_PREFIXES`, `FOREIGN_TEAM_NAME_SUFFIXES`, `FOREIGN_TEAM_NAME_EXTRA_SUFFIXES`)
+- Updated `src/game/careerGeneration/utils/teamIdentityGeneration.js`:
+  - `nextTeamName` now supports competition-type-aware name generation
+  - foreign competitions now draw from foreign naming pools
+- Updated `src/game/careerGeneration/utils/teamGenerator.js` and `src/game/careerGeneration/utils/careerGenerator.js`:
+  - wired `competitionType` through team generation and into name generation calls
+
+Status: fixed

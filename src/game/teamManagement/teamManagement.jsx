@@ -4,11 +4,15 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import { MODAL_BUTTONS, useModal } from "../../engine/ui/modal/modalContext";
 import PageLayout from "../shared/pageLayout/pageLayout";
+import { PLAYER_GENERATION_TYPES } from "../playerGeneration";
 import TeamManagementDebugPanel from "./components/teamManagementDebugPanel";
 import TeamManagementPitch from "./components/teamManagementPitch";
 import TeamManagementPlayerList from "./components/teamManagementPlayerList";
 import TeamManagementTacticBox from "./components/teamManagementTacticBox";
-import { TEAM_MANAGEMENT_DEFAULT_TACTICS } from "./constants/teamManagementConstants";
+import {
+  TEAM_MANAGEMENT_DEFAULT_TACTICS,
+  TEAM_MANAGEMENT_SLOT_LAYOUT,
+} from "./constants/teamManagementConstants";
 import { createDragPayload, readDragPayload, TEAM_MANAGEMENT_DRAG_TYPE } from "./utils/dragPayload";
 import { calculateTacticRatings } from "./utils/tacticRatings";
 import {
@@ -19,6 +23,17 @@ import {
   removePlayerFromAssignments,
 } from "./utils/teamManagementState";
 import "./teamManagement.scss";
+
+const setDragImageFromPlayerTile = (dragEvent) => {
+  const tileElement = dragEvent.currentTarget;
+  const playerImageElement = tileElement?.querySelector?.(".playerImage");
+  if (!playerImageElement || !dragEvent.dataTransfer?.setDragImage) {
+    return;
+  }
+
+  const { width, height } = playerImageElement.getBoundingClientRect();
+  dragEvent.dataTransfer.setDragImage(playerImageElement, width / 2, height / 2);
+};
 
 const TeamManagement = () => {
   const navigate = useNavigate();
@@ -48,9 +63,52 @@ const TeamManagement = () => {
     awayKit: playerTeam.awayKit ?? null,
     goalkeeperKit: playerTeam.goalkeeperKit ?? "",
   };
+  const playerListPlayers = [
+    ...(initialDraft.goalkeeper ? [initialDraft.goalkeeper] : []),
+    ...initialDraft.outfieldPlayers,
+  ];
+  const playerListBaseOrderById = playerListPlayers.reduce((state, player, index) => {
+    if (player?.id) {
+      state[player.id] = index;
+    }
+    return state;
+  }, {});
   const unplacedOutfieldPlayers = getUnplacedOutfieldPlayers({
     outfieldPlayers: initialDraft.outfieldPlayers,
     slotAssignments,
+  });
+  const playerPlacementById = TEAM_MANAGEMENT_SLOT_LAYOUT.reduce((state, slot, slotIndex) => {
+    const playerId = slotAssignments?.[slot.id] ?? null;
+    if (!playerId) {
+      return state;
+    }
+
+    state[playerId] = {
+      slotId: slot.id,
+      label: slot.label,
+      roleGroup: slot.roleGroup,
+      sortOrder: slotIndex + 1,
+    };
+    return state;
+  }, {});
+  const sortedPlayerListPlayers = [...playerListPlayers].sort((leftPlayer, rightPlayer) => {
+    const getSortOrder = (player) => {
+      if (player?.playerType === PLAYER_GENERATION_TYPES.GOALKEEPER) {
+        return 0;
+      }
+
+      const placement = playerPlacementById?.[player?.id] ?? null;
+      return placement?.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    };
+
+    const orderDelta = getSortOrder(leftPlayer) - getSortOrder(rightPlayer);
+    if (orderDelta !== 0) {
+      return orderDelta;
+    }
+
+    const leftFallbackOrder = playerListBaseOrderById?.[leftPlayer?.id] ?? Number.MAX_SAFE_INTEGER;
+    const rightFallbackOrder = playerListBaseOrderById?.[rightPlayer?.id] ?? Number.MAX_SAFE_INTEGER;
+    return leftFallbackOrder - rightFallbackOrder;
   });
   const teamComplete = isTeamArrangementComplete(slotAssignments);
   const tacticRatings = calculateTacticRatings({
@@ -71,6 +129,7 @@ const TeamManagement = () => {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData(TEAM_MANAGEMENT_DRAG_TYPE, payload);
     event.dataTransfer.setData("text/plain", payload);
+    setDragImageFromPlayerTile(event);
   };
 
   const handleDragStartFromSlot = (event, playerId, sourceSlotId) => {
@@ -81,6 +140,7 @@ const TeamManagement = () => {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData(TEAM_MANAGEMENT_DRAG_TYPE, payload);
     event.dataTransfer.setData("text/plain", payload);
+    setDragImageFromPlayerTile(event);
   };
 
   const handleDropToSlot = (event, targetSlotId) => {
@@ -100,18 +160,16 @@ const TeamManagement = () => {
     );
   };
 
-  const handleDropToUnplaced = (event) => {
-    event.preventDefault();
-    const payload = readDragPayload(event);
-    if (!payload?.playerId || !initialDraft.outfieldById[payload.playerId]) {
+  const handleDragEndFromSlot = (event, playerId, sourceSlotId) => {
+    if (event.dataTransfer?.dropEffect === "move") {
       return;
     }
 
     setSlotAssignments((prevAssignments) =>
       removePlayerFromAssignments({
         slotAssignments: prevAssignments,
-        playerId: payload.playerId,
-        sourceSlotId: payload.sourceSlotId,
+        playerId,
+        sourceSlotId,
       })
     );
   };
@@ -125,6 +183,7 @@ const TeamManagement = () => {
       tactics,
       dtr: tacticRatings.dtr,
       atr: tacticRatings.atr,
+      tacticCompatibility: tacticRatings.tacticCompatibility,
     };
 
     setGameState((prev) => ({
@@ -154,8 +213,8 @@ const TeamManagement = () => {
       modalTitle: "Save Team Management",
       modalContent: (
         <p>
-          Save this team arrangement and tactic setup (DTR {tacticRatings.dtr}, ATR {tacticRatings.atr}) and return
-          to the calendar?
+          Save this team arrangement and tactic setup (DTR {tacticRatings.dtr}, ATR {tacticRatings.atr},
+          compatibility {tacticRatings.tacticCompatibility}) and return to the calendar?
         </p>
       ),
       buttons: MODAL_BUTTONS.YES_NO,
@@ -194,20 +253,21 @@ const TeamManagement = () => {
           atr={tacticRatings.atr}
           dtr={tacticRatings.dtr}
           onUpdateTactic={updateTactic}
+          tacticCompatibility={tacticRatings.tacticCompatibility}
           tactics={tactics}
         />
 
         <section className="teamManagement__main">
           <TeamManagementPlayerList
-            onAllowDrop={allowDrop}
             onDragStartFromList={handleDragStartFromList}
-            onDropToUnplaced={handleDropToUnplaced}
-            players={unplacedOutfieldPlayers}
+            playerPlacementById={playerPlacementById}
+            players={sortedPlayerListPlayers}
             teamKit={teamKit}
           />
           <TeamManagementPitch
             goalkeeper={initialDraft.goalkeeper}
             onAllowDrop={allowDrop}
+            onDragEndFromSlot={handleDragEndFromSlot}
             onDragStartFromSlot={handleDragStartFromSlot}
             onDropToSlot={handleDropToSlot}
             playersById={initialDraft.outfieldById}
@@ -235,6 +295,7 @@ const TeamManagement = () => {
           dtr={tacticRatings.dtr}
           groupedSkillTotals={tacticRatings.groupedSkillTotals}
           slotAssignments={slotAssignments}
+          tacticCompatibility={tacticRatings.tacticCompatibility}
           tactics={tactics}
           teamComplete={teamComplete}
           unplacedPlayers={unplacedOutfieldPlayers}

@@ -1,0 +1,25 @@
+BUG-001 - Generated managers have no names
+Status: fixed
+
+Repro steps:
+1. Generate a new career.
+2. Open the career debug output for AI managers.
+3. Inspect generated manager objects.
+
+Expected behavior:
+- Each manager should have a readable name field so manager identity is visible and usable.
+
+Actual behavior:
+- Managers only had tactical preference fields and IDs; no name fields were present.
+
+Suspected cause:
+- `generateTeamManager` created manager objects without generating or attaching name fields.
+
+Attempted fixes:
+- Reviewed existing name generation utilities to avoid duplicating name pools/logic.
+- Reused player name generator for manager name creation.
+
+Final fix:
+- Updated manager generation to include `firstName`, `lastName`, and `name` on manager objects.
+- Extended manager debug assignment output to include manager name fields for verification.
+

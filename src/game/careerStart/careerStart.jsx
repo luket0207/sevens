@@ -39,13 +39,65 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
   currentDayIndex: 0,
   visibleMonthIndex: 0,
   pendingFlashDayIndex: null,
+  pendingDayResults: null,
+  pendingCupDraw: null,
+  seasonFixturesRevealed: false,
   lastAdvancedAt: "",
   championsCupStructure: {
     participants: [],
     groups: {},
+    groupTables: {},
     quarterFinals: [],
     semiFinals: [],
     final: {},
+  },
+  simulation: {
+    status: "ready",
+    pendingPlayerFixtureId: "",
+    league: {
+      fixturesById: {},
+      fixtureIdsByDay: {},
+      tablesByCompetition: {},
+      fixtureCount: 0,
+      playerCalendarEvents: [],
+    },
+    cups: {
+      fixturesById: {},
+      fixtureIdsByDay: {},
+      competitions: {
+        leagueCup: {
+          id: "league-cup",
+          name: "League Cup",
+          participants: [],
+          championTeamId: "",
+          stageOrder: [],
+          stageMeta: {},
+        },
+        championsCup: {
+          id: "champions-cup",
+          name: "Champions Cup",
+          participantTeamIds: [],
+          groups: {},
+          groupTables: {},
+          championTeamId: "",
+          groupWinners: {},
+          groupRunnersUp: {},
+          qualifiers: [],
+          stageOrder: [],
+          stageMeta: {},
+        },
+      },
+    },
+    seasonOutcomes: {
+      resolved: false,
+      resolvedAt: "",
+      leagues: {},
+    },
+    debug: {
+      latestDaySummary: null,
+      recentDaySummaries: [],
+      recentFixtureLogs: [],
+    },
   },
   debug: {
     seasonShape: {
@@ -57,6 +109,7 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
     totals: {
       totalScheduledEvents: 0,
       leagueFixtures: 0,
+      simulatedLeagueFixtures: 0,
       leagueCupEvents: 0,
       championsCupEvents: 0,
       playoffEvents: 0,
@@ -65,6 +118,7 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
     leagueFixturePreview: [],
     cupEventPreview: [],
     playoffPreview: [],
+    simulation: {},
   },
 });
 

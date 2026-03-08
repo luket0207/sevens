@@ -1,0 +1,39 @@
+@use "../../assets/scss/ui/import" as *;
+
+.cupDrawPage {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.cupDrawPage__summary,
+.cupDrawPage__drawCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.9);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.cupDrawPage__meta {
+  color: rgba($lightText, 0.84);
+}
+
+.cupDrawPage__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cupDrawPage__fixtureList {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cupDrawPage__continue {
+  display: flex;
+  justify-content: flex-end;
+}
+

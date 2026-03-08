@@ -1,0 +1,375 @@
+BUG-001 - Pitch Player Cards Too Detailed and Empty Slots Not Shirt Shadows
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect filled pitch slots and empty pitch slots.
+
+Expected behavior:
+- Filled pitch slots should show only:
+  - player image
+  - a name + overall pill beneath the image
+- Position pills should be colour-coded:
+  - GK = orange
+  - DF = yellow
+  - MD = blue
+  - AT = red
+- Empty slots should display shirt-shadow placeholders with the position label inside.
+
+Actual behavior (before fix):
+- Pitch cards displayed too much player detail.
+- Empty slots used generic drop text rather than shirt-shadow placeholders.
+
+Suspected cause:
+- Pitch reused richer player-tile rendering meant for list/detail view.
+- Empty slot UI was text-first, not role-visual-first.
+
+Attempted fixes:
+- Added a dedicated pitch tile render mode with image + position-coloured pill only.
+- Added position colour tokens for GK/DF/MD/AT.
+- Reworked empty pitch slot rendering to shirt-shadow placeholders with role-group labels.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+  - `src/game/teamManagement/components/teamManagementPitch.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+  - `src/assets/scss/ui/colours.scss`
+
+Status: fixed
+
+
+BUG-002 - Player List Should Always Show All Outfield Players
+
+Repro steps:
+1. Open `/team-management` with no pre-saved placement state.
+2. Place one or more players on the pitch.
+3. Inspect the left player list.
+
+Expected behavior:
+- If no prior placement exists, all outfield players start in the list.
+- Players remain visible in the list after being placed on pitch.
+- Placed players are visually altered in list to indicate they are placed.
+- List remains the more detailed player view.
+
+Actual behavior (before fix):
+- Initial draft auto-filled pitch slots by default.
+- List was derived from unplaced players only, so placed players disappeared from the list.
+
+Suspected cause:
+- Initial draft fallback created filled slot assignments.
+- List consumed only `unplacedOutfieldPlayers`.
+
+Attempted fixes:
+- Changed default draft assignment to empty slots when no saved placements exist.
+- Stopped auto-filling empty slots during assignment normalization.
+- Rendered full outfield list always and added placement-state styling/label per player.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/utils/teamManagementState.js`
+  - `src/game/teamManagement/teamManagement.jsx`
+  - `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+  - `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+BUG-003
+
+When dragging a player, only the image of the player should be dragged.
+
+Repro steps:
+1. Open `/team-management`.
+2. Drag a player from list or pitch.
+3. Observe drag preview.
+
+Expected behavior:
+- Drag preview should be only the player image.
+
+Actual behavior (before fix):
+- Drag preview used the full tile/content block.
+
+Suspected cause:
+- Drag operation used default browser ghost image from the whole draggable tile.
+
+Attempted fixes:
+- Added explicit drag-image selection from the `.playerImage` element on drag start.
+- Applied this behavior for both list-origin and slot-origin drags.
+
+Final fix:
+- Updated `src/game/teamManagement/teamManagement.jsx`:
+  - added `setDragImageFromPlayerTile` helper
+  - used helper in list/slot drag-start handlers
+
+Status: fixed
+
+BUG-004
+
+All of the skillset for each player should be displayed in their entry in the list. It might be worth making a global skillset component to easily display these whenever we need them.
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect a player entry in the left list.
+
+Expected behavior:
+- List entries should display full player skillset.
+
+Actual behavior (before fix):
+- List entries showed only a subset summary (PAS/MOV/CON).
+
+Suspected cause:
+- Skill summary formatter in tile component only included three selected skills.
+
+Attempted fixes:
+- Switched list tile skill text to build from all available `player.skills` entries.
+- Added safe wrapping for long skill lines.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+BUG-005
+
+I do not want this area "Drop a pitch player here to remove from pitch". I want it so that if a player is dropped anywhere that is not a slot, then that is when they are removed.
+
+Repro steps:
+1. Open `/team-management`.
+2. Drag a placed pitch player off-slot.
+3. Observe removal behavior and list panel content.
+
+Expected behavior:
+- No explicit remove drop-zone should exist.
+- Dropping a slot player anywhere that is not a slot should remove that player from pitch.
+
+Actual behavior (before fix):
+- Separate remove drop-zone UI was required to unplace players.
+
+Suspected cause:
+- Removal logic was tied to dedicated drop-zone handler.
+
+Attempted fixes:
+- Removed remove drop-zone UI/props.
+- Added slot-drag-end fallback: if drop effect is not `move` (not dropped onto slot), remove player from assignments.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+  - `src/game/teamManagement/teamManagement.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+BUG-006
+
+When the player is placed the position of the slot should still be visible in the top center of the slot on the pitch.
+
+Repro steps:
+1. Open `/team-management`.
+2. Place players into multiple slots.
+3. Inspect slot labels in filled slots.
+
+Expected behavior:
+- Slot position label should remain visible at top-center of each slot even when filled.
+
+Actual behavior (before fix):
+- Filled slots lost visible slot-position label.
+
+Suspected cause:
+- Slot label UI was hidden/removed in filled slot state.
+
+Attempted fixes:
+- Added persistent top-centered slot tag rendered for every slot.
+- Styled tag to remain readable over filled and empty slot states.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPitch.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+
+BUG-007 - Use Engine Bars for Player Skillset Display
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect player skill display in the left list.
+
+Expected behavior:
+- Skill display should use the engine `Bars` component for each skill.
+- Skills should be glanceable via bar visualization instead of plain text-only summaries.
+
+Actual behavior (before fix):
+- Skills were displayed as text summary lines.
+
+Suspected cause:
+- Team Management list tile had no reusable bar-based skill renderer.
+
+Attempted fixes:
+- Added shared skillset-bars component under `src/game/shared/`.
+- Wired Team Management list tile to use that component for full skillset rendering.
+
+Final fix:
+- Updated:
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+  - `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+
+Status: fixed
+
+BUG-008 - Goalkeeper Missing from Player List
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect left player list.
+
+Expected behavior:
+- Goalkeeper should be visible in the player list so stats can be reviewed.
+- Goalkeeper list entry should remain non-draggable because GK is fixed on pitch.
+
+Actual behavior (before fix):
+- Player list only received outfield players.
+- Goalkeeper was visible only in the fixed pitch slot.
+
+Suspected cause:
+- Team Management passed `initialDraft.outfieldPlayers` directly to list component.
+
+Attempted fixes:
+- Built list player source as `[goalkeeper, ...outfieldPlayers]`.
+- Kept goalkeeper tile non-draggable and labeled as fixed.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/teamManagement.jsx`
+  - `src/game/teamManagement/components/teamManagementPlayerList.jsx`
+
+Status: fixed
+
+BUG-009 - Skill Bars Should Be Continuous and Value-Coloured
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect skill bars in the left player list.
+
+Expected behavior:
+- Bars should be continuous (non-segmented).
+- Bar fill colour should reflect the skill value band.
+
+Actual behavior (before fix):
+- Skill bars were segmented and used a single fill colour.
+
+Suspected cause:
+- Skillset renderer passed `segments` to `Bars`.
+- No value-band colour mapping was applied to bar fills.
+
+Attempted fixes:
+- Switched skill bars to unsegmented mode.
+- Added value-band class mapping and SCSS fill colours using global rating tokens.
+
+Final fix:
+- Updated:
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+
+Status: fixed
+
+BUG-010 - Equal 50/50 Layout and Scrollable Player List
+
+Repro steps:
+1. Open `/team-management`.
+2. Inspect the horizontal split of player list and pitch panels.
+3. Inspect top of pitch panel for heading text.
+4. Add enough player content to make list area grow.
+
+Expected behavior:
+- Player list and pitch panels should each take 50% width on desktop layout.
+- Pitch panel should not show:
+  - "Pitch Arrangement"
+  - "2 DEF, 2 MID, 2 ATT slots. Goalkeeper is fixed."
+- Pitch panel should align to the top (`flex-start`).
+- Player list should have a max height and vertical scroll so panel height remains controlled.
+
+Actual behavior (before fix):
+- Layout used asymmetric column widths.
+- Pitch panel still showed heading/subheading text.
+- List could continue growing without internal scroll containment.
+
+Suspected cause:
+- Main grid used weighted column widths.
+- Pitch component rendered a static header block.
+- Player list container had no max-height/overflow configuration.
+
+Attempted fixes:
+- Updated main Team Management grid to an even 1fr/1fr split.
+- Removed pitch header text block from pitch component.
+- Added top alignment for list/pitch columns.
+- Added max-height + `overflow-y: auto` on player list.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPitch.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+BUG-011 - Keep Pitch and Player List at Matching Height
+
+Repro steps:
+1. Open `/team-management` on desktop width.
+2. Compare visible height of the player list panel and pitch panel.
+3. Add enough list content to trigger scrolling.
+
+Expected behavior:
+- Pitch and player list panels should keep the same overall height.
+- Player list should scroll internally within that shared panel height.
+
+Actual behavior (before fix):
+- Panel heights could diverge based on list content and pitch sizing.
+
+Suspected cause:
+- Panel heights were independently driven by content/min-height rules.
+- Player list had its own max-height not directly tied to pitch panel height.
+
+Attempted fixes:
+- Applied a shared responsive height to both list and pitch columns.
+- Switched player column to row layout so list fills remaining vertical space under its header.
+- Set pitch area to fill its column height.
+- Kept list scrolling internal via `overflow-y: auto`.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+
+BUG-012 - Make Position Label Obvious in Top-Right of List Card
+
+Repro steps:
+1. Open `/team-management`.
+2. Place one or more players so position markers are shown in the player list.
+3. Inspect placement labels in list cards.
+
+Expected behavior:
+- Position marker should be visually obvious.
+- Position marker should appear in the top-right corner of the player card.
+
+Actual behavior (before fix):
+- Placement label appeared inline in the card content and was less prominent.
+
+Suspected cause:
+- Placement marker used regular text flow style rather than badge-style overlay.
+
+Attempted fixes:
+- Moved placement marker rendering to top-level of list card markup.
+- Styled marker as a strong top-right badge with pill shape, background, and border.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+  - `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed

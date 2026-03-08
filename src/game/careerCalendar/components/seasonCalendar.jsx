@@ -95,6 +95,7 @@ const SeasonCalendar = ({
   canGoNextMonth,
 }) => {
   const visibleMonth = season?.months?.[visibleMonthIndex] ?? null;
+  const visibleMonthDays = visibleMonth?.weeks?.flatMap((week) => week.days) ?? [];
 
   if (!visibleMonth) {
     return (
@@ -110,7 +111,7 @@ const SeasonCalendar = ({
         <div>
           <h2 className="seasonCalendar__title">{visibleMonth.label}</h2>
           <p className="seasonCalendar__subtitle">
-            Showing {visibleMonth.weeks.length} weeks ({season.totalDays} day season model)
+            Showing {visibleMonthDays.length} day month view ({season.totalDays} day season model)
           </p>
         </div>
         <div className="seasonCalendar__pagination">
@@ -127,17 +128,12 @@ const SeasonCalendar = ({
         </div>
       </header>
 
-      <div className="seasonCalendar__weeks">
-        {visibleMonth.weeks.map((week) => (
-          <section className="seasonCalendar__week" key={week.id}>
-            <p className="seasonCalendar__weekTitle">Week {week.seasonWeekNumber}</p>
-            <div className="seasonCalendar__dayGrid">
-              {week.days.map((day) => (
-                <DayCard day={day} isCurrentDay={day.absoluteDayIndex === currentDayIndex} key={day.id} />
-              ))}
-            </div>
-          </section>
-        ))}
+      <div className="seasonCalendar__gridWrap">
+        <div className="seasonCalendar__monthGrid">
+          {visibleMonthDays.map((day) => (
+            <DayCard day={day} isCurrentDay={day.absoluteDayIndex === currentDayIndex} key={day.id} />
+          ))}
+        </div>
       </div>
     </section>
   );

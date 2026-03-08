@@ -116,6 +116,30 @@ export const CHAMPIONS_CUP_MATCH_SLOTS = Object.freeze([
   }),
 ]);
 
+export const CHAMPIONS_CUP_DRAW_SLOTS = Object.freeze([
+  Object.freeze({
+    id: "champions-cup-draw-quarter-finals",
+    stageKey: "quarter-finals",
+    weekNumber: 10,
+    dayOfWeek: DAY_INDEX.THURSDAY,
+    stageLabel: "Quarter-finals Draw",
+  }),
+  Object.freeze({
+    id: "champions-cup-draw-semi-finals",
+    stageKey: "semi-finals",
+    weekNumber: 13,
+    dayOfWeek: DAY_INDEX.THURSDAY,
+    stageLabel: "Semi-finals Draw",
+  }),
+  Object.freeze({
+    id: "champions-cup-draw-final",
+    stageKey: "final",
+    weekNumber: 16,
+    dayOfWeek: DAY_INDEX.THURSDAY,
+    stageLabel: "Final Draw",
+  }),
+]);
+
 export const CHAMPIONS_CUP_GROUP_IDS = Object.freeze(["A", "B", "C", "D"]);
 
 export const CHAMPIONS_CUP_QUARTER_FINAL_PAIRINGS = Object.freeze([

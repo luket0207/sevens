@@ -1,0 +1,42 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.playerSkillsetBars {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.playerSkillsetBars__row {
+  display: grid;
+  grid-template-columns: minmax(78px, auto) minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.playerSkillsetBars__label {
+  font-size: 0.66rem;
+  color: rgba($lightText, 0.9);
+  line-height: 1.15;
+}
+
+.playerSkillsetBars .bars__track {
+  height: 10px;
+}
+
+.playerSkillsetBars__row--1to10 .bars__fill { background: $ratingBand1To10; }
+.playerSkillsetBars__row--11to20 .bars__fill { background: $ratingBand11To20; }
+.playerSkillsetBars__row--21to30 .bars__fill { background: $ratingBand21To30; }
+.playerSkillsetBars__row--31to40 .bars__fill { background: $ratingBand31To40; }
+.playerSkillsetBars__row--41to50 .bars__fill { background: $ratingBand41To50; }
+.playerSkillsetBars__row--51to60 .bars__fill { background: $ratingBand51To60; }
+.playerSkillsetBars__row--61to70 .bars__fill { background: $ratingBand61To70; }
+.playerSkillsetBars__row--71to80 .bars__fill { background: $ratingBand71To80; }
+.playerSkillsetBars__row--81to90 .bars__fill { background: $ratingBand81To90; }
+.playerSkillsetBars__row--91to100 .bars__fill { background: $ratingBand91To100; }
+
+.playerSkillsetBars .bars__meta {
+  margin-top: 0.18rem;
+}
+
+.playerSkillsetBars .bars__value {
+  font-size: 0.62rem;
+}

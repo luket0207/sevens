@@ -1,0 +1,92 @@
+EPIC-009 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-901 to FEAT-911 - Manager Generation and Team Assignment
+Status: done
+
+What was implemented:
+- Added central manager generation constants:
+  - manager tactic pools (reusing existing tactic options)
+  - preference count rules.
+- Added manager generation utility:
+  - procedural preference generation for defensive/attacking tactic sets
+  - no preferred/unpreferred overlap per category
+  - explicit manager model creator
+  - reusable manager preference validator
+  - guarded generation loop to prevent invalid outputs.
+- Integrated manager creation into AI team generation:
+  - each generated AI team now gets one manager at generation time.
+- Extended career world totals/debug:
+  - added `aiManagerCount` to world totals
+  - added manager generation debug summary with:
+    - assignment coverage
+    - validity counts
+    - preference count distributions
+    - per-team manager preference details.
+- Exposed manager data in career debug views:
+  - added manager summary line in calendar debug header
+  - added AI Managers JSON card with full preference lists.
+- Extended generation progress and competition summaries:
+  - added `GENERATING_MANAGERS` progress phase
+  - progress now increments once per team manager generated
+  - per-competition summary now includes manager count.
+- Ensured assignment stability by generating managers only during career generation and persisting directly on team data.
+
+Engine components used:
+- `rng` for procedural random manager preference generation.
+- `gameContext` for persistence of manager data in career world state.
+
+Engine components not used:
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required directly for manager generation/assignment logic.
+
+Files changed:
+- `src/game/careerGeneration/constants/managerGenerationConstants.js`
+- `src/game/careerGeneration/utils/managerGeneration.js`
+- `src/game/careerGeneration/utils/teamGenerator.js`
+- `src/game/careerGeneration/utils/careerGenerationDebug.js`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-009/features.txt`
+- `vibe/epics/EPIC-009/implementation.txt`
+- `vibe/epics/EPIC-009/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Manager IDs are currently deterministic per team (`<teamId>-manager`); if future hiring/firing is added, introduce persistent manager identity lifecycle.
+- Tactic pools are reused from Team Management constants; if cross-feature tactic ownership changes, extract to a dedicated shared tactic pool module.
+
+BUG-001 - Generated managers have no names
+Status: done
+
+What was implemented:
+- Added manager identity fields to generated manager objects:
+  - `firstName`
+  - `lastName`
+  - `name`
+- Reused existing `generatePlayerName` utility so manager naming follows current game naming conventions.
+- Extended manager debug assignment payload to include manager name values for easier QA verification.
+
+Engine components considered:
+- `rng`, `gameContext`, `saveGame`.
+
+Engine components used:
+- `rng` (indirectly via existing player name generation utility).
+- `gameContext` (existing persistence path, no structural changes needed).
+
+Engine components not used:
+- `saveGame` was not changed because name fields are persisted automatically through existing career world serialization.
+
+Files changed:
+- `src/game/careerGeneration/utils/managerGeneration.js`
+- `src/game/careerGeneration/utils/careerGenerationDebug.js`
+- `vibe/epics/EPIC-009/bugs.txt`
+- `vibe/epics/EPIC-009/implementation.txt`
+- `vibe/epics/EPIC-009/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Manager names currently use the same name pool as generated players; if manager-specific naming flavor is needed later, introduce a dedicated manager name pool utility.

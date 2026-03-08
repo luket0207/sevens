@@ -212,3 +212,57 @@ Automated completed:
 Automated needed:
 - Integration regression test asserting no match-resolution side effects during day progression.
 Status: in progress
+
+----------------------------------------------------------------
+BUG-001 Regression Test - Month Calendar Visual Should Be Single 7x4 Block
+Manual steps:
+1. Open `/career/home`.
+2. Inspect the visible month in the calendar panel.
+3. Confirm there are 28 day cards shown in one continuous month grid.
+4. Confirm there are no visible `Week` labels in the calendar view.
+5. On a narrow viewport, confirm the month still preserves a 7-column structure (scrolling if needed) rather than collapsing into fewer columns.
+Expected:
+- Calendar month is shown as one 28-day (`7 x 4`) visual block.
+- No week section headings are shown.
+- Event markers and current-day highlight still render correctly.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to pre-existing baseline lint issues in engine/info files (no new lint errors introduced by this bugfix).
+Automated needed:
+- Component test asserting no week-title rendering and exact 28 day-card render for a month.
+Status: passed
+
+----------------------------------------------------------------
+BUG-002 Regression Test - Responsive Calendar with Uniform Day Tile Dimensions
+Manual steps:
+1. Open `/career/home` on desktop width.
+2. Compare multiple day tiles, including empty days and days with several events.
+3. Resize to a narrower viewport and re-check tile sizing.
+4. Confirm event-heavy days do not grow taller than other day tiles.
+Expected:
+- All day tiles retain a consistent width/height ratio.
+- Responsive behavior is preserved for the month grid.
+- Event-heavy cards keep size parity and use internal scrolling for overflow content.
+Automated completed:
+- `npm run build`: passed.
+Automated needed:
+- Visual/component regression test validating uniform tile dimensions across event densities and viewport sizes.
+Status: passed
+
+----------------------------------------------------------------
+BUG-003 Regression Test - Calendar Grid Must Not Overflow Container Width
+Manual steps:
+1. Open `/career/home`.
+2. Inspect the calendar month grid and confirm no horizontal scrollbar appears in the calendar container.
+3. Resize viewport narrower and re-check for horizontal overflow.
+4. Inspect long event text days and ensure they do not cause grid overflow.
+Expected:
+- Day tiles never exceed the width of the calendar container.
+- No horizontal scrolling is required for the month grid.
+- Event text wraps within tile bounds without expanding the grid width.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Visual regression test asserting no horizontal overflow in calendar panel at representative viewport sizes.
+Status: passed

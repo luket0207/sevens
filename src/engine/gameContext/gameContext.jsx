@@ -81,6 +81,7 @@ const DEFAULT_CAREER_WORLD = Object.freeze({
     competitionCount: 0,
     aiTeamCount: 0,
     aiPlayerCount: 0,
+    aiManagerCount: 0,
   },
   debug: {
     teamOverallDistributionByCompetition: {},
@@ -88,6 +89,23 @@ const DEFAULT_CAREER_WORLD = Object.freeze({
     influenceDistribution: {
       totalOutfieldPlayers: 0,
       counts: {},
+    },
+    managerGeneration: {
+      totals: {
+        aiTeamCount: 0,
+        managerCount: 0,
+        missingManagers: 0,
+        validManagers: 0,
+        invalidManagers: 0,
+        assignmentCoveragePercent: 0,
+      },
+      preferenceCountDistribution: {
+        preferredDefensiveCounts: {},
+        unpreferredDefensiveCounts: {},
+        preferredAttackingCounts: {},
+        unpreferredAttackingCounts: {},
+      },
+      managerAssignments: [],
     },
   },
 });
@@ -100,13 +118,65 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
   currentDayIndex: 0,
   visibleMonthIndex: 0,
   pendingFlashDayIndex: null,
+  pendingDayResults: null,
+  pendingCupDraw: null,
+  seasonFixturesRevealed: false,
   lastAdvancedAt: "",
   championsCupStructure: {
     participants: [],
     groups: {},
+    groupTables: {},
     quarterFinals: [],
     semiFinals: [],
     final: {},
+  },
+  simulation: {
+    status: "ready",
+    pendingPlayerFixtureId: "",
+    league: {
+      fixturesById: {},
+      fixtureIdsByDay: {},
+      tablesByCompetition: {},
+      fixtureCount: 0,
+      playerCalendarEvents: [],
+    },
+    cups: {
+      fixturesById: {},
+      fixtureIdsByDay: {},
+      competitions: {
+        leagueCup: {
+          id: "league-cup",
+          name: "League Cup",
+          participants: [],
+          championTeamId: "",
+          stageOrder: [],
+          stageMeta: {},
+        },
+        championsCup: {
+          id: "champions-cup",
+          name: "Champions Cup",
+          participantTeamIds: [],
+          groups: {},
+          groupTables: {},
+          championTeamId: "",
+          groupWinners: {},
+          groupRunnersUp: {},
+          qualifiers: [],
+          stageOrder: [],
+          stageMeta: {},
+        },
+      },
+    },
+    seasonOutcomes: {
+      resolved: false,
+      resolvedAt: "",
+      leagues: {},
+    },
+    debug: {
+      latestDaySummary: null,
+      recentDaySummaries: [],
+      recentFixtureLogs: [],
+    },
   },
   debug: {
     seasonShape: {
@@ -118,6 +188,7 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
     totals: {
       totalScheduledEvents: 0,
       leagueFixtures: 0,
+      simulatedLeagueFixtures: 0,
       leagueCupEvents: 0,
       championsCupEvents: 0,
       playoffEvents: 0,
@@ -126,6 +197,7 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
     leagueFixturePreview: [],
     cupEventPreview: [],
     playoffPreview: [],
+    simulation: {},
   },
 });
 

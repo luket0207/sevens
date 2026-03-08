@@ -1,0 +1,154 @@
+@use "../../assets/scss/ui/import" as *;
+
+.careerDayResults {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.careerDayResults__panel {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.9);
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.careerDayResults__empty,
+.careerDayResults__note {
+  color: rgba($lightText, 0.84);
+}
+
+.careerDayResults__resultGroups {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.careerDayResults__resultGroup {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.careerDayResults__competition {
+  margin: 0;
+  color: rgba($lightText, 0.82);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.careerDayResults__resultLines {
+  display: grid;
+  gap: 0.2rem;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.careerDayResults__resultEntry {
+  display: grid;
+  gap: 0.05rem;
+}
+
+.careerDayResults__resultLine {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+}
+
+.careerDayResults__resultScore {
+  min-width: 4.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.careerDayResults__resultMeta {
+  margin: 0;
+  text-align: center;
+  font-size: 0.76rem;
+  color: rgba($lightText, 0.8);
+}
+
+.careerDayResults__resultTeam {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.careerDayResults__resultTeam--home {
+  text-align: right;
+}
+
+.careerDayResults__resultTeam--away {
+  text-align: left;
+}
+
+.careerDayResults__fixtureGroups {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.careerDayResults__fixtureGroup {
+  border: 1px solid rgba($lightText, 0.15);
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: rgba($siteBackground, 0.3);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.careerDayResults__accordionButton {
+  width: 100%;
+  background: rgba($secondaryBackground, 0.6);
+  border: 1px solid rgba($lightText, 0.2);
+  color: $lightText;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+.careerDayResults__matchDayGroups {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.careerDayResults__matchDayGroup {
+  border: 1px solid rgba($lightText, 0.14);
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: rgba($siteBackground, 0.2);
+  display: grid;
+  gap: 0.25rem;
+
+  h4 {
+    margin: 0;
+    font-size: 0.86rem;
+    color: rgba($lightText, 0.9);
+  }
+}
+
+.careerDayResults__matchDayLines {
+  display: grid;
+  gap: 0.15rem;
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba($lightText, 0.9);
+  }
+}
+
+.careerDayResults__playerFixtureTeam {
+  color: $tertiaryBackground;
+  font-weight: 700;
+}
+
+.careerDayResults__actions {
+  display: flex;
+  justify-content: flex-end;
+}

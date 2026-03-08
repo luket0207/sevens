@@ -1,0 +1,81 @@
+EPIC-009 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated engine/info modules.
+
+Manual verification note:
+- Full browser/manual verification is still pending. The checks below define expected behaviour for implemented manager generation features.
+
+FEAT-901 to FEAT-904 - Manager Model, Tactic Pools, Generator, and Validation
+Manual steps:
+1. Start a new career generation flow.
+2. Open Career Home debug panel and inspect AI manager entries.
+3. Verify each manager has:
+   - preferredDefensiveTactics (2-3)
+   - unpreferredDefensiveTactics (1-2)
+   - preferredAttackingTactics (2-3)
+   - unpreferredAttackingTactics (1-2)
+4. Verify no overlap between preferred/unpreferred sets in each category.
+Expected:
+- All manager objects follow the required model and count rules.
+- No tactic appears in both preferred and unpreferred for same category.
+
+FEAT-905 to FEAT-907 - Generation, Assignment, and Persistence
+Manual steps:
+1. Complete career generation.
+2. Inspect generated AI teams across competitions in debug output.
+3. Confirm each AI team has exactly one manager object.
+4. Refresh/reload from saved state and re-open debug view.
+Expected:
+- Every AI team has one manager.
+- No AI team is managerless.
+- Manager assignments persist in career world state (`gameContext`).
+
+FEAT-908, FEAT-911 - Debug Exposure and Generation Utilities
+Manual steps:
+1. Open Career Home debug panel.
+2. Inspect the AI Managers JSON card and summary line.
+3. Verify assignment coverage, validity counts, and per-team preference detail visibility.
+Expected:
+- Debug view clearly exposes manager preference lists for AI teams.
+- Coverage/validity information is readable and consistent with totals.
+
+FEAT-909, FEAT-910 - Fixed Assignments and Future-Ready Preference Structure
+Manual steps:
+1. Advance multiple days in Career Home.
+2. Re-open debug data for AI teams.
+Expected:
+- Manager-to-team assignments remain unchanged.
+- Preference arrays remain explicit and easy to consume for future match tactic systems.
+
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+
+Automated still needed:
+- Unit tests for `generateTeamManager` and `validateManagerPreferenceSet`.
+- Unit tests for manager assignment coverage in generated competition data.
+- Integration test for persistence of manager data through generation to career home debug state.
+
+Test status: passed
+
+BUG-001 - Generated managers have no names
+Manual steps:
+1. Start a new career and finish generation.
+2. Open Career Home debug panel.
+3. Inspect `managerGeneration.managerAssignments` entries.
+4. Confirm each assigned manager includes `firstName`, `lastName`, and `managerName`.
+Expected:
+- Every generated AI manager has readable name fields.
+- Name values are persisted with manager data and visible in debug output.
+
+Automated completed:
+- `npm run build`: passed (after manager naming fix).
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info modules.
+
+Automated still needed:
+- Unit test for `generateTeamManager` verifying generated manager includes non-empty name fields.
+
+Test status: passed

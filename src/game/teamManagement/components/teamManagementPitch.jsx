@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import PlayerImage from "../../playerImage/components/playerImage";
 import { TEAM_MANAGEMENT_SLOT_LAYOUT } from "../constants/teamManagementConstants";
 import TeamManagementPlayerTile from "./teamManagementPlayerTile";
 
@@ -11,25 +10,15 @@ const TeamManagementPitch = ({
   onAllowDrop,
   onDropToSlot,
   onDragStartFromSlot,
+  onDragEndFromSlot,
 }) => {
   return (
     <section className="teamManagement__column teamManagement__column--pitch">
-      <header className="teamManagement__columnHead">
-        <h2 className="teamManagement__sectionTitle">Pitch Arrangement</h2>
-        <p className="teamManagement__hint">2 DEF, 2 MID, 2 ATT slots. Goalkeeper is fixed.</p>
-      </header>
-
       <div className="teamManagement__pitch">
         <div className="teamManagement__goalkeeperSlot">
           <p className="teamManagement__slotLabel">Goalkeeper (Fixed)</p>
           {goalkeeper ? (
-            <div className="teamManagement__goalkeeperCard">
-              <PlayerImage appearance={goalkeeper.appearance} playerType={goalkeeper.playerType} teamKit={teamKit} />
-              <div>
-                <p className="teamManagement__playerName">{goalkeeper.name}</p>
-                <p className="teamManagement__playerMeta">OVR {Math.round(Number(goalkeeper.overall) || 0)}</p>
-              </div>
-            </div>
+            <TeamManagementPlayerTile player={goalkeeper} positionGroup="GK" teamKit={teamKit} variant="pitch" />
           ) : (
             <p className="teamManagement__hint">No goalkeeper found in player team data.</p>
           )}
@@ -41,7 +30,12 @@ const TeamManagementPitch = ({
 
           return (
             <article
-              className="teamManagement__pitchSlot"
+              className={[
+                "teamManagement__pitchSlot",
+                assignedPlayer ? "teamManagement__pitchSlot--filled" : "teamManagement__pitchSlot--empty",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               key={slot.id}
               onDragOver={onAllowDrop}
               onDrop={(event) => onDropToSlot(event, slot.id)}
@@ -50,21 +44,22 @@ const TeamManagementPitch = ({
                 left: `${slot.leftPercent}%`,
               }}
             >
-              <p className="teamManagement__slotLabel">
-                {slot.roleLabel} Slot
-                <span>{slot.label}</span>
-              </p>
+              <p className="teamManagement__pitchSlotTag">{slot.roleGroup}</p>
               {assignedPlayer ? (
                 <TeamManagementPlayerTile
                   className="teamManagement__playerTile--draggable"
-                  compact
                   draggable
+                  onDragEnd={(event) => onDragEndFromSlot(event, assignedPlayer.id, slot.id)}
                   onDragStart={(event) => onDragStartFromSlot(event, assignedPlayer.id, slot.id)}
                   player={assignedPlayer}
+                  positionGroup={slot.roleGroup}
                   teamKit={teamKit}
+                  variant="pitch"
                 />
               ) : (
-                <p className="teamManagement__emptySlot">Drop player here</p>
+                <div className="teamManagement__emptyShirt" aria-hidden="true">
+                  <span>{slot.roleGroup}</span>
+                </div>
               )}
             </article>
           );
@@ -82,6 +77,7 @@ TeamManagementPitch.propTypes = {
   onAllowDrop: PropTypes.func.isRequired,
   onDropToSlot: PropTypes.func.isRequired,
   onDragStartFromSlot: PropTypes.func.isRequired,
+  onDragEndFromSlot: PropTypes.func.isRequired,
 };
 
 TeamManagementPitch.defaultProps = {
