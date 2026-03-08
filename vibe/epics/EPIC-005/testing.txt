@@ -1,0 +1,317 @@
+EPIC-005 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated engine/info modules.
+- `npm.cmd exec eslint -- src/game/careerGeneration/careerGenerationLoading.jsx src/game/careerGeneration/utils/careerGenerator.js src/game/careerGeneration/utils/careerGenerationDebug.js src/game/careerGeneration/utils/teamGenerator.js src/game/careerGeneration/utils/teamIdentityGeneration.js src/game/careerGeneration/utils/playerOverallTargets.js src/game/careerGeneration/utils/playerRolePlan.js src/game/careerGeneration/constants/careerCompetitionSchema.js src/game/careerGeneration/constants/teamIdentityPools.js src/game/careerHome/careerHome.jsx src/engine/gameContext/gameContext.jsx src/game/careerStart/careerStart.jsx src/routes.jsx`: passed with one existing fast-refresh warning in `gameContext.jsx`.
+
+Manual verification note:
+- Full browser/manual validation below is still pending and should be executed to fully close EPIC-005.
+
+FEAT-501 - Create Career Generation Flow Trigger
+Manual steps:
+1. Open `/career/start`, complete setup requirements, click `Start Career`.
+Expected:
+- App routes to `/career/generating` first.
+- User is not taken directly to `/career/home`.
+Automated completed:
+- Build pass.
+- Focused eslint pass on flow/routing files.
+Automated needed:
+- Integration test for start-click routing and generation queue state.
+Status: in progress
+
+FEAT-502 - Add Career Generation Loading Screen
+Manual steps:
+1. Start a career from `/career/start`.
+2. Observe `/career/generating` while generation runs.
+Expected:
+- Spinner renders.
+- Progress bar and phase/detail text update during generation.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Component test for loading view state transitions (`idle`, `in_progress`, `error`, `complete`).
+Status: in progress
+
+FEAT-503 - Define Career Competition Structure
+Manual steps:
+1. Complete one full generation.
+2. Inspect debug data on `/career/home`.
+Expected:
+- Schema contains 6 competition groups with configured team counts/ranges.
+- Total AI team slots = 46.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit test asserting schema ids, counts, and ranges.
+Status: in progress
+
+FEAT-504 - Generate Team Overall Values per Competition
+Manual steps:
+1. Generate a career and open league/team debug accordions.
+Expected:
+- Every AI team has `teamOverall`.
+- `teamOverall` values fall within each league range.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests validating range constraints per competition.
+Status: in progress
+
+FEAT-505 - Build Shared Team Generator
+Manual steps:
+1. Generate a career and inspect one team object in debug output.
+Expected:
+- Team object includes identity, kit data, colours, keeper kit, players, and team overall.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit test for `generateCareerTeam` return shape.
+Status: in progress
+
+FEAT-506 - Generate Team Names and Stadium Names
+Manual steps:
+1. Generate a career and inspect all team names/stadium names in debug tree.
+Expected:
+- Every AI team has both fields populated.
+- Names show variety with minimal obvious duplication.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit test for non-empty generated identity values.
+Status: in progress
+
+FEAT-507 - Generate Team Kits for AI Teams
+Manual steps:
+1. Generate a career and open several teams in `/career/home`.
+2. Confirm shirt renders display correctly for home/away.
+Expected:
+- Every AI team has valid kit objects and colours.
+- Home/away kits are serialisable and render through shared shirt renderer.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for kit presence and home/away colour validity.
+Status: in progress
+
+FEAT-508 - Generate 7 Player Overall Targets per Team
+Manual steps:
+1. Generate a career and inspect `playerOverallTargets` on multiple teams.
+Expected:
+- Exactly 7 targets per team.
+- Target average equals team overall exactly.
+- Targets show believable spread.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit test for exact-average and range constraints in target generator.
+Status: in progress
+
+FEAT-509 - Assign Team Player Roles and Forced Influence Rules
+Manual steps:
+1. Generate a career and inspect player role slots and influence fields per team.
+Expected:
+- Team slots always map to `1 GK, 2 DEF, 2 MID, 2 ATT`.
+- Defenders always `Influence Defender`.
+- Midfield/attacker slots use expected rule pools.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for role-plan ordering and forced rule guarantees.
+Status: in progress
+
+FEAT-510 - Generate Full Team Players Through Shared Hook/System
+Manual steps:
+1. Generate a career and inspect player objects in debug tree.
+Expected:
+- Every team has 7 generated players.
+- Players include normal shared-generator metadata (skills, overall, influence, name, appearance, potential).
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Integration/unit tests asserting player generation path and metadata presence.
+Status: in progress
+
+FEAT-511 - Generate All Career Teams and Organise by League
+Manual steps:
+1. Generate a career and inspect competition/team totals in summary.
+Expected:
+- 46 AI teams generated.
+- Teams grouped into correct competition buckets.
+- Domestic and foreign groups separated in stored state.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit test asserting generated counts/group assignments.
+Status: in progress
+
+FEAT-512 - Save Generated Career Data into gameContext
+Manual steps:
+1. Generate a career, then navigate to `/career/home`.
+2. Refresh within session flow as needed and inspect state via debug view.
+Expected:
+- Generated world data is present under `gameState.career.world`.
+- Career home reads and renders from saved context.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Integration test for context persistence after generation completion.
+Status: in progress
+
+FEAT-513 - Add Career Generation Progress Tracking
+Manual steps:
+1. Start generation and watch progress values while loading runs.
+Expected:
+- Progress percent and completed units advance throughout generation.
+- Phase/detail text changes as major steps complete.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for progress emitter unit accounting and percent calculation.
+Status: in progress
+
+FEAT-514 - Add Career Home Debug Accordion View
+Manual steps:
+1. Open `/career/home` after generation.
+2. Expand league -> team -> player sections.
+Expected:
+- Nested accordion flow is usable.
+- Team/player details and skill metadata are visible and scannable.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Component tests for nested debug render and expand/collapse behavior.
+Status: in progress
+
+FEAT-515 - Replace Start Career Completion Path with Real Career Generation
+Manual steps:
+1. Complete setup with a selected player team.
+2. Click Start Career and finish generation.
+3. Inspect `playerTeam` in career debug summary.
+Expected:
+- Start flow uses real generator path.
+- Selected player team remains in generated career state.
+- AI teams/leagues are present alongside player team data.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Integration test covering full start-to-home generation lifecycle.
+Status: in progress
+
+FEAT-516 - Add Sensible Generation Performance Improvements
+Manual steps:
+1. Run full career generation multiple times.
+2. Observe responsiveness and completion time.
+Expected:
+- Generation remains practical for 46 teams.
+- Static pools/schema are reused rather than rebuilt ad hoc.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Benchmark-style test harness for repeated generation runs.
+Status: in progress
+
+FEAT-517 - Add Career Generation Debug/Test Utilities
+Manual steps:
+1. Open `/career/home` and inspect debug distribution section.
+Expected:
+- Team overall distribution by league is visible.
+- Player target spread diagnostics are present.
+- Influence-rule distribution counts are present.
+Automated completed:
+- Build pass.
+- Focused eslint pass.
+Automated needed:
+- Unit tests for debug summary builder output shape and counts.
+Status: in progress
+
+BUG-001 - Career Generation Freezes at 0%
+Manual steps:
+1. Open `/career/start` and complete all required setup fields.
+2. Click `Start Career`.
+3. Observe `/career/generating` progress while waiting for completion.
+Expected:
+- Progress percent moves beyond `0%` early in the flow.
+- Loading phase text updates while generation runs.
+- Generation completes and routes to `/career/home` without appearing stalled.
+Automated completed:
+- `npm.cmd exec eslint -- src/game/careerGeneration/utils/careerGenerator.js src/game/careerGeneration/utils/teamGenerator.js src/game/careerGeneration/careerGenerationLoading.jsx`: passed.
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to this bug fix.
+Automated needed:
+- Unit tests for cancellation behavior in `generateCareerWorldData` loop.
+- Unit tests for progress percentage normalization and team-level incrementing behavior.
+- Integration test for `/career/generating` progress advancing from initial state through completion.
+Status: in progress
+
+BUG-002 - Career Generation Stalls at 1%
+Manual steps:
+1. Open `/career/start` and complete setup requirements.
+2. Click `Start Career`.
+3. Observe `/career/generating` until completion.
+Expected:
+- Progress continues beyond early `1%` state.
+- Completed competitions list updates one-by-one as each league/competition finishes.
+- Generation continues immediately into the next competition and eventually routes to `/career/home`.
+Automated completed:
+- `npm.cmd exec eslint -- src/game/careerGeneration/careerGenerationLoading.jsx src/game/careerGeneration/utils/careerGenerator.js src/game/careerStart/careerStart.jsx src/engine/gameContext/gameContext.jsx`: passed (with existing fast-refresh warning in `gameContext.jsx` only).
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-002 changes.
+Automated needed:
+- Unit tests for `onCompetitionGenerated` callback cadence/order.
+- Integration test for loading-screen competition summary updates during generation.
+- Regression test to verify generation-state summary reset on new start/retry.
+Status: in progress
+
+BUG-003 - Add Detailed Runtime Generation Trace
+Manual steps:
+1. Open `/career/start`, complete setup requirements, and click `Start Career`.
+2. On `/career/generating`, observe the new "Generator Trace" section.
+3. Confirm events appear for competition/team start and completion while generation runs.
+Expected:
+- Trace entries stream in during generation with timestamps and event type labels.
+- If generation stalls, latest event clearly identifies the last completed/started step.
+- Trace resets when retrying or starting a fresh generation run.
+Automated completed:
+- `npm.cmd exec eslint -- src/game/careerGeneration/utils/careerGenerator.js src/game/careerGeneration/careerGenerationLoading.jsx src/game/careerStart/careerStart.jsx src/engine/gameContext/gameContext.jsx`: passed with one existing fast-refresh warning in `gameContext.jsx`.
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-003.
+Automated needed:
+- Unit tests for debug-event emission order and payload shape.
+- Integration test asserting trace panel updates during generation and resets on retry.
+Status: in progress
+
+BUG-004 - Strict Mode Run Lock Causes Freeze at 1%
+Manual steps:
+1. Open `/career/start`, complete setup, click `Start Career` in development mode.
+2. Observe `/career/generating` immediately after the first trace events.
+3. Confirm generation continues into competition/team trace entries and completes.
+Expected:
+- Generation does not stall after initial strict-mode effect cleanup.
+- Trace progresses beyond `generation:start`/`phase:preparing`.
+- Progress and completed-competition summaries keep advancing.
+Automated completed:
+- `npm.cmd exec eslint -- src/game/careerGeneration/careerGenerationLoading.jsx src/game/careerGeneration/utils/careerGenerator.js src/game/careerStart/careerStart.jsx src/engine/gameContext/gameContext.jsx`: passed with existing fast-refresh warning in `gameContext.jsx`.
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues unrelated to BUG-004.
+Automated needed:
+- Integration test that simulates strict-mode double effect invocation for loading route.
+- Regression test asserting generator run restarts correctly after cleanup cancellation.
+Status: in progress

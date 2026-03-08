@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./game/home/home";
 import CareerStart from "./game/careerStart/careerStart";
+import CareerGenerationLoading from "./game/careerGeneration/careerGenerationLoading";
 import CareerHome from "./game/careerHome/careerHome";
 import TeamManagement from "./game/teamManagement/teamManagement";
 import Staff from "./game/staff/staff";
@@ -19,6 +20,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/career/start" element={<CareerStart />} />
+      <Route path="/career/generating" element={<CareerGenerationLoading />} />
       <Route path="/career/home" element={<CareerHome />} />
       <Route path="/team-management" element={<TeamManagement />} />
       <Route path="/staff" element={<Staff />} />

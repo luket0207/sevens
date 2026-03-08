@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
@@ -31,6 +32,7 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
 });
 
 const CareerStart = () => {
+  const navigate = useNavigate();
   const { gameState, setGameValue } = useGame();
 
   const setup = gameState.career?.setup ?? DEFAULT_CAREER_SETUP;
@@ -44,6 +46,8 @@ const CareerStart = () => {
   const goalkeeperKit = setup.goalkeeperKit ?? DEFAULT_CAREER_SETUP.goalkeeperKit;
   const players = Array.isArray(setup.players) ? setup.players : DEFAULT_CAREER_SETUP.players;
   const teamSelector = setup.teamSelector ?? DEFAULT_CAREER_SETUP.teamSelector;
+  const generationStatus = gameState.career?.generation?.status ?? "idle";
+  const isGenerationActive = generationStatus === "queued" || generationStatus === "in_progress";
 
   const teamNameValid = hasRequiredText(teamName);
   const teamStadiumValid = hasRequiredText(teamStadium);
@@ -65,6 +69,30 @@ const CareerStart = () => {
     Object.entries(patch).forEach(([key, value]) => {
       setGameValue(`career.setup.${key}`, value);
     });
+  };
+
+  const startCareerGeneration = () => {
+    if (!canStartCareer || isGenerationActive) {
+      return;
+    }
+
+    setGameValue("career.generation.status", "queued");
+    setGameValue("career.generation.error", "");
+    setGameValue("career.generation.startedAt", "");
+    setGameValue("career.generation.completedAt", "");
+    setGameValue("career.generation.completedCompetitionSummaries", []);
+    setGameValue("career.generation.debugEvents", []);
+    setGameValue("career.generation.progress", {
+      phase: "preparing",
+      phaseLabel: "Preparing career data",
+      detail: "Initialising generation flow.",
+      completedUnits: 0,
+      totalUnits: 1,
+      percent: 0,
+      updatedAt: new Date().toISOString(),
+    });
+
+    navigate("/career/generating");
   };
 
   return (
@@ -124,12 +152,18 @@ const CareerStart = () => {
 
       <section className="careerStart__actions">
         <p className="careerStart__actionHint">
-          {canStartCareer
+          {isGenerationActive
+            ? "Career generation is currently running."
+            : canStartCareer
             ? "All setup requirements are complete."
             : "Start Career remains disabled until team name, stadium, full kit setup, and final squad selection are complete."}
         </p>
-        <Button variant={BUTTON_VARIANT.PRIMARY} to="/career/home" disabled={!canStartCareer}>
-          Start Career
+        <Button
+          variant={BUTTON_VARIANT.PRIMARY}
+          onClick={startCareerGeneration}
+          disabled={!canStartCareer || isGenerationActive}
+        >
+          {isGenerationActive ? "Generating Career..." : "Start Career"}
         </Button>
       </section>
     </PageLayout>

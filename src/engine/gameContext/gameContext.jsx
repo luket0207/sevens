@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 
 /*
 Usage:
@@ -50,6 +51,47 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
   },
 });
 
+const DEFAULT_CAREER_GENERATION_PROGRESS = Object.freeze({
+  phase: "idle",
+  phaseLabel: "Idle",
+  detail: "",
+  completedUnits: 0,
+  totalUnits: 1,
+  percent: 0,
+  updatedAt: "",
+});
+
+const DEFAULT_CAREER_GENERATION = Object.freeze({
+  status: "idle",
+  error: "",
+  startedAt: "",
+  completedAt: "",
+  progress: DEFAULT_CAREER_GENERATION_PROGRESS,
+  completedCompetitionSummaries: [],
+  debugEvents: [],
+});
+
+const DEFAULT_CAREER_WORLD = Object.freeze({
+  generatedAt: "",
+  playerTeam: null,
+  competitions: [],
+  domesticCompetitions: [],
+  foreignCompetitions: [],
+  totals: {
+    competitionCount: 0,
+    aiTeamCount: 0,
+    aiPlayerCount: 0,
+  },
+  debug: {
+    teamOverallDistributionByCompetition: {},
+    playerTargetSpreadByTeam: [],
+    influenceDistribution: {
+      totalOutfieldPlayers: 0,
+      counts: {},
+    },
+  },
+});
+
 const DEFAULT_GAME_STATE = Object.freeze({
   player: {
     health: 100,
@@ -63,6 +105,8 @@ const DEFAULT_GAME_STATE = Object.freeze({
   },
   career: {
     setup: DEFAULT_CAREER_SETUP,
+    generation: DEFAULT_CAREER_GENERATION,
+    world: DEFAULT_CAREER_WORLD,
   },
 });
 
@@ -112,6 +156,10 @@ export const GameProvider = ({ children }) => {
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+};
+
+GameProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export const useGame = () => {

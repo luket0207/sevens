@@ -1,0 +1,215 @@
+EPIC-005 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-501 to FEAT-517 - Career Generation, Loading Flow, and Debug Views
+Status: done
+
+What was implemented:
+- Added full career-generation flow trigger from `/career/start`:
+  - replaced direct `to="/career/home"` path with real generation start handler.
+  - writes generation queue/progress state into `gameContext`.
+  - routes to `/career/generating`.
+- Added dedicated loading route/view:
+  - new `/career/generating` route and screen.
+  - animated spinner + progress bar + phase/detail text.
+  - retry path on generation error.
+- Added reusable competition schema as single source of truth:
+  - League 5: 7 teams, `20..25`
+  - League 4: 8 teams, `25..30`
+  - League 3: 8 teams, `30..35`
+  - League 2: 8 teams, `35..40`
+  - League 1: 8 teams, `40..45`
+  - Foreign Champions Cup: 7 teams, `40..50`
+  - total AI teams = 46.
+- Added shared AI team generator utility:
+  - generates team identity (name + stadium), kit set, keeper kit, team overall, player targets, role plan, and full players.
+- Added curated/template identity pools with uniqueness guards:
+  - reusable prefix/suffix pools for team and stadium names.
+  - collision handling with retries + fallback labels.
+- Reused existing kit model from career-start utilities:
+  - `randomiseFullKitSet` for home/away shirts and contrast-safe colours.
+  - keeper kit picked from existing keeper option model.
+- Added exact-average 7-player target generation per team:
+  - integer targets always average exactly to team overall.
+  - targets constrained to `teamOverall +/- 5` where possible (and clamped to global range).
+- Added enforced slot role/influence assignment:
+  - `1 GK`, `2 DEF`, `2 MID`, `2 ATT`.
+  - defenders always force `Influence Defender`.
+  - midfielders force 50/50 between `Influence Defensive Mid` / `Influence Attacking Mid`.
+  - attackers force 50/50 between `Influence Attacker` / `Influence Goalscorer`.
+- Reused shared player generation system for all generated players:
+  - each slot generates via shared `generatePlayer` path.
+  - preserves normal generated fields: skills, overall, potential, influence, name, appearance.
+- Added full league/team organization output:
+  - stable `competitions` array plus separated `domesticCompetitions` and `foreignCompetitions`.
+- Added career data persistence in `gameContext`:
+  - expanded `career` state with:
+    - `career.generation` (status, progress, timestamps, error)
+    - `career.world` (player team + competitions + totals + debug summaries)
+  - preserves user-selected setup team and stores it as `career.world.playerTeam`.
+- Added real progress tracking across generation phases:
+  - preparing
+  - generating competitions
+  - generating teams
+  - generating players
+  - finalising
+  - saving
+  - progress values reflect completed work units.
+- Replaced `/career/home` placeholder with nested debug accordion view:
+  - league -> team -> players nested `details/summary`.
+  - includes team kit renders, overalls, targets, and per-player skill/influence metadata.
+  - includes debug distribution JSON for fast verification.
+- Added route guards to enforce flow order:
+  - `/career/home` redirects to `/career/generating` while generation is running.
+  - `/career/home` redirects to `/career/start` if generation is not complete.
+- Added debug/test-oriented generation summaries:
+  - team overall distribution by competition.
+  - per-team player target spread diagnostics.
+  - outfield influence distribution counts.
+
+Engine components used:
+- `gameContext` for storing setup + generated world + progress lifecycle.
+- `bars` for loading progress display.
+- `button` for flow actions and retry/back interactions.
+- `rng` for team overall rolls, identity variation, and role/influence random decisions.
+
+Engine components not used:
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this generation/load/debug slice).
+
+Files changed:
+- `src/routes.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerHome/careerHome.scss`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `src/game/careerGeneration/careerGenerationLoading.scss`
+- `src/game/careerGeneration/index.js`
+- `src/game/careerGeneration/constants/careerCompetitionSchema.js`
+- `src/game/careerGeneration/constants/teamIdentityPools.js`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerGeneration/utils/careerGenerationDebug.js`
+- `src/game/careerGeneration/utils/teamGenerator.js`
+- `src/game/careerGeneration/utils/teamIdentityGeneration.js`
+- `src/game/careerGeneration/utils/playerOverallTargets.js`
+- `src/game/careerGeneration/utils/playerRolePlan.js`
+- `vibe/epics/EPIC-005/features.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Home debug tree intentionally prioritizes inspectability over compactness; add search/filter controls in a later epic if needed.
+- Generation currently depends on in-memory session state; if save/load integration is required immediately, wire `career.world` into `saveGame` flow in the next epic.
+- No automated unit tests were added in this pass; coverage items are listed in `testing.txt`.
+
+BUG-001 - Career Generation Freezes at 0%
+Status: fixed
+
+What was implemented:
+- Reduced progress update churn by batching player progress updates to team-level increments.
+- Added explicit cancellation support in the generator loop to prevent orphaned background generation work from continuing after unmount/cleanup.
+- Added cancellation callback wiring from loading route into generation utility.
+- Adjusted progress percent normalization so progress shows at least `1%` once generation has started.
+- Increased yielding cadence to once per team to keep the loading UI responsive.
+
+Engine components used:
+- `gameContext` for generation progress/state lifecycle updates.
+- `bars` for visible progress feedback.
+- `rng` (existing generator dependency) for generation randomness.
+
+Engine components not used:
+- `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for this bug fix).
+
+Files changed:
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerGeneration/utils/teamGenerator.js`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+BUG-002 - Career Generation Stalls at 1%
+Status: fixed
+
+What was implemented:
+- Added league/competition-level generation callbacks so completion is surfaced incrementally.
+- Added `completedCompetitionSummaries` into career generation state and reset hooks on start/retry.
+- Updated loading screen to render completed competitions live while generation immediately continues to the next competition.
+- Kept summaries compact (counts and rating range) to avoid large per-step state payloads.
+- Replaced hardcoded competition count with schema-derived total for stable UI.
+
+Engine components used:
+- `gameContext` for storing incremental competition-generation summaries.
+- `bars` for progressbar display (existing loading UI).
+- `rng` (existing generator dependency).
+
+Engine components not used:
+- `button` (existing screen action usage unchanged for this fix), `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `src/game/careerGeneration/careerGenerationLoading.scss`
+- `src/game/careerStart/careerStart.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+BUG-003 - Add Detailed Runtime Generation Trace
+Status: fixed
+
+What was implemented:
+- Added structured debug-event emission directly from the career generation pipeline.
+- Added generation-state storage for debug events with a bounded buffer to avoid unbounded memory growth.
+- Added loading-screen "Generator Trace" panel to display latest runtime events with timestamps.
+- Added trace reset on generation start/retry so each run has a clean log.
+- Trace coverage now includes:
+  - generation start/complete
+  - preparing/finalising phases
+  - competition start/complete
+  - team start/complete
+
+Engine components used:
+- `gameContext` for storing runtime generation trace events.
+- `bars` and `button` remain in use by loading-screen interaction and progress UI.
+- `rng` remains in use by generator internals.
+
+Engine components not used:
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `src/game/careerGeneration/careerGenerationLoading.scss`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`
+
+BUG-004 - Strict Mode Run Lock Causes Freeze at 1%
+Status: fixed
+
+What was implemented:
+- Reworked loading-run control to be strict-mode safe.
+- Removed `hasStartedRef` one-shot gate that blocked second run after strict cleanup.
+- Added `activeRunRef` token to enforce single active generation run while allowing valid restart after cleanup.
+- Updated cancellation checks to be run-token based across progress/debug/competition callbacks.
+- Added deterministic active-run cleanup in both effect cleanup and async `finally`.
+
+Engine components used:
+- `gameContext` for generation status/progress/debug updates consumed by loading UI.
+- `bars` and `button` remain in use in the loading screen.
+
+Engine components not used:
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not needed for this control-flow bug fix directly).
+
+Files changed:
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `vibe/epics/EPIC-005/bugs.txt`
+- `vibe/epics/EPIC-005/implementation.txt`
+- `vibe/epics/EPIC-005/testing.txt`

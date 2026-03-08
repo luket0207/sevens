@@ -1,0 +1,392 @@
+EPIC-006 - Player Image Component
+
+Overview
+The goal of this epic is to create a reusable player image component that can visually represent a player anywhere in the game.
+
+The component must take:
+- the player's appearance array
+- the team the player plays for
+
+Using those values, it should render a simple stylised image of the player.
+
+The player image should use:
+- the appearance array to determine the head appearance
+- the team kit to determine the body/shirt appearance
+
+For now, the first place this component must be used is the team selection flow on /career/start, wherever players are displayed.
+
+This component should be built as a reusable rendering component so it can later be used in many places across the game.
+
+================================================================
+Core Rendering Rules
+================================================================
+
+The component should render a simplified player image.
+
+Style direction:
+- simple
+- readable
+- stylised
+- slightly South Park inspired
+- no detailed facial features required
+- head should be a simple oval / simplified shape
+- body should visually use the player's team kit
+
+The component should not try to be realistic.
+The goal is a clean, recognisable, lightweight player visual.
+
+================================================================
+Inputs
+================================================================
+
+The component must accept:
+
+- player appearance array
+- player team data
+
+At minimum, the appearance input must support values in this format:
+- [1,5,3]
+- [2,2,4]
+
+The team input must allow access to the correct kit data for that player.
+
+================================================================
+Appearance Array Rules
+================================================================
+
+The appearance array contains 3 values.
+Each value is an integer from 1 to 5 inclusive.
+
+----------------------------------------------------------------
+First number - Skin tone and hair colour
+----------------------------------------------------------------
+
+This value determines:
+- skin tone
+- hair colour
+
+Mapping:
+- 1 = Light skin, Blonde hair
+- 2 = Light skin, Brown hair
+- 3 = Tan skin, Brown hair
+- 4 = Tan skin, Black hair
+- 5 = Dark skin, Black hair
+
+Special case:
+- if hairstyle is Bald, hair colour is not needed visually
+
+----------------------------------------------------------------
+Second number - Head shape
+----------------------------------------------------------------
+
+This value determines the shape of the head.
+
+Style direction:
+- simple head shapes
+- slightly South Park inspired
+- no facial detail required
+- not literal geometric shapes, but clear silhouette differences
+
+Mapping:
+- 1 = Round
+- 2 = Wide
+- 3 = Tall
+- 4 = Square
+- 5 = Square Tall
+
+Clarification:
+- "Square" does not mean a literal hard square
+- it means a more square-shaped head silhouette
+- "Square Tall" means a taller, more rectangular/square silhouette
+
+----------------------------------------------------------------
+Third number - Hairstyle
+----------------------------------------------------------------
+
+This value determines the hairstyle.
+
+The colour comes from the first number.
+
+Mapping:
+- 1 = Bald
+- 2 = Short
+- 3 = Short Spikey
+- 4 = Curly
+- 5 = Long
+
+Special rule:
+- Bald means do not render hair
+
+================================================================
+Body / Kit Rules
+================================================================
+
+The body of the player image should visually represent the team kit.
+
+Requirements:
+- Use the team the player plays for to access the correct kit data
+- Render the shirt/body using the existing team kit data model
+- Reuse the shirt rendering/decoder logic where sensible rather than duplicating it
+- The player image should clearly look like it belongs to the team
+
+The player body does not need to be highly detailed.
+A clean simplified torso/body presentation is enough, as long as:
+- the shirt is visible
+- the team kit is recognisable
+- the player feels linked to the team visually
+
+If useful, the body can be constructed by embedding or composing the existing shirt component into the player image component.
+
+================================================================
+Scope for This Epic
+================================================================
+
+This epic is about:
+- building the reusable player image component
+- decoding appearance values into visual output
+- combining head appearance with team kit body
+- integrating the component into the team selector on /career/start
+
+This epic is not about:
+- full animation
+- facial features
+- complex limb rendering
+- advanced portrait systems
+- multiple poses
+- detailed goalkeeper-specific outfit logic unless already easy to support through the kit model
+
+Keep the implementation lightweight, modular, and reusable.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-601 - Create Reusable Player Image Component
+----------------------------------------------------------------
+
+Description
+Create a reusable component that renders a player image from player appearance data and team data.
+
+Requirements
+- Build a standalone reusable player image component.
+- The component must accept:
+  - player appearance array
+  - team data or team kit data needed for rendering
+- The component should produce a complete simplified player visual.
+- Keep the component flexible enough to be reused in multiple places later.
+- The component should fit naturally into existing React/component patterns in the project.
+
+Acceptance Criteria
+- A reusable player image component exists.
+- The component can render from appearance array + team data inputs.
+- The component is not tightly coupled to only one screen.
+
+----------------------------------------------------------------
+FEAT-602 - Add Appearance Array Parsing Utility
+----------------------------------------------------------------
+
+Description
+Create a clean way to decode the 3-value appearance array into renderable appearance settings.
+
+Requirements
+- Implement a shared parser/mapper for the appearance array.
+- It must decode:
+  - skin tone + hair colour
+  - head shape
+  - hairstyle
+- Validate or safely handle values expected in the range 1 to 5.
+- Keep the mapping logic clean and centralised rather than scattering raw number meaning through the UI.
+
+Acceptance Criteria
+- The appearance array can be converted into structured appearance data.
+- The meaning of each appearance value is centralised in reusable logic.
+- The output is easy for the player image component to consume.
+
+----------------------------------------------------------------
+FEAT-603 - Implement Skin Tone and Hair Colour Mapping
+----------------------------------------------------------------
+
+Description
+Map the first appearance value into the correct skin tone and hair colour combination.
+
+Requirements
+- Implement the following mapping:
+  - 1 = Light skin, Blonde hair
+  - 2 = Light skin, Brown hair
+  - 3 = Tan skin, Brown hair
+  - 4 = Tan skin, Black hair
+  - 5 = Dark skin, Black hair
+- Expose the mapped values in a form the renderer can use directly.
+- Ensure Bald hairstyle can suppress hair rendering while still preserving valid appearance data internally.
+
+Acceptance Criteria
+- The first appearance value correctly maps to skin tone and hair colour.
+- Bald players do not incorrectly show hair.
+- The mapping remains reusable and easy to maintain.
+
+----------------------------------------------------------------
+FEAT-604 - Implement Head Shape Variants
+----------------------------------------------------------------
+
+Description
+Render the different head silhouettes defined by the second appearance value.
+
+Requirements
+- Implement these head shape variants:
+  - 1 = Round
+  - 2 = Wide
+  - 3 = Tall
+  - 4 = Square
+  - 5 = Square Tall
+- Shapes should remain simple and stylised.
+- Shapes should feel visually distinct from one another.
+- Avoid literal hard-edged geometric boxes if they look poor; the goal is recognisable silhouette differences.
+
+Acceptance Criteria
+- All 5 head shape values render differently.
+- Head shapes remain simple and stylised.
+- The rendered shapes match the intended meaning closely enough to be recognisable.
+
+----------------------------------------------------------------
+FEAT-605 - Implement Hairstyle Variants
+----------------------------------------------------------------
+
+Description
+Render the different hairstyles defined by the third appearance value.
+
+Requirements
+- Implement these hairstyle variants:
+  - 1 = Bald
+  - 2 = Short
+  - 3 = Short Spikey
+  - 4 = Curly
+  - 5 = Long
+- Hairstyles should use the mapped hair colour from the first appearance value.
+- Bald must render no hair.
+- Keep the hairstyle rendering simple, readable, and visually distinct.
+
+Acceptance Criteria
+- All 5 hairstyle values render correctly.
+- Hair colour follows the first appearance value mapping.
+- Bald shows no hair.
+- Hairstyles are simple but recognisably different.
+
+----------------------------------------------------------------
+FEAT-606 - Compose Player Body from Team Kit
+----------------------------------------------------------------
+
+Description
+Use the player's team kit as the body/shirt portion of the player image.
+
+Requirements
+- The player image must visually use the team the player belongs to.
+- Reuse existing shirt rendering/decoder logic where practical.
+- Render the body so the shirt is clearly visible as the player's torso/body.
+- The component should visually connect the player to their team through the kit.
+- Avoid duplicating the team shirt rendering logic unless absolutely necessary.
+
+Acceptance Criteria
+- The player body uses the team kit visually.
+- The shirt/body output matches the team's saved kit data.
+- The player image clearly looks team-linked.
+
+----------------------------------------------------------------
+FEAT-607 - Define Player Image Layout and Scaling
+----------------------------------------------------------------
+
+Description
+Establish the base layout, proportions, and sizing behaviour for the player image component.
+
+Requirements
+- Define a clean internal layout for:
+  - head
+  - hair
+  - body/shirt
+- The component should scale cleanly for different usage sizes.
+- It should remain readable at the smaller sizes likely needed in player cards.
+- Keep proportions stylised rather than realistic.
+- Ensure the component can be embedded in lists/cards without layout issues.
+
+Acceptance Criteria
+- The player image has stable proportions.
+- The component scales cleanly.
+- It remains readable in compact UI contexts such as selection cards.
+
+----------------------------------------------------------------
+FEAT-608 - Integrate Player Image into Career Team Selector
+----------------------------------------------------------------
+
+Description
+Use the new player image component anywhere players are currently displayed in the team selection flow on /career/start.
+
+Requirements
+- Update the player display areas in the team selector to include the player image component.
+- This includes:
+  - visible choice cards
+  - chosen-player list, if players are displayed there too
+- Goalkeepers and outfield players should both display through the same image component approach.
+- The player image should appear alongside the player's details/stats.
+
+Acceptance Criteria
+- Player images appear in the team selector on /career/start.
+- Visible player choices include the new player image.
+- Selected/chosen player displays also include the player image where relevant.
+
+----------------------------------------------------------------
+FEAT-609 - Keep Player Image Rendering Reusable Across Future Screens
+----------------------------------------------------------------
+
+Description
+Ensure the implementation is structured for reuse across the rest of the game.
+
+Requirements
+- Avoid baking team-selector-specific assumptions too deeply into the player image component.
+- Keep rendering logic modular so the component can later be reused in:
+  - career home
+  - squad lists
+  - scouting
+  - match UI
+  - debug tools
+- Separate rendering concerns from data mapping concerns where sensible.
+
+Acceptance Criteria
+- The player image component is reusable outside /career/start.
+- Appearance parsing, style mapping, and rendering concerns are structured sensibly for later reuse.
+
+----------------------------------------------------------------
+FEAT-610 - Add Player Image Debug/Test Cases
+----------------------------------------------------------------
+
+Description
+Add lightweight development support to inspect and verify the player image combinations.
+
+Requirements
+- Add a simple way during development to inspect combinations of:
+  - all skin/hair mappings
+  - all head shapes
+  - all hairstyles
+  - different team kits
+- This can be a lightweight debug section, development helper, or test rendering surface.
+- The purpose is to confirm that the appearance array decoding works and combinations render clearly.
+
+Acceptance Criteria
+- Developers can inspect player image combinations during implementation.
+- The appearance value mappings can be visually validated.
+- The test/debug support helps verify the component before broader reuse.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- A reusable player image component exists.
+- The component accepts a player's appearance array and team data.
+- The first appearance value correctly maps to skin tone and hair colour.
+- The second appearance value correctly changes the head shape.
+- The third appearance value correctly changes the hairstyle.
+- Bald players render without hair.
+- The player's team kit is used as the body/shirt of the player image.
+- The component is used wherever players are displayed in the team selection flow on /career/start.
+- The implementation remains lightweight, stylised, readable, and reusable for future systems.

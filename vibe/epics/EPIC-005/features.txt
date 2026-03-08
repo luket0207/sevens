@@ -202,6 +202,7 @@ Feature List
 ----------------------------------------------------------------
 FEAT-501 - Create Career Generation Flow Trigger
 ----------------------------------------------------------------
+Status: done
 
 Description
 Hook the Start Career action into the new career generation flow.
@@ -223,6 +224,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-502 - Add Career Generation Loading Screen
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the loading screen shown while the career data is being generated.
@@ -243,6 +245,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-503 - Define Career Competition Structure
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the data structure for the leagues and competitions generated at the start of a career.
@@ -271,6 +274,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-504 - Generate Team Overall Values per Competition
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the target team overall values for every AI team in the career.
@@ -289,6 +293,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-505 - Build Shared Team Generator
 ----------------------------------------------------------------
+Status: done
 
 Description
 Create the shared generator that builds a full team object from a target team overall.
@@ -316,6 +321,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-506 - Generate Team Names and Stadium Names
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the decorative identity data for each AI team.
@@ -336,6 +342,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-507 - Generate Team Kits for AI Teams
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the home/away kit data for every AI team.
@@ -359,6 +366,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-508 - Generate 7 Player Overall Targets per Team
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the 7 player overall targets that will be used to build each team’s squad.
@@ -382,6 +390,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-509 - Assign Team Player Roles and Forced Influence Rules
 ----------------------------------------------------------------
+Status: done
 
 Description
 Map the generated 7 player overall targets to the team’s required player slots and role generation rules.
@@ -411,6 +420,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-510 - Generate Full Team Players Through Shared Hook
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the actual team players using the existing shared player generation hook/system.
@@ -440,6 +450,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-511 - Generate All Career Teams and Organise by League
 ----------------------------------------------------------------
+Status: done
 
 Description
 Generate the full set of AI teams for the career and place them into the correct competition groups.
@@ -458,6 +469,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-512 - Save Generated Career Data into gameContext
 ----------------------------------------------------------------
+Status: done
 
 Description
 Persist the generated career data so it becomes the active career state.
@@ -480,6 +492,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-513 - Add Career Generation Progress Tracking
 ----------------------------------------------------------------
+Status: done
 
 Description
 Track and expose meaningful generation progress to the loading screen.
@@ -503,6 +516,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-514 - Add Career Home Debug Accordion View
 ----------------------------------------------------------------
+Status: done
 
 Description
 Display the generated career structure on /career/home in a debug-friendly expandable format.
@@ -532,6 +546,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-515 - Replace Start Career Completion Path with Real Career Generation
 ----------------------------------------------------------------
+Status: done
 
 Description
 Wire the full generation flow into the existing career setup completion process.
@@ -550,6 +565,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-516 - Add Sensible Generation Performance Improvements
 ----------------------------------------------------------------
+Status: done
 
 Description
 Apply reasonable performance-minded structure to keep career generation practical without sacrificing too much randomness.
@@ -572,6 +588,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-517 - Add Career Generation Debug/Test Utilities
 ----------------------------------------------------------------
+Status: done
 
 Description
 Provide development support for validating the generated career data and generation pipeline.
@@ -623,3 +640,4 @@ This epic is complete when:
 - The full generated career structure is saved into gameContext.
 - /career/home displays the generated leagues, teams, and players in a nested accordion debug view.
 - The system is implemented in a way that is sensible for the size of the generation workload and ready for future career systems.
+

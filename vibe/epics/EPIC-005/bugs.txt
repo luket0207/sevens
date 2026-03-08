@@ -1,0 +1,146 @@
+BUG-001 - Career Generation Freezes at 0%
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. Wait on `/career/generating`.
+
+Expected behavior:
+- Loading progress should continue advancing through generation phases and eventually navigate to `/career/home`.
+
+Actual behavior:
+- Loading view appears stuck at `0%` and generation appears frozen.
+
+Suspected cause:
+- Progress updates were emitted for every single player generation unit, creating excessive `gameContext` update pressure.
+- In development Strict Mode, cancelled/unmounted generation work could continue in the background, increasing perceived stall time.
+
+Attempted fixes:
+- Batched player progress updates to one update per generated team instead of one update per player.
+- Added cancellation support into the generation pipeline and checks between phases/teams.
+- Added cancellation hookup from loading component (`shouldCancel`) to stop orphaned work.
+- Updated percent calculation to avoid showing `0%` after generation has started.
+- Increased main-thread yielding frequency to once per team.
+
+Final fix:
+- Updated `src/game/careerGeneration/utils/careerGenerator.js`:
+  - added cancellation-aware generation loop (`shouldCancel` + cancellation checks)
+  - switched player progress increments to batched per-team increments (`+ team.players.length`)
+  - changed percent calculation to start at `>=1%` once work has started
+  - yielded to the main thread after each team to keep UI responsive
+- Updated `src/game/careerGeneration/utils/teamGenerator.js`:
+  - removed per-player progress callback path from team generation
+- Updated `src/game/careerGeneration/careerGenerationLoading.jsx`:
+  - passes cancellation callback into generator
+  - ignores cancellation errors during cleanup/unmount
+
+Status: fixed
+
+
+BUG-002 - Career Generation Stalls at 1%
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. Wait on `/career/generating`.
+
+Expected behavior:
+- Generation should continue progressing and visibly complete competitions while the next ones generate.
+
+Actual behavior:
+- Progress reached `1%` then appeared stuck.
+- User feedback was not clear that league-by-league generation was advancing.
+
+Suspected cause:
+- Generation UI did not surface completed leagues incrementally.
+- Context updates were focused on percent/progress values rather than explicit per-league completion visibility.
+
+Attempted fixes:
+- Added competition-level completion callbacks from generation pipeline.
+- Added lightweight persisted competition summaries in generation state.
+- Updated loading UI to show completed competitions live while generation continues.
+- Reset competition summary state cleanly when starting/retrying generation.
+
+Final fix:
+- Updated `src/game/careerGeneration/utils/careerGenerator.js`:
+  - accepts `onCompetitionGenerated` callback
+  - emits a compact competition summary after each league/competition finishes
+  - yields and cancellation-checks between competitions
+- Updated `src/game/careerGeneration/careerGenerationLoading.jsx`:
+  - stores and renders `completedCompetitionSummaries` as each competition finishes
+  - keeps generation moving immediately to the next competition
+  - uses schema-driven total competition count in loading UI
+- Updated `src/game/careerStart/careerStart.jsx` and `src/engine/gameContext/gameContext.jsx`:
+  - added/reset generation-state support for `completedCompetitionSummaries`
+
+Status: fixed
+
+
+BUG-003 - Add Detailed Runtime Generation Trace
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. Observe `/career/generating` if progress appears stuck.
+
+Expected behavior:
+- Runtime trace should show exactly which competition/team step the generator is currently processing.
+- The trace should update continuously while generation runs.
+
+Actual behavior:
+- Existing UI progress feedback was too high-level to identify the exact stalled step.
+
+Suspected cause:
+- No step-by-step generation trace existed in game state/loading UI for debugging stalled runs.
+
+Attempted fixes:
+- Added generator debug-event emitter with timestamped structured events.
+- Added game-state storage for bounded generation debug events.
+- Added live generator trace panel to loading UI showing latest-first events.
+
+Final fix:
+- Updated `src/game/careerGeneration/utils/careerGenerator.js`:
+  - added `onDebugEvent` callback support
+  - emits debug events for generation start/complete, phase transitions, competition start/complete, and team start/complete
+- Updated `src/game/careerGeneration/careerGenerationLoading.jsx`:
+  - persists bounded debug events into `career.generation.debugEvents`
+  - renders live "Generator Trace" list (latest-first) on `/career/generating`
+  - resets trace state on start/retry
+- Updated `src/engine/gameContext/gameContext.jsx` and `src/game/careerStart/careerStart.jsx`:
+  - added/reset default `career.generation.debugEvents` state
+
+Status: fixed
+
+
+BUG-004 - Strict Mode Run Lock Causes Freeze at 1%
+
+Repro steps:
+1. Open `/career/start`.
+2. Complete setup requirements and click `Start Career`.
+3. Observe `/career/generating` in development mode.
+
+Expected behavior:
+- Generation continues after initial prepare events and moves into competition/team events.
+
+Actual behavior:
+- Trace stays at initial events and generation appears frozen at early progress.
+
+Suspected cause:
+- In React Strict Mode, the first effect run is intentionally cleaned up.
+- Previous loading-flow guard (`hasStartedRef`) prevented a second run from starting after cleanup cancellation.
+- Result: status remained `in_progress` with no active generator run.
+
+Attempted fixes:
+- Replaced one-shot `hasStartedRef` guard with an active run token ref that supports strict-mode re-invocation.
+- Added run-scoped cancellation state and cleanup-safe active-run reset.
+- Ensured only one active run per mounted loading screen while still allowing restart after strict cleanup.
+
+Final fix:
+- Updated `src/game/careerGeneration/careerGenerationLoading.jsx`:
+  - removed `hasStartedRef` guard
+  - introduced `activeRunRef` token with per-run `cancelled` state
+  - generation callbacks now reference current run token for cancellation checks
+  - cleanup/finally now clears active token deterministically
+  - retry path no longer depends on resetting `hasStartedRef`
+
+Status: fixed
