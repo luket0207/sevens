@@ -1,0 +1,218 @@
+EPIC-003 Implementation Log
+Date: 2026-03-07
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-401 - Replace Existing Player Generator
+Status: done
+What was implemented:
+- Added a new standalone player-generation module at `src/game/playerGeneration/`.
+- Implemented a new public API (`generateGoalkeeper`, `generateOutfieldPlayer`, `generatePlayer`, `generatePlayerBatch`) replacing the prior removed temporary generator flow.
+- New generator accepts target overall and returns skills whose average remains exactly equal to target.
+Engine components used:
+- `rng` via `randomInt` for all randomization.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (feature is utility-only with no UI/state integration in this epic).
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/skillTransferUtils.js`
+- `src/game/playerGeneration/influenceUtils.js`
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/playerGeneration/index.js`
+
+FEAT-402 - Implement Base Skill Spread Generator
+Status: done
+What was implemented:
+- Added `applyBaseSkillSpread` utility:
+  - starts from equal skills at target overall,
+  - applies random transfer-based spread,
+  - preserves total skill sum.
+- Added separate spread configs for `GK` and `OUTFIELD`.
+Engine components used:
+- `rng`.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/skillTransferUtils.js`
+
+FEAT-403 - Implement Influence Rule Selection
+Status: done
+What was implemented:
+- Added six-outcome equal-probability rule selector (`selectOutfieldInfluenceRule`), 1-in-6 each:
+  - `No Influence`
+  - `Influence Defender`
+  - `Influence Defensive Mid`
+  - `Influence Attacking Mid`
+  - `Influence Attacker`
+  - `Influence Goalscorer`
+Engine components used:
+- `rng`.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/influenceUtils.js`
+
+FEAT-404 - Implement Skill Transfer System
+Status: done
+What was implemented:
+- Added reusable `transferSkillPoints` transfer engine.
+- Added influence transfer-size distribution:
+  - 70%: 5-8
+  - 25%: 9-12
+  - 5%: 13-20
+- Added 2-4 transfer count handling per influence application.
+Engine components used:
+- `rng`.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/skillTransferUtils.js`
+- `src/game/playerGeneration/influenceUtils.js`
+
+FEAT-405 - Implement Influence Rule Logic
+Status: done
+What was implemented:
+- Added rule-specific source and target skill pools and applied them through transfer engine for all 5 influence rules.
+- `No Influence` bypasses transfer logic.
+Engine components used:
+- `rng`.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/influenceUtils.js`
+- `src/game/playerGeneration/playerGenerationUtils.js`
+
+FEAT-406 - Implement Skill Cap Enforcement
+Status: done
+What was implemented:
+- Enforced hard bounds in transfer logic: minimum `1`, maximum `100`.
+- Implemented overflow-safe transfer behavior: only movable amount is transferred; unused points remain on source.
+Engine components used:
+- none directly beyond existing transfer utils.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (not specifically required for cap math itself), `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/skillTransferUtils.js`
+
+FEAT-407 - Add Player Influence Metadata
+Status: done
+What was implemented:
+- Added `influenceRule` property to generated player object.
+- `GK` players store `No Influence`; outfield players store selected rule.
+Engine components used:
+- none directly (metadata mapping in generator).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (selection happens outside this metadata write), `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationUtils.js`
+
+FEAT-408 - Add Generator Testing Utilities
+Status: done
+What was implemented:
+- Added `generatePlayerBatch` utility for multi-player generation at chosen type and overall.
+- Added `calculateOverallFromSkills` utility export for quick balancing/verification workflows.
+- Added central `index.js` exports to simplify utility consumption in future epics.
+Engine components used:
+- none directly in API shaping.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (called within downstream generator path), `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/playerGeneration/skillTransferUtils.js`
+- `src/game/playerGeneration/index.js`
+
+FEAT-409 - Add Career Start Debug Access for New Generator
+Status: done
+What was implemented:
+- Added a new Career Start debug component wired to the EPIC-003 generator API:
+  - generate single player
+  - generate batch of players
+  - clear output
+- Added controls for:
+  - player type (`GK` / `OUTFIELD`)
+  - target overall (`1..50`)
+  - batch count (`1..20`)
+- Added generated output rendering with:
+  - player type
+  - target overall
+  - calculated overall
+  - influence rule
+  - full skill list
+- Persisted debug state in `gameContext` under `career.setup.playerGenerationDebug`.
+- Replaced Players placeholder message in `/career/start` with the new debug module.
+Engine components used:
+- `gameContext` for persisted debug controls/output.
+- `button` for generator actions.
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (used by generator internals, not directly in page wiring), `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/engine/gameContext/gameContext.jsx`
+
+FEAT-409 (Hook) - Expose Player Generation Through Reusable Hook
+Status: done
+What was implemented:
+- Added reusable `usePlayerGeneration` hook at `src/game/playerGeneration/hooks/usePlayerGeneration.js`.
+- Hook exposes clean generation interface:
+  - `generatePlayer(targetOverall)`
+  - `generatePlayerBatch(targetOverall, count)`
+- Hook supports player-type context through `defaultPlayerType` and optional per-call override without duplicating generation logic.
+- Hook delegates directly to shared EPIC-003 utilities (`generatePlayer` / `generatePlayerBatch`) rather than reimplementing generation.
+- Exported hook from `src/game/playerGeneration/index.js` for easy reuse across future systems.
+- Updated Career Start debug component to consume the hook API instead of calling utility functions directly.
+Engine components used:
+- none directly (hook composes existing player generation utilities).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (hook layer is generator API composition only).
+Files changed:
+- `src/game/playerGeneration/hooks/usePlayerGeneration.js`
+- `src/game/playerGeneration/index.js`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+
+FEAT-410 - Allow Forced Influence Rule in Player Generation Hook
+Status: done
+What was implemented:
+- Added optional forced influence override path through shared generator utilities:
+  - `generateOutfieldPlayer({ targetOverall, forcedInfluenceRule })`
+  - `generatePlayer({ ..., forcedInfluenceRule })`
+  - `generatePlayerBatch({ ..., forcedInfluenceRule })`
+- Added influence override resolution and validation utility:
+  - accepts forced values:
+    - `None`
+    - `Influence Defender`
+    - `Influence Defensive Mid`
+    - `Influence Attacking Mid`
+    - `Influence Attacker`
+    - `Influence Goalscorer`
+  - supports `No Influence` alias internally for compatibility.
+  - throws on invalid forced values instead of silently falling back.
+- Updated `usePlayerGeneration` hook API to pass optional forced influence through to shared utilities without duplicating rule logic.
+- Preserved existing random behavior when no forced rule is supplied.
+- Extended `/career/start` debug controls with a `Forced Influence` selector to validate forced-rule flows in-app.
+- Persisted forced-rule debug selection in `gameContext` (`career.setup.playerGenerationDebug.forcedInfluenceRule`).
+Engine components used:
+- `gameContext` for persisted debug setting.
+- `button` via existing debug component actions.
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (used in generator internals, not in override API plumbing), `saveGame`, `timer`.
+Files changed:
+- `src/game/playerGeneration/playerGenerationConstants.js`
+- `src/game/playerGeneration/influenceUtils.js`
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/playerGeneration/hooks/usePlayerGeneration.js`
+- `src/game/playerGeneration/index.js`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/engine/gameContext/gameContext.jsx`
+
+Tradeoffs / follow-up tasks:
+- Debug tooling is intentionally temporary and should be replaced by the full squad generation UX in a later epic.
+- Add deterministic unit tests to validate long-run influence distribution and sum-preserving invariants across large batches.

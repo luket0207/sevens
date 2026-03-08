@@ -1,0 +1,152 @@
+EPIC-001 Implementation Log
+Date: 2026-03-07
+
+FEAT-001 - Replace current landing flow with new Home screen
+Status: done
+What was implemented:
+- Replaced the existing landing content with a new Home screen that presents a football-career entry experience and a primary `Start Career` action.
+- Wired the home CTA to `/career/start`.
+- Removed `/info` from active user-facing routing.
+- Updated base app styling in `index.scss` so the app can span full viewport width/height cleanly.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- `button` for the primary Start Career CTA.
+Engine components not used (and why):
+- `gameContext` not needed for FEAT-001 because no persistent landing-page data is captured.
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not needed for static navigation-first landing behavior.
+Files changed:
+- `src/game/home/home.jsx`
+- `src/game/home/home.scss`
+- `src/routes.jsx`
+- `src/index.scss`
+Tradeoffs / follow-ups:
+- Home copy and visual style are intentionally lightweight and can be expanded once deeper career systems are added.
+
+FEAT-002 - Add core route structure for Career Mode shell
+Status: done
+What was implemented:
+- Added all required epic routes:
+  - `/`
+  - `/career/start`
+  - `/career/home`
+  - `/team-management`
+  - `/staff`
+  - `/scouting`
+  - `/training`
+  - `/cup-draw`
+  - `/pre-match`
+  - `/match`
+  - `/post-match`
+- Created a screen/component per route.
+- Added shared full-width responsive page primitives (`PageLayout`, `PlaceholderPage`) and used them for non-functional shell pages.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- None required directly for placeholder route structure.
+Engine components not used (and why):
+- All listed engine systems were not needed in FEAT-002 because this step is route/screen structure only, without interaction logic.
+Files changed:
+- `src/routes.jsx`
+- `src/game/shared/pageLayout/pageLayout.jsx`
+- `src/game/shared/pageLayout/pageLayout.scss`
+- `src/game/shared/placeholderPage/placeholderPage.jsx`
+- `src/game/shared/placeholderPage/placeholderPage.scss`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/staff/staff.jsx`
+- `src/game/scouting/scouting.jsx`
+- `src/game/training/training.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/preMatch/preMatch.jsx`
+- `src/game/match/match.jsx`
+- `src/game/postMatch/postMatch.jsx`
+Tradeoffs / follow-ups:
+- Placeholder pages are intentionally simple and ready to be replaced with feature-specific UI in later epics.
+
+FEAT-003 - Create Career Start page shell and team setup state
+Status: done
+What was implemented:
+- Implemented `/career/start` screen shell as the first career setup page.
+- Added persistent team setup state shape in `gameContext`:
+  - `teamName`
+  - `teamStadium`
+  - `teamKit`
+  - `players`
+- Added state-safe reads in the Career Start screen, keeping data in `gameContext` for save/load compatibility.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- `gameContext` to store vital team setup data in global game state.
+Engine components not used (and why):
+- `saveGame` not called directly here, but state shape is persisted in `gameContext` to remain compatible with save/load flows.
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `timer` were not required for state-shape creation itself.
+Files changed:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+Tradeoffs / follow-ups:
+- Career start progression remains gated by missing Team Kit and Players setup flows (expected for this epic scope).
+
+FEAT-004 - Add Team Name and Team Stadium form inputs
+Status: done
+What was implemented:
+- Added editable Team Name and Team Stadium inputs on `/career/start`.
+- Bound both fields to `gameContext` state with live updates as users type.
+- Added validation helpers that trim text and treat whitespace-only values as invalid.
+- Added clear labels and helper hints to keep setup understandable.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- `gameContext` for state binding and persistence-ready data flow.
+Engine components not used (and why):
+- `button`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for the text-field implementation itself.
+Files changed:
+- `src/game/careerStart/components/teamIdentityFields.jsx`
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+Tradeoffs / follow-ups:
+- Field-level error messaging is intentionally minimal and can be enhanced with richer validation UI later.
+
+FEAT-005 - Add disabled Start Career action with full future validation
+Status: done
+What was implemented:
+- Added `Start Career` action on `/career/start`.
+- Implemented reusable validation for full setup completeness:
+  - `teamName` trimmed non-empty
+  - `teamStadium` trimmed non-empty
+  - `teamKit` truthy/valid
+  - `players` non-empty array
+- Kept button disabled until all four checks pass, which means it stays disabled in the current scope because kit/players flows are not built yet.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- `gameContext` for full setup data source.
+- `button` for consistent primary action behavior.
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` are not needed for current gating logic.
+Files changed:
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/careerStart/careerStart.jsx`
+Tradeoffs / follow-ups:
+- Validation hooks are simple by design and ready for deeper rules once Team Kit and Players features are added.
+
+FEAT-006 - Add placeholder UI sections for Team Kit and Players
+Status: done
+What was implemented:
+- Added visible placeholder sections for Team Kit and Players on `/career/start`.
+- Kept both sections non-interactive while clearly indicating these setup areas are still required.
+- Integrated placeholders into the same setup flow so users can see why Start Career remains disabled.
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Engine components used:
+- None directly for placeholder rendering.
+Engine components not used (and why):
+- All listed engine systems were unnecessary for static placeholder content.
+Files changed:
+- `src/game/careerStart/components/setupPlaceholderSection.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+Tradeoffs / follow-ups:
+- Placeholder sections are intentionally static and expected to be replaced by real kit/player setup interactions in the next implementation pass.

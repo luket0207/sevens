@@ -3,12 +3,25 @@ import "./home.scss";
 
 const Home = () => {
   return (
-    <div className="home">
-      <div className="home_content">
-        <h1>Mini React Game Engine</h1>
-        <Button variant={BUTTON_VARIANT.PRIMARY} to="/info">
-          Go to Info
-        </Button>
+    <div className="homeScreen">
+      <div className="homeScreen__overlay">
+        <main className="homeScreen__content">
+          <p className="homeScreen__eyebrow">Football Career Mode</p>
+          <h1 className="homeScreen__title">Build Your Club Legacy</h1>
+          <p className="homeScreen__summary">
+            Start from day one and shape your team identity before the season begins.
+          </p>
+          <Button variant={BUTTON_VARIANT.PRIMARY} to="/career/start">
+            Start Career
+          </Button>
+        </main>
+      </div>
+
+      <div className="homeScreen__support">
+        <h2 className="homeScreen__supportTitle">Season Roadmap</h2>
+        <p className="homeScreen__supportText">
+          Team setup, staff planning, scouting, training, and matchday routes are ready to expand.
+        </p>
       </div>
     </div>
   );

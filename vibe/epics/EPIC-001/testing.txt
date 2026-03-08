@@ -1,0 +1,93 @@
+EPIC-001 Testing Log
+Date: 2026-03-07
+
+Shared command checks run for this pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing repo lint issues in engine/info files (not introduced by the new EPIC-001 files in this pass).
+
+FEAT-001 - Replace current landing flow with new Home screen
+Manual test steps (non-developer friendly):
+1. Start the app.
+Expected result: The first page shown is the new football career Home screen.
+2. Confirm the old info/catalog page is not shown automatically.
+Expected result: You remain on the new Home screen.
+3. Click `Start Career`.
+Expected result: The app navigates to `/career/start`.
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, but project has baseline failures unrelated to this feature.
+Automated tests still needed:
+- Route-level integration test asserting Home renders at `/` and CTA routes to `/career/start`.
+Test status: in progress (manual browser pass still needed).
+
+FEAT-002 - Add core route structure for Career Mode shell
+Manual test steps (non-developer friendly):
+1. In the browser, open each route directly in the address bar:
+   - `/career/home`, `/team-management`, `/staff`, `/scouting`, `/training`, `/cup-draw`, `/pre-match`, `/match`, `/post-match`.
+Expected result: Each page loads without errors and shows a structured placeholder screen.
+2. Resize browser to mobile width.
+Expected result: Placeholder pages remain readable and full-width without broken layout.
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, with unrelated baseline failures.
+Automated tests still needed:
+- Route smoke tests for all required epic paths.
+Test status: in progress (manual browser pass still needed).
+
+FEAT-003 - Create Career Start page shell and team setup state
+Manual test steps (non-developer friendly):
+1. Navigate to `/career/start`.
+Expected result: Career Setup page renders with a team setup structure.
+2. Confirm page sections include team setup context for identity plus future setup placeholders.
+Expected result: Team setup feels like the first real game setup step.
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, with unrelated baseline failures.
+Automated tests still needed:
+- Unit tests for default game state shape including `career.setup.teamName`, `teamStadium`, `teamKit`, `players`.
+Test status: in progress (manual browser + unit tests pending).
+
+FEAT-004 - Add Team Name and Team Stadium form inputs
+Manual test steps (non-developer friendly):
+1. On `/career/start`, type a team name in Team Name.
+Expected result: The typed value appears immediately in the input.
+2. Type a stadium name in Team Stadium.
+Expected result: The typed value appears immediately in the input.
+3. Enter only spaces in either input.
+Expected result: Field is treated as invalid (helper text indicates requirement).
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, with unrelated baseline failures.
+Automated tests still needed:
+- Unit tests for trim-based text validation and state update behavior.
+Test status: in progress (manual browser + unit tests pending).
+
+FEAT-005 - Add disabled Start Career action with full future validation
+Manual test steps (non-developer friendly):
+1. Open `/career/start` on first load.
+Expected result: `Start Career` button is visible and disabled.
+2. Enter valid Team Name and Team Stadium values.
+Expected result: `Start Career` remains disabled because Team Kit and Players are not complete.
+3. Check the helper message near the button.
+Expected result: Message explains all four requirements are needed.
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, with unrelated baseline failures.
+Automated tests still needed:
+- Unit tests for `isCareerSetupComplete` covering all valid/invalid combinations.
+Test status: in progress (manual browser + unit tests pending).
+
+FEAT-006 - Add placeholder UI sections for Team Kit and Players
+Manual test steps (non-developer friendly):
+1. Open `/career/start`.
+Expected result: Team Kit section is visible.
+2. Confirm Team Kit section does not provide editing controls yet.
+Expected result: Section clearly indicates placeholder status.
+3. Confirm Players section is visible and also marked as placeholder.
+Expected result: Page clearly communicates both setup areas are required but not yet implemented.
+Automated tests completed:
+- Build succeeded (`npm run build`).
+- Lint command executed, with unrelated baseline failures.
+Automated tests still needed:
+- UI smoke tests confirming placeholder sections render on `/career/start`.
+Test status: in progress (manual browser + automated tests pending).

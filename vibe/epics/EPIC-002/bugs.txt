@@ -1,0 +1,791 @@
+BUG-001
+
+The target rating for a generated player and the derived rating are not consistent. I am getting results like this all the time 
+Target Rating (Input): 80
+Calculated Overall (Derived): 82
+
+This is a key feature of the game and will be used frequently throughout the game, so we need to get this right. So we are going to treat this bug as a new feature which is below. Build this new functionality over what exisits already
+
+FEATURE - Balance Player Rating Generation System and Stamp Archetypes
+
+Context:
+The player generation system already exists and is working, but it is not yet balanced correctly. This feature is to rebalance the existing generation and overall-calculation logic so it produces much more believable football players by position, while still being reversible from skills back into overall rating.
+
+This is not a net-new player generator feature. This is a balancing and structure-improvement feature applied to the existing system.
+
+Main goals:
+- Balance generated skill profiles by position.
+- Separate generation logic from overall-impact logic.
+- Introduce positional archetypes to create realistic variation between players of the same position and same overall.
+- Ensure generated players are stamped with their archetype.
+- Ensure the calculated overall can still be derived correctly from the generated skill set.
+- Apply a one-off special rule that all outfield players must always have Goalkeeping lower than 15.
+
+================================================================
+Purpose
+================================================================
+
+The current player generation works mechanically, but the outputs are too flat and not believable enough by position.
+
+We want the balanced system to:
+- create players that match their position naturally
+- allow meaningful variation within the same position and same overall
+- allow rounded players where appropriate
+- allow some secondary strengths that are not the most important overall drivers
+- keep structurally inappropriate skills low on average
+- make overall rating depend on role-relevant skills more than irrelevant ones
+- remain reversible, so the generated skill set can be used to recalculate the same overall correctly
+
+Examples of intended behaviour:
+- Midfielders can sometimes have high Tackling even though Passing/Control/Dribbling/Off Ball matter more to their overall.
+- Defenders can occasionally have decent Shooting, but it should usually remain low and should only have a small effect on overall.
+- Attackers should vary meaningfully between dribblers, finishers, creator-forwards, runners, etc.
+- Goalkeepers should be extremely weak in most outfield skills.
+- All outfield players must always have Goalkeeping lower than 15.
+
+================================================================
+High-level design change
+================================================================
+
+The important balancing change is to split the system into two separate concepts:
+
+1. Generation profile logic
+- Controls how likely each skill is to be high or low for a given position.
+- Includes positional generation bias and archetype-based variation.
+- This is used when generating the skill values.
+
+2. Overall impact logic
+- Controls how much each skill contributes to the final overall rating for that position.
+- This is used when calculating overall from a finished skill set.
+
+Do not use one simple banding system based only on weight values.
+Do not use the overall impact matrix directly as the generation banding system.
+The generation system and overall system should be related, but not identical.
+
+================================================================
+Skills
+================================================================
+
+Use this exact skill list consistently:
+
+- Goalkeeping
+- Tackling
+- Marking
+- Passing
+- Control
+- Dribbling
+- Off Ball
+- Shooting
+
+================================================================
+Overall impact weights
+================================================================
+
+These values are for overall calculation only.
+
+Matrix:
+
+Position	Goalkeeping	Tackling	Marking	Passing	Control	Dribbling	Off Ball	Shooting
+GK	3	1	0	1	1	0	0	0
+DF	0	3	3	2	2	1	1	1
+MD	0	2	1	3	3	3	3	2
+AT	0	1	0	2	3	3	2	3
+
+Interpretation:
+- 3 = core role skill
+- 2 = major contributor
+- 1 = minor contributor
+- 0 = no direct overall effect
+
+================================================================
+Generation bias by position
+================================================================
+
+These values are for generation only.
+They are starting biases before archetype adjustments and randomness.
+
+GK generation bias:
+- Goalkeeping: +8
+- Tackling: -8
+- Marking: -38
+- Passing: -6
+- Control: -10
+- Dribbling: -42
+- Off Ball: -40
+- Shooting: -45
+
+DF generation bias:
+- Goalkeeping: special rule for outfield players, always below 15
+- Tackling: +6
+- Marking: +6
+- Passing: +1
+- Control: 0
+- Dribbling: -8
+- Off Ball: -7
+- Shooting: -12
+
+MD generation bias:
+- Goalkeeping: special rule for outfield players, always below 15
+- Tackling: -1
+- Marking: -6
+- Passing: +4
+- Control: +4
+- Dribbling: +3
+- Off Ball: +3
+- Shooting: -1
+
+AT generation bias:
+- Goalkeeping: special rule for outfield players, always below 15
+- Tackling: -10
+- Marking: -34
+- Passing: -1
+- Control: +4
+- Dribbling: +4
+- Off Ball: +1
+- Shooting: +4
+
+Important rule:
+- All outfield players must always have Goalkeeping lower than 15.
+- This is a special one-off hard rule for DF, MD, and AT only.
+- This should override normal low-biased generation for Goalkeeping on outfield players.
+- Keep Goalkeeping valid as a real skill value, but always in the range 1 to 14 inclusive for outfield players.
+
+================================================================
+Archetypes
+================================================================
+
+Each generated player should be assigned exactly one archetype appropriate to their position.
+The generated player object must be stamped with this archetype value when generated.
+
+Use these archetypes:
+
+GK archetypes:
+- Traditional Shot Stopper
+- Sweeper Keeper
+- Commanding Keeper
+- Reflex Specialist
+- Distributor
+- Balanced Goalkeeper
+
+DF archetypes:
+- No-Nonsense Defender
+- Ball-Playing Defender
+- Aggressive Stopper
+- Reader of the Game
+- Carrying Defender
+- Balanced Defender
+
+MD archetypes:
+- Deep-Lying Playmaker
+- Ball Winner
+- Box-to-Box Midfielder
+- Attacking Midfielder
+- Technical Midfielder
+- Balanced Midfielder
+
+AT archetypes:
+- Finisher
+- Dribbler
+- Creator Forward
+- Runner
+- Technical Forward
+- Balanced Attacker
+
+================================================================
+Archetype bias adjustments
+================================================================
+
+These are added on top of the position generation bias.
+
+GK archetype bias:
+
+Traditional Shot Stopper
+- Goalkeeping: +4
+- Tackling: 0
+- Marking: 0
+- Passing: -3
+- Control: -3
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+Sweeper Keeper
+- Goalkeeping: +1
+- Tackling: 0
+- Marking: 0
+- Passing: +4
+- Control: +4
+- Dribbling: +2
+- Off Ball: 0
+- Shooting: 0
+
+Commanding Keeper
+- Goalkeeping: +3
+- Tackling: +1
+- Marking: 0
+- Passing: -1
+- Control: 0
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+Reflex Specialist
+- Goalkeeping: +5
+- Tackling: -1
+- Marking: 0
+- Passing: -2
+- Control: -2
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+Distributor
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: +5
+- Control: +3
+- Dribbling: +1
+- Off Ball: 0
+- Shooting: 0
+
+Balanced Goalkeeper
+- Goalkeeping: +2
+- Tackling: 0
+- Marking: 0
+- Passing: +1
+- Control: +1
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+DF archetype bias:
+
+No-Nonsense Defender
+- Goalkeeping: 0
+- Tackling: +4
+- Marking: +5
+- Passing: -3
+- Control: -2
+- Dribbling: -2
+- Off Ball: -1
+- Shooting: -2
+
+Ball-Playing Defender
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: +1
+- Passing: +5
+- Control: +4
+- Dribbling: +1
+- Off Ball: +1
+- Shooting: -1
+
+Aggressive Stopper
+- Goalkeeping: 0
+- Tackling: +5
+- Marking: +2
+- Passing: -1
+- Control: -1
+- Dribbling: -2
+- Off Ball: 0
+- Shooting: -1
+
+Reader of the Game
+- Goalkeeping: 0
+- Tackling: +2
+- Marking: +5
+- Passing: +1
+- Control: +1
+- Dribbling: 0
+- Off Ball: +1
+- Shooting: -1
+
+Carrying Defender
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: +3
+- Control: +3
+- Dribbling: +4
+- Off Ball: +1
+- Shooting: 0
+
+Balanced Defender
+- Goalkeeping: 0
+- Tackling: +2
+- Marking: +2
+- Passing: +1
+- Control: +1
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+MD archetype bias:
+
+Deep-Lying Playmaker
+- Goalkeeping: 0
+- Tackling: +1
+- Marking: 0
+- Passing: +5
+- Control: +4
+- Dribbling: +1
+- Off Ball: +1
+- Shooting: -2
+
+Ball Winner
+- Goalkeeping: 0
+- Tackling: +6
+- Marking: +2
+- Passing: +1
+- Control: 0
+- Dribbling: -2
+- Off Ball: +1
+- Shooting: -2
+
+Box-to-Box Midfielder
+- Goalkeeping: 0
+- Tackling: +3
+- Marking: +1
+- Passing: +2
+- Control: +2
+- Dribbling: +1
+- Off Ball: +3
+- Shooting: +1
+
+Attacking Midfielder
+- Goalkeeping: 0
+- Tackling: -3
+- Marking: -2
+- Passing: +4
+- Control: +4
+- Dribbling: +4
+- Off Ball: +3
+- Shooting: +3
+
+Technical Midfielder
+- Goalkeeping: 0
+- Tackling: -1
+- Marking: -1
+- Passing: +3
+- Control: +5
+- Dribbling: +4
+- Off Ball: +2
+- Shooting: 0
+
+Balanced Midfielder
+- Goalkeeping: 0
+- Tackling: +2
+- Marking: 0
+- Passing: +2
+- Control: +2
+- Dribbling: +2
+- Off Ball: +2
+- Shooting: +1
+
+AT archetype bias:
+
+Finisher
+- Goalkeeping: 0
+- Tackling: -1
+- Marking: 0
+- Passing: -2
+- Control: +2
+- Dribbling: 0
+- Off Ball: +2
+- Shooting: +6
+
+Dribbler
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: 0
+- Control: +2
+- Dribbling: +6
+- Off Ball: +1
+- Shooting: -2
+
+Creator Forward
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: +5
+- Control: +3
+- Dribbling: +2
+- Off Ball: 0
+- Shooting: -2
+
+Runner
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: -1
+- Control: 0
+- Dribbling: +2
+- Off Ball: +5
+- Shooting: +1
+
+Technical Forward
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: +2
+- Control: +5
+- Dribbling: +3
+- Off Ball: +1
+- Shooting: 0
+
+Balanced Attacker
+- Goalkeeping: 0
+- Tackling: 0
+- Marking: 0
+- Passing: +1
+- Control: +2
+- Dribbling: +2
+- Off Ball: +1
+- Shooting: +2
+
+================================================================
+Variance rules
+================================================================
+
+After position bias and archetype bias, apply controlled random variance.
+
+Rules:
+- Do not flatten all players of the same overall into near-identical numbers.
+- Players of the same position and same overall should still have distinct identities.
+- Variance should create trade-offs, not just random noise.
+
+Guidelines:
+- Core strengths for the role: around -4 to +4
+- Flexible/secondary skills: around -5 to +5
+- Suppressed skills: around -4 to +3
+- Rare/structurally weak skills: use a low-biased roll instead of normal variance
+
+Important:
+- Maintain believable positional shape.
+- Midfielders should have the widest flexibility.
+- Defenders should usually remain weak at Shooting.
+- Attackers should vary strongly across Control, Dribbling, Shooting, Passing, and Off Ball depending on archetype.
+- Goalkeepers should remain extremely weak in most outfield skills.
+
+================================================================
+Low-biased generation rules
+================================================================
+
+Use low-biased generation for structurally weak role skills.
+
+Outfield low-biased roll:
+- 85% chance: 18-38
+- 12% chance: 39-55
+- 3% chance: 56-75
+
+Goalkeeper low-biased outfield roll:
+- 88% chance: 12-32
+- 10% chance: 33-45
+- 2% chance: 46-65
+
+Special exception:
+- Do not use the normal outfield low-biased rule for Goalkeeping on DF, MD, or AT.
+- Outfield Goalkeeping must always be 1 to 14 inclusive.
+
+================================================================
+Overall calculation method
+================================================================
+
+Use the overall impact matrix and calculate overall separately from generation.
+
+Step 1: weighted base average
+
+baseOverall =
+sum(skill * impactWeight) / sum(impactWeight)
+
+Only include skills where impactWeight > 0.
+
+Step 2: core weakness penalty
+
+Apply a stronger penalty when a player is weak in an important role skill.
+
+Suggested shape:
+
+penalty =
+sum(
+  ((baseOverall - skill) ^ 1.15) * (impactWeight ^ 1.35) * 0.055
+)
+for each skill where impactWeight > 0 and skill < baseOverall
+
+Step 3: small role-strength bonus
+
+Apply a small bonus for standout highly relevant role skills.
+
+Suggested shape:
+
+bonus =
+sum(
+  min(1.2, (skill - (baseOverall + 6)) * 0.03 * impactWeight)
+)
+for each skill where impactWeight >= 2 and skill > baseOverall + 6
+
+Step 4: final overall
+
+overall = round(baseOverall - penalty + bonus)
+
+Important:
+- The calculated overall must be derived from the generated skills, not copied from the original selected rating.
+- The generator should then make small corrections as needed so generated players resolve to the intended target overall.
+
+================================================================
+Generation flow
+================================================================
+
+Rework the existing generator flow so it behaves like this:
+
+1. Choose position
+2. Choose target overall
+3. Choose an archetype appropriate to the position
+4. For each skill:
+   generatedSkill = targetOverall + positionBias + archetypeBias + randomVariance
+5. For weak-role skills, use low-biased generation instead of normal variance
+6. For DF, MD, and AT, always force Goalkeeping to be below 15
+7. Clamp all skills to the legal range 1 to 100
+8. Calculate overall from the final skill set
+9. Apply small corrections to role-relevant skills until calculated overall matches the target overall
+10. Preserve the player's archetype identity during correction
+11. Save/stamp the selected archetype onto the generated player object
+
+================================================================
+Generated player object changes
+================================================================
+
+Update the generated player object so it includes the archetype.
+
+At minimum, generated players should contain:
+- firstName
+- lastName
+- fullName
+- position
+- targetRating
+- archetype
+- appearance
+- skills
+- calculatedOverall
+
+Archetype should be a readable string matching the selected archetype name.
+
+Example:
+- archetype: "Ball-Playing Defender"
+- archetype: "Technical Midfielder"
+- archetype: "Finisher"
+
+================================================================
+Implementation expectations
+================================================================
+
+This feature should improve the balance of the current existing generator, not replace it with something disconnected from the current codebase.
+
+Requirements:
+- Refactor the current balancing logic as needed.
+- Keep the generation utilities reusable.
+- Keep the overall calculation utility reusable.
+- Keep constants/config separated cleanly where sensible.
+- Do not hardcode final outputs.
+- The system should still generate varied random players.
+- The system should be stable enough for future full squad generation.
+
+Suggested constants/config modules:
+- POSITION_IMPACT_WEIGHTS
+- POSITION_GENERATION_BIAS
+- POSITION_ARCHETYPES
+- LOW_BIASED_SKILL_RULES
+
+================================================================
+Acceptance criteria
+================================================================
+
+This feature is complete when:
+
+- The existing player generator is rebalanced rather than left flat/unrealistic.
+- Position generation logic is separated from overall impact logic.
+- Each generated player is assigned a valid archetype for their position.
+- The generated player object stores the archetype.
+- Midfielders can generate with meaningful Tackling without that needing to be a primary overall driver.
+- Defenders usually generate with low Shooting, but occasional edge cases can still exist.
+- Attackers of the same rating can still look meaningfully different from one another.
+- Goalkeepers remain very weak in most outfield skills.
+- All outfield players always have Goalkeeping below 15.
+- Overall is calculated from skills using the impact matrix and penalty/bonus logic.
+- The generator can still produce a skill set that resolves back to the intended overall rating.
+- The implementation remains modular and reusable for future team/squad generation features.
+
+================================================================
+Execution log update (2026-03-07)
+================================================================
+
+Bug title:
+- BUG-001 - Target rating and derived rating mismatch in player generation
+
+Repro steps:
+- Open Career Start debug generator.
+- Pick any position and target rating (for example `DF` at `80`).
+- Generate several players.
+- Compare `Target Rating (Input)` and `Calculated Overall (Derived)`.
+
+Expected:
+- Derived overall should be calculated from generated skills and resolve to the selected target.
+
+Actual (before fix):
+- Derived overall frequently drifted from target due flat weighting/banding and weak correction strategy.
+
+Suspected cause:
+- Generation profile and overall impact logic were effectively coupled via one simplistic weighting approach.
+- No archetype layer for positional variation.
+- Outfield Goalkeeping was not hard constrained.
+- Correction loop was too coarse to reliably converge to selected target.
+
+Attempted fixes:
+- Introduced separate generation and impact config matrices.
+- Added positional archetypes and archetype bias overlays.
+- Added low-biased generation bands for structurally weak skills.
+- Added hard outfield Goalkeeping rule (`1..14`).
+- Replaced overall formula with weighted base + weakness penalty + role-strength bonus.
+- Added bounded iterative correction passes on role-relevant skills.
+
+Final fix:
+- Implemented full BUG-001 balancing refactor in player generator constants/utilities and stamped `archetype` on generated player output.
+- Updated debug output to surface the chosen archetype.
+
+Status:
+- fixed
+
+
+BUG-002
+
+The ratings still seem to be coming out too high, for example this was a player I generated using the current code:
+
+Generated Player Output
+
+Full Name: Valen Pitcher
+
+First Name: Valen
+
+Last Name: Pitcher
+
+Position: DF
+
+Archetype: No-Nonsense Defender
+
+Target Rating (Input): 75
+
+Calculated Overall (Derived): 75
+
+Appearance: [1, 5, 4]
+Goalkeeping
+5
+Tackling
+94
+Marking
+94
+Passing
+77
+Control
+76
+Dribbling
+67
+Off Ball
+68
+Shooting
+41
+
+For a 75 rated player, they should not have 90 rated anything. If I was to put an overall rating to that player above by looking at their skill ratings, it would be around 93 because the tackling and marking skills, two vital skills for a defender are so high.
+
+A 75 rated defender I would expect to look something more like this (I am estimating to show ballpark figures, this example shouldn't be taken as literal 75 rating)
+
+Goalkeeping
+5
+Tackling
+77
+Marking
+73
+Passing
+40
+Control
+66
+Dribbling
+20
+Off Ball
+32
+Shooting
+11
+
+================================================================
+Execution log update (2026-03-07) - BUG-002
+================================================================
+
+Bug title:
+- BUG-002 - Unrealistic high core skill spikes at lower target ratings
+
+Repro steps:
+- Open Career Start debug generator.
+- Generate a defender at target rating `75`.
+- Inspect core skills such as `Tackling` and `Marking`.
+
+Expected:
+- A 75-rated player should have believable role-appropriate strengths without extreme 90+ spikes.
+
+Actual (before fix):
+- Some low/mid target players produced extreme core skills (for example 90+) while overall still resolved to target.
+
+Suspected cause:
+- Position/archetype bias offsets were applied too strongly at low target ratings.
+- Correction loop favored high-impact/core skills for upward adjustments, inflating already-strong attributes.
+- Penalty pressure in overall calculation encouraged further core-skill inflation to recover target overall.
+
+Attempted fixes:
+- Added target-relative dynamic skill ceilings by impact tier during generation and correction.
+- Added target-aware bias scaling so bias influence is compressed more at lower target ratings.
+- Changed correction prioritization to raise weaker role-relevant skills before boosting already high skills.
+- Reduced upward shift caps for core/high-impact skills.
+- Softened penalty coefficients/exponents in overall calculation.
+
+Final fix:
+- Rebalanced player generation/correction internals in `playerGeneratorUtils.js` to suppress unrealistic high stat spikes while keeping target-overall convergence.
+
+Status:
+- fixed
+
+
+BUG-003
+
+The generation of players is still not working correctly. Can we remove the generation of players and all code associated with it (as long as it doesn't break anything else) so I can start again. The next Epic will be implementing the new player generation
+
+================================================================
+Execution log update (2026-03-07) - BUG-003
+================================================================
+
+Bug title:
+- BUG-003 - Remove temporary player generation and associated code
+
+Repro steps:
+- Open Career Start.
+- Observe the temporary player generator controls and generated-player debug output still present.
+
+Expected:
+- Player generation functionality should be removed completely so a new system can be implemented in the next epic.
+
+Actual (before fix):
+- Legacy temporary generator code and UI were still active in Career Start.
+
+Suspected cause:
+- Previous bug fixes improved/tuned the existing generator but did not remove the system.
+
+Attempted fixes:
+- Removed generator component usage from Career Start.
+- Removed generator state wiring from Career Start and default `gameContext` setup state.
+- Deleted all temporary generator source files and related UI/styling blocks.
+- Rebuilt and lint-checked changed Career Start code.
+
+Final fix:
+- Temporary player generation system and associated code were removed while keeping the rest of Career Setup stable.
+
+Status:
+- fixed

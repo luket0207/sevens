@@ -1,0 +1,91 @@
+EPIC-001
+
+Overview
+The goal of this epic is to create the basic game structure and to allow the player to start a career, to the point they have selected everything they need to start a career.
+
+It will include all the core pages we need for the game, these are:
+home
+career/start
+career/home
+team-management
+staff
+scouting
+training
+cup-draw
+pre-match
+match
+post-match
+
+To start the epic we will delete the current home and info page and replace the homepage with a new one. This will have a link to start a career which will take us to career start.
+
+The structure should span the whole page width with a responsive layout.
+
+When starting a career we then need to set the following values for the players team before we can continue:
+
+- Team Name -- the name of the team
+- Team Kit -- the home and away kits for the team to use in the game, we will get the team colours from the kits as well
+- Team Stadium -- the name of the team's stadium
+- Players -- the starting footballers for the player's team. 
+
+Once we have this we can acivate the button to start a career. We stop at this point. 
+
+
+
+
+
+EPIC-002
+
+This epic's purose is to fill in the gaps we left in the team set up for the career last epic. 
+
+In here we need to implement a kit selection component and a team selection component. 
+
+The kit selection component will give us 4 values: home kit, away kit, home colour, away colour
+
+The kit selection tool is really just a shirt selection tool. This is all that a kit consists of.
+
+The shirt is made up of either 1 or 2 colours which can be selected by the player. There will be a main colour and a detail colour. The details can be things like stripes, spots, bars accross certain areas, half and half shirts and any that can be done easily. The detail colour can be used to implement these. 
+
+The player will need 1 shirt for home and away. The away colour needs to be forced to have a good contrast with the home colour, so we can avoid clashes. All colours should be able to be randomised but also follow the constrast rules when randomised. The main colour for the shirts also becomes the home colour and away colour respectively. 
+
+When we have this kit, we need to export it into the details of the team in the gameContext so it is saved to the team. Then we need a component that can decode this value and produce an image of the shirt identically to how the player made it. This component will be used in lots of places around the game then. 
+
+The player will also need to select a goalkeeper kit. This is just a choice between orange, green, yellow and black and that counts for both home and away.
+
+
+Then we go on to the team selector component. This is more complicated.
+
+For now, I don't want to build the whole component, in the team selector state in the career start page, just put a debugging tool called a player generator for now.
+
+This generator will not be used in the game, but the mechanics behind it will be so, just not the debug interface we are going to make. The interface should take in the 2 values selected from dropdowns: rating (70 to 100), position (GK, DF, MD, AT).
+
+Then a button to generate a random player that fits them two values. When generating a player we need to generate the following:
+
+The player's name - make a pool of first and last names, make a sort of slight pardoy edge to the names too.
+
+The player's appearance - this will just be an array of 3 numbers which are all 1 to 5, so for example [1,4,2]. Can just be randomly generated for now as long as it follows the rules.
+
+The players skill ratings -  the player's skill ratings for Goalkeeping	Tackling	Marking	Passing	Control	Dribbling	Off Ball	Shooting.
+
+The ratings should be weighted depending on position. All of them are 1 to 100. The bands of quality of rating are as follows:
+
+Band	Rating
+Bad	Below 50
+Poor	50-59
+Ok	60-69
+Good	70-79
+Very Good	80-89
+Elite	90+
+
+This is how they should be weighted, with 3 being a lot of inflence and 1 being only a slight influence. 
+
+	Goalkeeping	Tackling	Marking	Passing	Control	Dribbling	Off Ball	Shooting
+GK	3	1	1	1	1	0	0	0
+DF	0	3	3	2	2	1	1	1
+MD	0	2	2	3	3	3	3	2
+AT	0	1	1	2	3	3	2	3
+
+When the player is generated we should be able to see all the players details including each skill value and it's overall value (which should be calculated independantly of the value that was selected on generation, to check the player has been made correctly, display both the first selection and the current calculated overall value to show it can be reverse engineered correctly)
+
+EPIC-003
+
+Things didn't go well making the player generation in EPIC-002 so we are going to do it here from fresh

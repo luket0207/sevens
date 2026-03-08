@@ -1,615 +1,287 @@
-[not started] FEAT-001 - Replace the current app landing flow with a brand new home screen
+EPIC-001 - Feature Prompt File
+
+This epic builds the basic game structure for the football career game. The goal of this first implementation pass is to create the core screen flow and the first part of the career setup process.
+
+Scope for this prompt file:
+- Replace the current landing flow with a new Home screen.
+- Add the full route structure for the main game pages.
+- Build the Career Start screen shell.
+- Implement editable Team Name and Team Stadium fields.
+- Prepare state for Team Kit and Players, but do not build those creation flows yet.
+- The button to start the career must remain disabled until all required team values exist, including Team Kit and Players.
+
+Important scope rules:
+- Do not implement Team Kit creation yet.
+- Do not implement Player selection/generation yet.
+- Do not allow progression into the career until Team Name, Team Stadium, Team Kit, and Players are all present in state.
+- Team Kit and Players can exist as placeholder/null state for now, but they must be part of the validation logic.
+- The layout should span the whole page width and be responsive.
+- This should feel like the real game flow, not a debug flow.
+
+Implementation status (2026-03-07):
+- FEAT-001: done
+- FEAT-002: done
+- FEAT-003: done
+- FEAT-004: done
+- FEAT-005: done
+- FEAT-006: done
+
+================================================================
+FEAT-001 - Replace current landing flow with new Home screen
+================================================================
+
+Purpose:
+Remove the current home/info flow and replace it with the new game home page.
+
+Outcome:
+The app lands on a new Home screen with a clear "Start Career" entry point.
+
+Prompt:
+Implement FEAT-001 for EPIC-001.
+
 Goal:
-Remove the current homepage and the current info page from the active app flow and replace them with a new football-management-specific home screen that becomes the default entry point of the app.
+Replace the current landing flow with a new Home screen for the football career game.
 
-Expected behaviour:
-- The old homepage must no longer be used as the app's main landing screen.
-- The old info page must no longer be part of the active first-run navigation flow.
-- When the app opens, the user must land on the new home screen by default.
-- The new home screen must be built specifically for this football team management sim and must not feel like a leftover screen from an earlier prototype.
-- The new home screen must visibly contain the game's identity and a clear primary action to start a career.
+Requirements:
+- Remove the current home/info page setup from the active user-facing flow.
+- Create a new Home screen as the main landing page.
+- The layout should span the full page width and be responsive.
+- The screen should feel like the real game entry point, not a debug page.
+- Add a primary action labelled "Start Career".
+- Clicking "Start Career" should navigate to /career/start.
+- Keep the implementation clean and modular using the existing project patterns.
 
-Implementation requirements:
-- Review the current routing/screen entry structure and remove, bypass, or replace the old home/info flow cleanly.
-- Do not stack a new screen on top of the old structure if the old structure is no longer needed.
-- Keep the implementation modular and aligned with the rules file folder structure.
-- Use global SCSS tokens for colours and typography.
-- Reuse engine button component if suitable.
+Implementation notes:
+- Do not build career logic here beyond navigation.
+- Do not add debug controls to this mode.
+- Keep styling responsive and ready for expansion later.
 
-Relies on:
-- App entry screen / routing structure
-- Global SCSS token files
-- Existing engine button component if reusable
+Acceptance criteria:
+- App opens on the new Home screen.
+- The old home/info flow is no longer the active user path.
+- A visible "Start Career" action exists.
+- Clicking it routes to /career/start.
+- The page uses a full-width responsive layout.
 
-Acceptance checks:
-- App loads directly into the new home screen.
-- Old homepage is no longer the default landing screen.
-- Old info page is no longer shown in the active start flow.
+================================================================
+FEAT-002 - Add core route structure for Career Mode shell
+================================================================
 
+Purpose:
+Create the full page and route skeleton for the main game structure, even if most pages are placeholders for now.
 
-[not started] FEAT-002 - Build the new home screen UI layout and content structure
+Outcome:
+All core pages from the epic exist and are routable.
+
+Prompt:
+Implement FEAT-002 for EPIC-001.
+
 Goal:
-Create the actual new home screen UI that acts as the first screen of the football management game.
+Create the initial route and screen structure for the core Career Mode pages.
 
-Expected behaviour:
-- The home screen should clearly read as the main menu of the game.
-- It must include:
-  - a visible game title or heading area
-  - a primary "Start Career" button
-- The layout should leave room for future menu options, but only Start Career needs to be active in EPIC-001.
-- The home screen should not show old prototype content, old instructions, or unrelated debug UI.
+Required routes/screens:
+- /
+- /career/start
+- /career/home
+- /team-management
+- /staff
+- /scouting
+- /training
+- /cup-draw
+- /pre-match
+- /match
+- /post-match
 
-Implementation requirements:
-- Build this as a dedicated feature screen/component rather than inline app markup.
-- Keep the JSX simple and move non-trivial logic out of the markup.
-- Style using global theme tokens only.
-- Keep feature-specific styles next to the screen/component.
+Requirements:
+- Add the route definitions for all pages above.
+- Create a screen/component for each route.
+- For now, all pages except Home and Career Start can be simple structured placeholders.
+- Each placeholder should use the shared page layout approach and full-width responsive styling.
+- Keep naming and folder structure consistent with the existing app architecture.
 
-Relies on:
-- FEAT-001 app entry update
-- Global theme tokens
-- Engine button component if reused
+Implementation notes:
+- This feature is about structure, not full functionality.
+- Pages should be ready for later feature work.
+- Do not add deep logic to the placeholder pages yet.
 
-Acceptance checks:
-- The screen looks like a real new project home screen.
-- Start Career is clearly visible and styled consistently.
-- No old landing content remains visible.
+Acceptance criteria:
+- Every required route exists and renders.
+- Home and Career Start are real pages in the flow.
+- The remaining pages render placeholder content without errors.
+- Layout is full-width and responsive across all pages.
 
+================================================================
+FEAT-003 - Create Career Start page shell and team setup state
+================================================================
 
-[not started] FEAT-003 - Add Start Career interaction from the new home screen
+Purpose:
+Build the main career setup screen and define the state structure needed for the player's team setup.
+
+Outcome:
+The Career Start page exists with the correct state model for team setup, including future kit/player fields.
+
+Prompt:
+Implement FEAT-003 for EPIC-001.
+
 Goal:
-Make the Start Career button functional and connect it to the career setup flow.
+Create the Career Start page shell and define the initial state shape for starting a career.
 
-Expected behaviour:
-- Clicking Start Career must move the user from the home screen into the first career setup screen.
-- The transition should be deterministic and should not depend on placeholder debug toggles.
-- The flow should be built in a way that later epics can extend from this same entry point.
-
-Implementation requirements:
-- Wire the home screen primary action to the new career setup route/screen.
-- Keep navigation logic explicit and traceable.
-- Do not initialise the full career yet when the button is clicked; this feature is only about entering the setup flow.
-
-Relies on:
-- FEAT-002 home screen UI
-- App routing/screen flow structure
-
-Acceptance checks:
-- Clicking Start Career always opens the career setup flow.
-- No old page is shown between home and setup.
-
-
-[not started] FEAT-004 - Define the EPIC-001 career state shape in gameContext
-Goal:
-Create the initial shared career state shape that later epics will build upon.
-
-Expected behaviour:
-- The shared state must support two clear states:
-  - no active career
-  - active career exists
-- The career data must live in a dedicated structured area in shared state rather than being scattered across unrelated state fields.
-- The state shape for this epic must include, at minimum:
-  - hasActiveCareer
+Requirements:
+- Build the /career/start screen as the first setup page for a new career.
+- This screen is where the player will prepare their team before starting the career.
+- Add a structured section for team setup values.
+- The state for the player's team setup must include:
   - teamName
-  - seasonNumber
-  - currentMonth
-  - currentWeek
-  - currentDay
-  - activeScreen or equivalent flow value if needed by current project pattern
-- Placeholder values used in EPIC-001 must be sensible and safe for future extension.
+  - teamStadium
+  - teamKit
+  - players
+- teamKit and players must exist in the state shape now even though their creation flows are not being built yet.
+- Use sensible initial values such as empty strings, null, or empty arrays depending on the field.
+- Keep the state shape clean and future-proof for later features.
 
-Implementation requirements:
-- Implement inside src/engine/gameContext/gameContext.jsx or the current shared state pattern used by the project.
-- Keep the structure extendable for future additions such as squad, calendar, competitions, tactics, and save data.
-- Avoid overbuilding deep unused structures in this epic.
-- Use explicit property names.
+Implementation notes:
+- This feature is about page structure and state shape.
+- Do not implement the UI for creating kits or selecting players yet.
+- Do not implement career start progression yet beyond having the correct state available.
 
-Relies on:
-- Existing gameContext structure and provider pattern
+Acceptance criteria:
+- /career/start renders a structured team setup screen.
+- Team setup state includes teamName, teamStadium, teamKit, and players.
+- teamKit and players are present in state even though not yet editable.
+- The page is responsive and uses full-width layout.
 
-Acceptance checks:
-- Shared state can represent both no-career and active-career states cleanly.
-- State shape is readable and future-friendly.
-- Required baseline fields exist.
+================================================================
+FEAT-004 - Add Team Name and Team Stadium form inputs
+================================================================
 
+Purpose:
+Implement the first editable setup fields the player can actually fill in.
 
-[not started] FEAT-005 - Define EPIC-001 default career values and initial state constants
+Outcome:
+The user can enter a team name and stadium name on the Career Start screen.
+
+Prompt:
+Implement FEAT-004 for EPIC-001.
+
 Goal:
-Create a single clear source of truth for the default values used when no career exists and when a new career is first created.
+Add editable Team Name and Team Stadium inputs to the Career Start screen.
 
-Expected behaviour:
-- There must be a stable baseline state for:
-  - no active career
-  - fresh created career
-- The initial created career values for this epic must be:
-  - hasActiveCareer = true
-  - seasonNumber = 1
-  - currentMonth = 1
-  - currentWeek = 1
-  - currentDay = 1
-- Team name must be injected from the setup flow, not hardcoded.
+Requirements:
+- Add an input for Team Name.
+- Add an input for Team Stadium.
+- Bind both inputs to the Career Start team setup state.
+- The inputs should update state live as the user types.
+- Use clear labels so the setup is easy to understand.
+- Keep the layout responsive and visually structured.
 
-Implementation requirements:
-- Avoid scattering default values across multiple screens or handlers.
-- Put baseline defaults close to shared state logic so future epics can extend them safely.
-- Keep naming and structure consistent with FEAT-004.
+Validation requirements:
+- Treat Team Name as required.
+- Treat Team Stadium as required.
+- Trim values for validation purposes so whitespace-only input does not count as valid.
 
-Relies on:
-- FEAT-004 state shape in gameContext
+Implementation notes:
+- Do not implement Team Kit or Players UI here.
+- This feature is only for the two text fields.
+- The form structure should be ready to expand later with the missing setup sections.
 
-Acceptance checks:
-- Default values are defined in one clear place.
-- A fresh career always starts with the same baseline values.
+Acceptance criteria:
+- Team Name input is visible and editable.
+- Team Stadium input is visible and editable.
+- Both values are stored in the team setup state.
+- Whitespace-only values are not treated as valid.
+- Layout remains clean and responsive.
 
+================================================================
+FEAT-005 - Add disabled Start Career action with full future validation
+================================================================
 
-[not started] FEAT-006 - Add a single initialiseNewCareer action in gameContext
+Purpose:
+Ensure the flow enforces all required team setup data, including not-yet-implemented fields.
+
+Outcome:
+The Start Career button exists but remains disabled until all required values are present, including Team Kit and Players.
+
+Prompt:
+Implement FEAT-005 for EPIC-001.
+
 Goal:
-Create one explicit shared-state action that creates a fresh career using the setup data and default values.
+Add the Start Career action to the Career Start screen, but keep it disabled until the full team setup is complete.
 
-Expected behaviour:
-- Calling this action must create a clean new active career state.
-- It must:
-  - set hasActiveCareer to true
-  - persist the chosen team name
-  - set seasonNumber = 1
-  - set currentMonth = 1
-  - set currentWeek = 1
-  - set currentDay = 1
-- It must be safe to call repeatedly during development without causing mixed or partial state.
+Requirements:
+- Add a primary button labelled "Start Career" on the /career/start screen.
+- The button must be disabled unless all of the following are valid:
+  - teamName exists and is not just whitespace
+  - teamStadium exists and is not just whitespace
+  - teamKit exists and is valid
+  - players exists and is valid
+- Even though teamKit and players are not yet implemented, they must still be part of the disabled logic now.
+- This means the button should remain disabled in the current implementation.
 
-Implementation requirements:
-- Keep this logic inside shared state actions, not screen JSX.
-- Use one initialise action rather than many disconnected setters.
-- Make this the single source of truth for fresh career creation in early epics.
+Validation expectations:
+- teamName: required non-empty trimmed string
+- teamStadium: required non-empty trimmed string
+- teamKit: must be present in state and pass a simple truthy/validity check ready for later enhancement
+- players: must be present in state and pass a simple validity check ready for later enhancement, likely non-empty array
 
-Relies on:
-- FEAT-004 state shape
-- FEAT-005 default values
-- Team setup data from later features in this epic
+Implementation notes:
+- Do not create temporary fake defaults for teamKit or players just to make the button work.
+- The correct current behaviour is that the user can fill in Team Name and Team Stadium, but cannot continue yet because Team Kit and Players are still missing.
+- Keep the validation logic separated and reusable if possible.
 
-Acceptance checks:
-- Running the action creates a valid career state every time.
-- Team name is stored correctly.
-- Baseline progression values are set correctly.
+Acceptance criteria:
+- A Start Career button is visible on the Career Start screen.
+- The button is disabled on first render.
+- Entering valid Team Name and Team Stadium alone is still not enough to enable the button.
+- teamKit and players are included in the enable/disable logic.
+- The validation structure is ready for future features that will implement kit and player setup.
 
+================================================================
+FEAT-006 - Add placeholder UI sections for Team Kit and Players
+================================================================
 
-[not started] FEAT-007 - Add a clear/reset career action for development testing
+Purpose:
+Make the Career Start page clearly show the remaining setup areas without implementing them yet.
+
+Outcome:
+The screen communicates that Team Kit and Players are still part of the required setup.
+
+Prompt:
+Implement FEAT-006 for EPIC-001.
+
 Goal:
-Create a shared-state reset action that clears the current career and returns the app to the same baseline as a fresh boot for EPIC-001 testing.
-
-Expected behaviour:
-- Triggering reset must remove the active career state completely.
-- After reset, shared state must match the no-career baseline.
-- This must support repeated testing of the epic demo without stale data remaining.
-
-Implementation requirements:
-- Implement in shared state, not as a local screen workaround.
-- Keep the reset explicit and safe.
-- Do not leave partial values behind after reset.
-
-Relies on:
-- FEAT-004 and FEAT-005 baseline shared state setup
-
-Acceptance checks:
-- Reset fully clears the active career.
-- State after reset matches a fresh launch baseline.
-
-
-[not started] FEAT-008 - Build the Start Career setup screen shell
-Goal:
-Create the dedicated setup screen the user enters after pressing Start Career.
-
-Expected behaviour:
-- This must be a distinct setup screen, not a modal placed directly on the home page unless engine reuse strongly justifies that approach.
-- The setup screen must clearly communicate that the user is creating a new career.
-- The screen must contain:
-  - a team name input field
-  - a continue/create path
-  - a back action to return to the home screen
-- The structure should be ready for future additions such as team customisation and player selection without needing a full rewrite.
-
-Implementation requirements:
-- Keep form state local until confirmation is needed.
-- Reuse engine UI components if suitable.
-- Keep layout modular and feature-scoped.
-
-Relies on:
-- FEAT-003 Start Career navigation
-- Engine UI components if suitable
-
-Acceptance checks:
-- Start Career opens this setup screen.
-- The screen contains the required controls.
-- The user can return to the home screen from here.
-
-
-[not started] FEAT-009 - Add team name input handling on the setup screen
-Goal:
-Implement the input state and change handling for the team name field.
-
-Expected behaviour:
-- The user must be able to type a team name into the setup form.
-- The input must reflect what the user types in real time.
-- The form state must remain stable when navigating within the setup flow.
-- The entered team name must be available for validation and later confirmation.
-
-Implementation requirements:
-- Keep the input controlled and explicit.
-- Store the draft value locally in the setup flow until career creation is confirmed.
-- Use clear naming for the local form state.
-
-Relies on:
-- FEAT-008 setup screen shell
-
-Acceptance checks:
-- Typing updates the team name field correctly.
-- The draft team name is available to the setup flow logic.
-
-
-[not started] FEAT-010 - Add explicit team name validation rules
-Goal:
-Prevent invalid or empty team names from being used to create a new career.
-
-Expected behaviour:
-- The user must not be able to continue/create a career if the team name is empty.
-- The user must not be able to continue/create a career if the value is whitespace only.
-- Validation feedback must be visible and understandable.
-- The validation rules should be easy to extend later if name constraints become stricter.
-
-Implementation requirements:
-- Keep validation logic explicit, not hidden inside JSX conditions.
-- Trim whitespace before evaluating whether the name is valid.
-- Keep user-facing messaging concise.
-
-Relies on:
-- FEAT-009 team name draft state
-
-Acceptance checks:
-- Empty names are rejected.
-- Whitespace-only names are rejected.
-- A valid non-empty name passes validation.
-
-
-[not started] FEAT-011 - Add setup screen validation feedback UI
-Goal:
-Show the user clear feedback when the entered team name is invalid.
-
-Expected behaviour:
-- If the team name is invalid, the user must see a clear message explaining why they cannot continue.
-- Validation feedback should appear in a consistent place near the relevant control or action.
-- The continue/create action should clearly reflect the invalid state through disabled state, blocked submit, or both.
-
-Implementation requirements:
-- Keep the feedback minimal but clear.
-- Use existing engine messaging/toast/modal systems only if they genuinely fit this simple form case.
-- Avoid overcomplicating the UX for one field.
-
-Relies on:
-- FEAT-010 validation rules
-- Setup screen UI from FEAT-008
-
-Acceptance checks:
-- Invalid input produces visible feedback.
-- The user cannot accidentally continue with invalid input.
-
-
-[not started] FEAT-012 - Add setup navigation controls for back and continue
-Goal:
-Make the setup screen navigable with clear back and continue actions.
-
-Expected behaviour:
-- Back action must return the user to the new home screen.
-- Continue action must only proceed if current setup input is valid.
-- Navigation should be predictable and not discard intended user actions unexpectedly.
-
-Implementation requirements:
-- Keep the back/continue flow explicit.
-- Do not initialise the career on this step yet; continue should move to confirmation first.
-- Reuse engine button component if suitable.
-
-Relies on:
-- FEAT-008 setup screen
-- FEAT-010 and FEAT-011 validation logic/UI
-
-Acceptance checks:
-- Back returns to home.
-- Continue only works when validation passes.
-- Invalid continue attempts do not advance the flow.
-
-
-[not started] FEAT-013 - Build the career creation confirmation step
-Goal:
-Add a lightweight confirmation step between valid setup input and actual career creation.
-
-Expected behaviour:
-- The user must be shown the entered team name clearly before the new career is created.
-- The user must be able to:
-  - confirm and create the career
-  - go back and edit the setup details
-- This step should feel like the final handoff into career creation.
-- This step must not yet include player selection, calendar generation, or advanced options.
-
-Implementation requirements:
-- This can be a separate screen section, panel, or modal depending on the best fit with engine reuse.
-- Keep implementation simple and explicit.
-- Keep the setup draft data available while moving between setup and confirmation.
-
-Relies on:
-- FEAT-012 continue flow
-- Setup draft data from FEAT-009
-
-Acceptance checks:
-- Team name is shown accurately on the confirmation step.
-- User can go back and edit.
-- User can proceed to final creation.
-
-
-[not started] FEAT-014 - Wire confirmation into initialiseNewCareer shared-state action
-Goal:
-Connect the confirmation action to the shared-state career creation logic.
-
-Expected behaviour:
-- Confirming creation must call the single initialiseNewCareer action in gameContext.
-- The created shared state must use the confirmed setup data.
-- The flow must not create duplicate or partial career state.
-
-Implementation requirements:
-- Do not duplicate creation logic in the screen layer.
-- Keep the handoff from UI to gameContext explicit and traceable.
-
-Relies on:
-- FEAT-006 initialiseNewCareer action
-- FEAT-013 confirmation step
-
-Acceptance checks:
-- Confirming creation updates shared state correctly.
-- Team name and baseline values are stored correctly.
-
-
-[not started] FEAT-015 - Create the first in-career hub screen shell
-Goal:
-Build the first real in-career screen shown immediately after a career is created.
-
-Expected behaviour:
-- After career creation, the user must be navigated away from setup flow and into a dedicated Career Mode hub screen.
-- The hub must clearly feel like the player has entered an active career.
-- The hub must reserve conceptual space for future systems such as squad, calendar, tactics, and competitions, even if they are not implemented yet.
-
-Implementation requirements:
-- Build this as a real expandable screen, not a temporary text placeholder.
-- Keep the screen light and stable.
-- Keep structure modular for later feature additions.
-
-Relies on:
-- FEAT-014 shared-state creation handoff
-
-Acceptance checks:
-- Successful creation always lands on the in-career hub.
-- Hub reads as a new active game state, not part of setup.
-
-
-[not started] FEAT-016 - Display core created career data on the hub from gameContext
-Goal:
-Prove the end-to-end state flow by rendering shared career data on the in-career hub.
-
-Expected behaviour:
-- The hub must display at minimum:
-  - team name
-  - season number
-  - current month
-  - current week
-  - current day
-- These values must come from shared state, not hardcoded placeholders.
-- The values should be displayed clearly enough that the user can verify career creation succeeded.
-
-Implementation requirements:
-- Use shared context values directly or via the existing project consumption pattern.
-- Keep formatting clean and simple.
-- Group the values into a small summary panel if helpful.
-
-Relies on:
-- FEAT-004 to FEAT-006 shared state setup
-- FEAT-015 in-career hub screen
-
-Acceptance checks:
-- Hub displays the correct team name.
-- Hub displays season 1, month 1, week 1, day 1.
-- Values persist across the screen transition.
-
-
-[not started] FEAT-017 - Add an EPIC-001 developer reset control on the in-career hub
-Goal:
-Expose the reset action in the UI so the entire EPIC-001 demo can be repeated quickly during development.
-
-Expected behaviour:
-- The in-career hub must contain a clearly labelled temporary dev/testing action to reset the career.
-- Triggering this control must:
-  - clear the active career through shared state
-  - return the user to the new home screen
-- The control is for development/demo purposes in this epic.
-
-Implementation requirements:
-- Keep the control explicit so it is not confused with a final player-facing feature.
-- Use the shared reset action, not local state hacks.
-
-Relies on:
-- FEAT-007 reset action
-- FEAT-015 in-career hub screen
-
-Acceptance checks:
-- Reset returns the app to the new home screen.
-- The next Start Career flow begins from a truly clean state.
-
-
-[not started] FEAT-018 - TEST CHECKPOINT A - Verify the new landing flow before shared career creation is wired
-Goal:
-Stop after the home and setup navigation work and verify the first part of the epic before continuing.
-
-How to test:
-- Open the app.
-- Confirm the new home screen is the default landing screen.
-- Confirm the old homepage and old info page are no longer the active start flow.
-- Click Start Career.
-- Confirm the setup screen opens.
-- Use the back action.
-- Confirm the app returns to the new home screen.
-
-Pass criteria:
-- Home -> Setup -> Home flow works cleanly.
-- No old screens appear in the active flow.
-- No obvious console errors occur during navigation.
-
-Relies on:
-- FEAT-001 to FEAT-003
-- FEAT-008
-- FEAT-012
-
-
-[not started] FEAT-019 - TEST CHECKPOINT B - Verify setup input and validation behaviour
-Goal:
-Stop after the setup form works and confirm validation is stable before wiring final creation.
-
-How to test:
-- Open the setup screen.
-- Leave team name empty and attempt to continue.
-- Enter whitespace only and attempt to continue.
-- Enter a valid team name and attempt to continue.
-- Move back and forth through the setup flow and confirm the expected behaviour remains stable.
-
-Pass criteria:
-- Empty input is rejected.
-- Whitespace-only input is rejected.
-- Validation feedback appears clearly.
-- Valid input allows progress to the confirmation step.
-- No unexpected setup flow breaks occur.
-
-Relies on:
-- FEAT-009 to FEAT-013
-
-
-[not started] FEAT-020 - TEST CHECKPOINT C - Verify shared-state career creation and hub rendering
-Goal:
-Stop after career creation is wired and verify the full shared-state handoff works before cleanup.
-
-How to test:
-- Open the app and start a new career.
-- Enter a valid team name.
-- Continue to confirmation.
-- Confirm career creation.
-- Verify the in-career hub opens.
-- Verify the hub displays:
-  - the chosen team name
-  - season number 1
-  - month 1
-  - week 1
-  - day 1
-
-Pass criteria:
-- Career creation succeeds without partial state.
-- Hub values come from shared state and display correctly.
-- No obvious console errors occur during creation or navigation.
-
-Relies on:
-- FEAT-014 to FEAT-016
-
-
-[not started] FEAT-021 - TEST CHECKPOINT D - Verify reset and repeatability of the full EPIC-001 loop
-Goal:
-Confirm the whole epic can be run repeatedly from a clean state, which is critical for future development.
-
-How to test:
-- Complete a new career creation.
-- Trigger the dev reset control from the hub.
-- Confirm the app returns to the new home screen.
-- Start another career with a different team name.
-- Confirm the second created career uses only the new values and no stale values remain from the first run.
-
-Pass criteria:
-- Reset fully clears the prior career.
-- A second run behaves like a fresh launch.
-- No stale state survives after reset.
-
-Relies on:
-- FEAT-017
-- FEAT-007
-
-
-[not started] FEAT-022 - Complete engine reuse review and document outcomes for EPIC-001
-Goal:
-Perform the mandatory engine reuse review required by the project rules and log the decisions in implementation notes.
-
-Expected behaviour:
-- The implementation notes for this epic must explicitly record:
-  - which engine parts were considered
-  - which were used
-  - which were not used
-  - why they were not used
-- At minimum review:
-  - src/engine/gameContext/gameContext.jsx
-  - src/engine/ui/button/button.jsx
-  - src/engine/ui/modal/modal.jsx
-  - src/engine/ui/modal/modalContext.jsx
-  - src/engine/ui/slidePanel/slidePanel.jsx
-  - src/engine/utils/saveGame/saveGame.jsx
-
-Implementation requirements:
-- Follow the rules file exactly for reuse documentation.
-- Prefer reuse only where it genuinely improves the feature.
-
-Relies on:
-- Existing engine systems
-- vibe epic implementation logging workflow
-
-Acceptance checks:
-- Reuse review is recorded clearly in implementation.txt.
-- Decisions are explicit and traceable.
-
-
-[not started] FEAT-023 - Run EPIC-001 lint/build/stability pass
-Goal:
-Perform the final quality pass before this epic is marked demo-ready.
-
-Expected behaviour:
-- The EPIC-001 flow should have no obvious console errors.
-- Dead code from the old landing flow should be removed or cleanly disconnected if no longer needed.
-- The project should pass:
-  - npm run lint
-  - npm run build
-- Naming, structure, and file placement should comply with the rules file.
-
-Implementation requirements:
-- Fix any leftover issues from replacing the old landing flow.
-- Do not leave temporary throwaway code in place if it will create debt for EPIC-002.
-
-Relies on:
-- All implementation features in this epic
-
-Acceptance checks:
-- Lint passes.
-- Build passes.
-- Active EPIC-001 demo flow is stable.
-
-
-[not started] FEAT-024 - EPIC-001 final demo verification
-Goal:
-Confirm the full vertical slice of EPIC-001 works as a complete connected demo.
-
-How to test:
-- Launch the app.
-- Confirm the new home screen is the default landing screen.
-- Click Start Career.
-- Enter an invalid team name and verify validation blocks progress.
-- Enter a valid team name.
-- Continue to the confirmation step.
-- Confirm career creation.
-- Verify the in-career hub opens.
-- Verify the hub displays the selected team name and default career values.
-- Trigger the dev reset control.
-- Confirm the app returns to the home screen.
-- Repeat the flow with a different team name.
-
-Pass criteria:
-- Entire flow works end-to-end without broken navigation.
-- Shared state is created correctly.
-- Shared state is reset correctly.
-- The epic is repeatably testable and ready to build on in the next epic.
+Add non-functional placeholder sections for Team Kit and Players on the Career Start screen.
+
+Requirements:
+- Add a visible Team Kit section to the page.
+- Add a visible Players section to the page.
+- These sections should clearly indicate that setup for them is still to be implemented.
+- They should visually belong to the same team setup flow as Team Name and Team Stadium.
+- Keep the layout clean, responsive, and ready for future interactivity.
+
+Implementation notes:
+- Do not build kit editors, colour pickers, upload flows, or generation flows yet.
+- Do not build player creation, selection, or squad generation yet.
+- These are placeholder sections only.
+- Their purpose is to make the page structure complete and make it obvious why the Start Career button is still disabled.
+
+Acceptance criteria:
+- Team Kit section is visible.
+- Players section is visible.
+- Both sections are clearly placeholders and not interactive implementations yet.
+- The page communicates the full required setup clearly.
+- Layout remains responsive and full-width.
+
+================================================================
+Definition of done for this prompt file
+================================================================
+
+This prompt file is complete when:
+- The app uses a new Home screen as the main landing page.
+- "Start Career" from the Home screen routes to /career/start.
+- All core epic routes exist as screens.
+- /career/start contains the team setup shell.
+- Team Name and Team Stadium are editable and saved in state.
+- Team Kit and Players exist in state but are not yet implemented.
+- Placeholder UI sections exist for Team Kit and Players.
+- The Start Career button exists but remains disabled until all team values are complete, including Team Kit and Players.
+- The whole structure is responsive and spans the full page width.

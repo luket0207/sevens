@@ -1,0 +1,510 @@
+@use "../../assets/scss/ui/import" as *;
+
+.careerStart__section,
+.careerStart__actions {
+  background: rgba($secondaryBackground, 0.9);
+  color: $secondaryForeground;
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  display: grid;
+  gap: 0.8rem;
+}
+
+.careerStart__sectionTitle {
+  font-size: 1.2rem;
+}
+
+.careerStart__fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.careerStart__field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.careerStart__label {
+  font-weight: 700;
+}
+
+.careerStart__input,
+.careerStart__select {
+  border-radius: 10px;
+  border: 1px solid rgba($lightText, 0.28);
+  background: rgba($siteBackground, 0.6);
+  color: $lightText;
+  padding: 0.65rem 0.75rem;
+
+  &::placeholder {
+    color: rgba($lightText, 0.62);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba($tertiaryBackground, 0.75);
+    outline-offset: 2px;
+  }
+}
+
+.careerStart__hint {
+  font-size: 0.88rem;
+  color: rgba($lightText, 0.82);
+}
+
+.careerStart__kitLayout {
+  display: grid;
+  gap: 1rem;
+}
+
+.careerStart__kitActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.careerStart__contrastNote {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba($tertiaryBackground, 0.45);
+  border-radius: 10px;
+  background: rgba($tertiaryBackground, 0.14);
+  color: $lightText;
+  font-size: 0.92rem;
+}
+
+.careerStart__kitGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.careerStart__kitCard {
+  background: rgba($primaryBackground, 0.75);
+  border: 1px solid rgba($lightText, 0.15);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.careerStart__kitTitle {
+  font-size: 1.02rem;
+}
+
+.careerStart__goalkeeperWrap {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.careerStart__goalkeeperOptions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.careerStart__goalkeeperBtn {
+  border: 1px solid rgba($lightText, 0.25);
+  background: rgba($siteBackground, 0.4);
+  color: $lightText;
+  border-radius: 999px;
+  padding: 0.55rem 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.careerStart__goalkeeperBtn--active {
+  border-color: rgba($tertiaryBackground, 0.88);
+  background: rgba($tertiaryBackground, 0.25);
+}
+
+.careerStart__goalkeeperSwatch {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba($lightText, 0.5);
+}
+
+.careerStart__savedPreview {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.7rem;
+  background: rgba($siteBackground, 0.3);
+}
+
+.careerStart__decodedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.careerStart__decodedCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+  background: rgba($primaryBackground, 0.48);
+}
+
+.shirtRenderer {
+  width: 96px;
+  height: 110px;
+}
+
+.shirtRenderer--small {
+  width: 76px;
+  height: 90px;
+}
+
+.shirtRenderer--medium {
+  width: 96px;
+  height: 110px;
+}
+
+.shirtRenderer__shape {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border: 2px solid rgba($lightText, 0.45);
+  box-shadow: 0 8px 16px rgba($siteBackground, 0.3);
+  clip-path: polygon(
+    15% 2%,
+    33% 2%,
+    38% 14%,
+    62% 14%,
+    67% 2%,
+    85% 2%,
+    100% 18%,
+    86% 32%,
+    82% 100%,
+    18% 100%,
+    14% 32%,
+    0 18%
+  );
+}
+
+.shirtRenderer__collar {
+  position: absolute;
+  top: 8%;
+  left: 38%;
+  width: 24%;
+  height: 10%;
+  border-radius: 0 0 999px 999px;
+  border: 1px solid rgba($lightText, 0.4);
+}
+
+.careerStart__generatorDebug {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.careerStart__debugNote {
+  margin: 0;
+  color: rgba($lightText, 0.87);
+}
+
+.careerStart__generatorControls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: end;
+}
+
+.careerStart__generatorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.careerStart__generatorResults {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.careerStart__teamSelector {
+  display: grid;
+  gap: 1rem;
+}
+
+.careerStart__teamSelectorHead {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.careerStart__teamSelectorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.careerStart__teamSelectorLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.careerStart__teamSelectorCurrent,
+.careerStart__teamSelectorChosen {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+  background: rgba($primaryBackground, 0.58);
+}
+
+.careerStart__teamOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.careerStart__chosenList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.careerStart__playerCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.65rem;
+  background: rgba($siteBackground, 0.24);
+}
+
+.careerStart__teamOptions .careerStart__playerCard {
+  flex: 1 1 calc(33.333% - 0.5rem);
+  min-width: 250px;
+}
+
+.careerStart__playerCard--compact {
+  background: rgba($siteBackground, 0.36);
+}
+
+.careerStart__playerCard--selectable {
+  border-color: rgba($tertiaryBackground, 0.4);
+}
+
+.careerStart__playerCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.careerStart__playerCardTitleWrap {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.careerStart__playerCardTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.careerStart__playerName {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba($lightText, 0.86);
+}
+
+.careerStart__playerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  font-size: 0.85rem;
+}
+
+.careerStart__chosenEmptySlot {
+  border: 1px dashed rgba($lightText, 0.26);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  display: grid;
+  gap: 0.3rem;
+  color: rgba($lightText, 0.8);
+  background: rgba($siteBackground, 0.2);
+}
+
+.careerStart__teamDebug {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  background: rgba($siteBackground, 0.26);
+}
+
+.careerStart__teamDebugSummary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.careerStart__teamDebugContent {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.careerStart__teamDebugJsonWrap {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.careerStart__teamDebugJson {
+  margin: 0;
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  padding: 0.6rem;
+  background: rgba($siteBackground, 0.55);
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.75rem;
+}
+
+.careerStart__generatedList {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.careerStart__generatedCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.65rem;
+  background: rgba($primaryBackground, 0.64);
+
+  p {
+    margin: 0;
+  }
+}
+
+.careerStart__skillsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.9rem;
+}
+
+.careerStart__skillRow {
+  border: 1px solid rgba($lightText, 0.16);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba($siteBackground, 0.28);
+}
+
+.careerStart__skillRow--overall {
+  background: rgba($tertiaryBackground, 0.24);
+  border-color: rgba($tertiaryBackground, 0.65);
+}
+
+.careerStart__ratingValue {
+  min-width: 2.1rem;
+  padding: 0.16rem 0.42rem;
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  border: 1px solid rgba($lightText, 0.2);
+  color: $lightText;
+}
+
+.careerStart__ratingValue--overall {
+  min-width: 3.5rem;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-width: 2px;
+  border-color: rgba($lightText, 0.55);
+  background: rgba($primaryBackground, 0.95);
+}
+
+.careerStart__ratingValue--1to10 {
+  background: $ratingBand1To10;
+}
+
+.careerStart__ratingValue--11to20 {
+  background: $ratingBand11To20;
+}
+
+.careerStart__ratingValue--21to30 {
+  background: $ratingBand21To30;
+}
+
+.careerStart__ratingValue--31to40 {
+  background: $ratingBand31To40;
+}
+
+.careerStart__ratingValue--41to50 {
+  background: $ratingBand41To50;
+  color: $darkText;
+}
+
+.careerStart__ratingValue--51to60 {
+  background: $ratingBand51To60;
+  color: $darkText;
+}
+
+.careerStart__ratingValue--61to70 {
+  background: $ratingBand61To70;
+  color: $darkText;
+}
+
+.careerStart__ratingValue--71to80 {
+  background: $ratingBand71To80;
+  color: $darkText;
+}
+
+.careerStart__ratingValue--81to90 {
+  background: $ratingBand81To90;
+}
+
+.careerStart__ratingValue--91to100 {
+  background: $ratingBand91To100;
+}
+
+.careerStart__actions {
+  align-items: start;
+}
+
+.careerStart__actionHint {
+  color: rgba($secondaryForeground, 0.9);
+}
+
+@media (max-width: 1000px) {
+  .careerStart__kitGrid,
+  .careerStart__decodedGrid,
+  .careerStart__skillsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .careerStart__goalkeeperOptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .careerStart__fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .careerStart__generatorControls {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .careerStart__teamOptions .careerStart__playerCard {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}

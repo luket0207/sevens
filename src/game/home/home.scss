@@ -1,31 +1,65 @@
-@use "../../assets/scss/ui/import" as *;;
+@use "../../assets/scss/ui/import" as *;
 
-.home {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-  background-image: url("../../assets/images/home_background.png");
+.homeScreen {
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background:
+    linear-gradient(140deg, rgba($primaryBackground, 0.84), rgba($secondaryBackground, 0.82)),
+    url("../../assets/images/home_background.png");
   background-size: cover;
   background-position: center;
+  color: $lightText;
+}
 
-  &_content {
-    background-color: #ffffffcc;
-    padding: 3rem;
-    border-radius: 12px;
-    box-shadow:
-      0 16px 40px rgba(0, 0, 0, 0.2),
-      0 8px 20px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    display: grid;
-    justify-items: center;
+.homeScreen__overlay {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
 
-    h1 {
-      font-size: 2rem;
-      margin: 0;
-      color: $darkText;
-      margin-bottom: 3rem;
-    }
-  }
+.homeScreen__content {
+  width: min(980px, 100%);
+  background: rgba($siteBackground, 0.78);
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 16px;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.homeScreen__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: rgba($lightText, 0.88);
+}
+
+.homeScreen__title {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.1;
+}
+
+.homeScreen__summary {
+  max-width: 52ch;
+  color: rgba($lightText, 0.88);
+}
+
+.homeScreen__support {
+  width: 100%;
+  padding: 1.25rem clamp(1rem, 2vw, 2rem);
+  background: rgba($siteBackground, 0.78);
+  border-top: 1px solid rgba($lightText, 0.18);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.homeScreen__supportTitle {
+  font-size: 1.05rem;
+}
+
+.homeScreen__supportText {
+  color: rgba($lightText, 0.86);
 }

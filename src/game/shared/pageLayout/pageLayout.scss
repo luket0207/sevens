@@ -1,0 +1,35 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.gamePage {
+  min-height: 100vh;
+  width: 100%;
+  padding: clamp(1rem, 2vw, 2rem);
+  background: linear-gradient(180deg, rgba($siteBackground, 0.96), rgba($primaryBackground, 0.9));
+  color: $lightText;
+}
+
+.gamePage__inner {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.gamePage__header {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.gamePage__title {
+  font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+}
+
+.gamePage__subtitle {
+  color: rgba($lightText, 0.88);
+  max-width: 72ch;
+}
+
+.gamePage__main {
+  display: grid;
+  gap: 1rem;
+}

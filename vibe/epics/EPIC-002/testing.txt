@@ -1,0 +1,233 @@
+EPIC-002 Testing Log
+Date: 2026-03-07
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repo-wide lint baseline issues in engine/info modules (unrelated to EPIC-002 functionality).
+- `npm.cmd exec eslint -- src/game/careerStart/playerGenerator/playerGeneratorConstants.js src/game/careerStart/playerGenerator/playerGeneratorUtils.js src/game/careerStart/components/playerGeneratorDebug.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/careerStart/playerGenerator/playerGeneratorUtils.js`: passed.
+- `npm.cmd exec eslint -- src/game/careerStart/careerStart.jsx`: passed.
+
+FEAT-001 - Team kit data structure
+Manual steps:
+1. Open `/career/start`.
+Expected: Team setup state supports `homeKit`, `awayKit`, `homeColour`, `awayColour`, `goalkeeperKit`.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for default `career.setup` shape.
+Status: in progress
+
+FEAT-002 - Shirt pattern system
+Manual steps:
+1. In Team Kit editor, open pattern dropdown.
+Expected: Finite pattern list is available and selectable.
+2. Switch patterns and observe previews.
+Expected: Each pattern renders deterministically.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Utility tests for pattern id validation + style decode outputs.
+Status: in progress
+
+FEAT-003 - Team kit selection component
+Manual steps:
+1. Change Home shirt pattern/main/detail.
+Expected: Home preview updates and values persist in state.
+2. Change Away shirt pattern/main/detail.
+Expected: Away preview updates and values persist in state.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Component tests for home/away control binding to state.
+Status: in progress
+
+FEAT-004 - Home vs away contrast rule
+Manual steps:
+1. Choose a home main colour.
+2. Try selecting an away main colour that is very similar.
+Expected: Similar away option is blocked or auto-corrected, and UI explains why.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for `hasGoodKitContrast` and safe-away correction paths.
+Status: in progress
+
+FEAT-005 - Kit randomisation
+Manual steps:
+1. Click `Randomise Home`, `Randomise Away`, and `Randomise Full Set`.
+Expected: Pattern/main/detail values change and remain valid.
+2. Verify away remains contrasting with home after randomisation.
+Expected: Contrast rule always holds.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for randomiser outputs and away contrast guarantees.
+Status: in progress
+
+FEAT-006 - Goalkeeper kit selection
+Manual steps:
+1. Select each GK option: orange, green, yellow, black.
+Expected: Selection updates and persists in setup state.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Validation test that only the four allowed GK values pass.
+Status: in progress
+
+FEAT-007 - Persist kit data into gameContext
+Manual steps:
+1. Modify home/away/GK kit values.
+2. Navigate away and back (or inspect persisted state through existing debug methods).
+Expected: Saved values match selected values exactly.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Integration test asserting `career.setup` updates for all kit fields.
+Status: in progress
+
+FEAT-008 - Reusable shirt renderer/decoder
+Manual steps:
+1. Configure shirts in editor.
+2. Compare editor previews to “Saved Shirt Decoder Preview”.
+Expected: Saved renders match configured shirts.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Component tests for renderer with multiple pattern+colour inputs.
+Status: in progress
+
+FEAT-009 - Temporary debug player generator UI
+Manual steps:
+1. In Players section, choose rating and position.
+2. Click `Generate Random Player`.
+Expected: A player is generated and shown.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Component tests for dropdown inputs and generate interaction.
+Status: in progress
+
+FEAT-010 - Player output model
+Manual steps:
+1. Generate a player.
+Expected: Output includes full required object shape and fields.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for generator output schema and field existence.
+Status: in progress
+
+FEAT-011 - Parody-style names
+Manual steps:
+1. Generate multiple players.
+Expected: Names are composed from first + last pools with football-like parody flavor.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Tests verifying non-empty first/last/full name generation.
+Status: in progress
+
+FEAT-012 - Appearance generation
+Manual steps:
+1. Generate multiple players and inspect appearance array.
+Expected: Always length 3, each value between 1 and 5.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for range and length guarantees.
+Status: in progress
+
+FEAT-013 - Weighted skills by position
+Manual steps:
+1. Generate players with same target rating across GK/DF/MD/AT.
+Expected: Skill trends reflect position priorities (e.g., GK high Goalkeeping, AT high Shooting/Dribbling/Control).
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Statistical unit tests to verify weighted trends and value bounds.
+Status: in progress
+
+FEAT-014 - Independent calculated overall
+Manual steps:
+1. Generate players and compare Target Rating vs Calculated Overall.
+Expected: Calculated overall is derived from skills and usually near target with variance.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for `calculateOverall` determinism by position + skills.
+Status: in progress
+
+FEAT-015 - Full debug output display
+Manual steps:
+1. Generate player.
+Expected: UI displays full name, first/last names, position, target rating, calculated overall, appearance, and all 8 skill values.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Component tests for required output fields visibility.
+Status: in progress
+
+FEAT-016 - Validation reconnect
+Manual steps:
+1. Configure valid kit and generate debug player.
+2. Observe Start Career enablement.
+Expected: Validation uses real kit data; temporary single debug player does not falsely complete final squad requirement.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- Unit tests for `isCareerSetupComplete` with valid/invalid kit states and players array behavior.
+Status: in progress
+
+BUG-001 - Balanced generation + archetype stamping
+Manual steps:
+1. Open `/career/start` and in `Players`, choose each position (`GK`, `DF`, `MD`, `AT`) with several target ratings (e.g., 70, 80, 90, 100).
+Expected: Output includes a readable `Archetype` field matching the selected position's archetype list.
+2. Generate 10+ players for each outfield position (`DF`, `MD`, `AT`).
+Expected: `Goalkeeping` is always between `1` and `14` inclusive.
+3. Generate repeated players for a single position and rating (for example `AT` at `80`).
+Expected: Profiles vary by archetype and skill shape; players are not near-identical clones.
+4. Compare `Target Rating (Input)` vs `Calculated Overall (Derived)` across multiple generations.
+Expected: Calculated overall is derived from generated skills and converges to target rating after correction.
+Automated completed:
+- `npm run build` compile pass.
+- File-scoped eslint pass for changed generator/debug files.
+Automated needed:
+- Add deterministic unit tests for `calculateOverall` penalty/bonus behavior.
+- Add probabilistic/snapshot generator tests for position/archetype distribution trends.
+- Add invariant tests: outfield Goalkeeping `1..14` and generated object includes `archetype`.
+Status: passed
+
+BUG-002 - High-skill spike suppression for lower target ratings
+Manual steps:
+1. Open `/career/start` and set Position to `DF`, Target Rating to `75`.
+2. Generate at least 10 players, noting `Tackling` and `Marking`.
+Expected: Core defensive skills should still lead defender profile, but no unrealistic spikes into 90+ for this target range.
+3. Repeat for `MD` and `AT` at target `75`.
+Expected: Role-relevant skills remain strongest but stay in a believable 70s/low-80s band for most outputs.
+4. Confirm `Target Rating (Input)` and `Calculated Overall (Derived)` remain aligned after rebalance.
+Expected: Derived overall still converges to selected target while preserving varied archetype identity.
+Automated completed:
+- `npm run build` passed.
+- `npm run lint` still fails only on known unrelated repository baseline issues.
+- File-scoped eslint for updated generator utility passed.
+Automated needed:
+- Add regression tests that enforce target-relative max bands per impact tier at sample target ratings (e.g., 75, 80, 90).
+- Add distribution tests to detect drift toward unrealistic core-skill inflation over large generation samples.
+Status: passed
+
+BUG-003 - Remove temporary player generation system
+Manual steps:
+1. Open `/career/start`.
+Expected: `Players` section no longer shows generator controls, rating/position selectors, or generated player output.
+2. Confirm the section displays only a placeholder note explaining generation will return in a future epic.
+Expected: UI remains stable with no missing-component errors.
+3. Navigate through Career Setup and interact with Team Identity + Team Kit controls.
+Expected: Existing setup flows still work; no regressions from generator removal.
+Automated completed:
+- `npm run build` passed after deleting generator files and state wiring.
+- `npm run lint` still fails only on known unrelated repository baseline issues.
+- File-scoped eslint pass for updated `careerStart.jsx` passed.
+Automated needed:
+- Add a lightweight component test asserting the Players section fallback message is rendered and generator controls are absent.
+Status: passed

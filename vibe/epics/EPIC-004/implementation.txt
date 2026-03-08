@@ -1,0 +1,221 @@
+EPIC-004 Implementation Log
+Date: 2026-03-08
+
+Engine components considered for this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-401 to FEAT-412 - Career Team Selector End-to-End
+Status: done
+
+What was implemented:
+- Added a real Career Team Selector flow in `/career/start` with 7 sequential choices:
+  - Choice 1: 3 goalkeepers
+  - Choices 2-7: 6 outfield groups of 3
+- Added up-front pool generation for selector logic:
+  - 3 goalkeeper pool (separate pool)
+  - 18 outfield pool generated before grouping
+- Added weighted outfield target-overall selection for `20..25`:
+  - `20` rare
+  - `21` common
+  - `22` slightly more common
+  - `23` common
+  - `24` uncommon
+  - `25` rare
+- Added forced influence spread in outfield generation:
+  - Exactly 2 each for:
+    - `Influence Defender`
+    - `Influence Defensive Mid`
+    - `Influence Attacking Mid`
+    - `Influence Attacker`
+    - `Influence Goalscorer`
+  - Remaining 8 outfield players use normal random influence selection.
+- Added full-pool shuffle + split into exactly 6 outfield groups of 3.
+- Added reusable player card UI for both choice options and chosen-player list.
+- Added sequential selection interaction:
+  - select one from current group
+  - auto-advance to next group
+  - no skipping and no multi-select per group through flow design.
+- Added persistent chosen-player list with full player details/stats.
+- Added selector completion/validation logic:
+  - valid only when exactly `1 GK + 6 OUTFIELD` selected.
+- Connected selector completion back into Career Start requirement by syncing selected team to `career.setup.players`.
+- Persisted full selector state in `gameContext` under `career.setup.teamSelector`.
+- Replaced old EPIC-003 generator debug section in Career Start with the new EPIC-004 team selector.
+- Added lightweight debug utility (`details` panel) for:
+  - goalkeeper pool
+  - outfield pool
+  - outfield influence spread
+  - outfield overall spread
+  - chosen state.
+
+Engine components used:
+- `gameContext` for persistent career setup/team-selector state.
+- `button` for selector actions and per-player selection actions.
+- `rng` for weighted overall rolls and pool shuffling.
+
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not needed for this selector flow implementation).
+
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/careerStart/utils/teamSelectorGeneration.js`
+- `src/game/careerStart/utils/teamSelectorPoolUtils.js`
+- `src/game/careerStart/utils/teamSelectorValidation.js`
+- `src/game/careerStart/utils/teamSelectorState.js`
+- `src/game/careerStart/components/teamSelector/careerTeamSelector.jsx`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/components/teamSelector/teamSelectorDebugPanel.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-004/features.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current selector intentionally does not support “back”/edit for prior choices; regeneration resets the flow.
+- Add automated unit/component tests for weighted distribution tendencies and sequential interaction behavior.
+
+FEAT-413 - Add Skill Rating Colour Spectrum Display
+Status: done
+
+What was implemented:
+- Added a reusable player-rating band utility at `src/game/playerGeneration/ratingDisplayUtils.js`:
+  - `getRatingDisplayMeta(value)`
+  - maps ratings to 10-point bands from `1-10` through `91-100`
+  - returns normalized rating value + band metadata for UI rendering.
+- Added new global rating-band colour tokens in `src/assets/scss/ui/colours.scss` for all 10 bands.
+- Updated team selector player stat rendering to use colour-coded rating pills from the shared utility.
+- Updated legacy player generation debug stat display to use the same shared rating utility and style classes for consistency.
+
+Engine components used:
+- none directly (feature is UI + shared game utility layer).
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not required for rating-colour mapping and presentation).
+
+Files changed:
+- `src/game/playerGeneration/ratingDisplayUtils.js`
+- `src/game/playerGeneration/index.js`
+- `src/assets/scss/ui/colours.scss`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-004/features.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current colour distinction is banded (10-point steps) rather than a fully smooth gradient, matching epic requirements.
+- If wider accessibility testing indicates issues, add optional icon/label reinforcement per rating band.
+
+FEAT-414 - Add Name, Appearance, and Potential to Generated Players
+Status: done
+
+What was implemented:
+- Extended the shared player generator output so every generated player now includes:
+  - `name`
+  - `firstName`
+  - `lastName`
+  - `appearance`
+  - `potential`
+- Added modular generation utilities:
+  - `nameGenerationUtils.js`
+  - `appearanceGenerationUtils.js`
+  - `potentialGenerationUtils.js`
+- Name generation now combines one random first name and one random last name from parody-style pools.
+- Appearance generation now returns exactly 3 integers, each in range `1..5`.
+- Potential generation now uses final generated overall and applies:
+  - `Potential Max = 50 - Current Overall`
+  - `Potential = random integer between 1 and Potential Max`
+  - edge-safe handling when max is `0` (overall 50) returns `0` without invalid RNG ranges.
+- Wired all new generation metadata into the core player factory in `playerGenerationUtils`, so the fields are available everywhere the shared generator/hook is used (including team selector).
+- Exposed new generator utilities from `src/game/playerGeneration/index.js` for reuse.
+- Updated player display UI to surface generated metadata in selection/debug views:
+  - team selector cards now show player name and potential
+  - generator debug cards now show name, potential, and appearance
+
+Engine components used:
+- `rng` for random name/appearance/potential generation.
+
+Engine components not used:
+- `gameContext`, `bars`, `button` (already used by selector shell, not required for generator metadata logic), `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/playerGeneration/nameGenerationUtils.js`
+- `src/game/playerGeneration/appearanceGenerationUtils.js`
+- `src/game/playerGeneration/potentialGenerationUtils.js`
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/playerGeneration/index.js`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-004/features.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Current parody name pools are intentionally small for maintainability; expand pools over time for better variety.
+- If needed later, separate visual appearance slots into named semantics once renderer requirements are defined.
+
+BUG-001 - Move Overall Into Skills Grid
+Status: fixed
+
+What was implemented:
+- Moved `overall` display from player card header to the first row inside `careerStart__skillsGrid`.
+- Added dedicated emphasis styles so the overall row/value is visually stronger than standard skill rows.
+
+Engine components used:
+- none (component/style update only).
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-004/bugs.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`
+
+BUG-002 - Overall Row Spans Both Skill Columns
+Status: fixed
+
+What was implemented:
+- Updated skill grid styling so the overall row no longer spans both columns.
+- Overall now sits in the normal 2-column grid flow, producing the intended `4 row x 2 column` outfield layout.
+- Kept separate emphasis styles for overall significance.
+
+Engine components used:
+- none (style-layer fix only).
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-004/bugs.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`
+
+BUG-003 - Overall Value Should Always Be Whole Number
+Status: fixed
+
+What was implemented:
+- Enforced integer overall at generator output level by rounding calculated overall in `playerGenerationUtils`.
+- Updated team selector and debug UI displays to render integer overall values.
+- Potential calculation now consumes rounded overall to keep metadata aligned with displayed player overall.
+
+Engine components used:
+- none (player generation utility + UI formatting update).
+
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Files changed:
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `vibe/epics/EPIC-004/bugs.txt`
+- `vibe/epics/EPIC-004/implementation.txt`
+- `vibe/epics/EPIC-004/testing.txt`

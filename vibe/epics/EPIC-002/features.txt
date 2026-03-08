@@ -1,0 +1,760 @@
+EPIC-002 - Feature Prompt File
+
+This epic fills in the remaining gaps from the career team setup flow created in the previous epic.
+
+The main goals of this implementation pass are:
+- Build the kit selection component for the player's team.
+- Save the kit data into the team data in game state.
+- Build a reusable shirt render/decoder component that can reproduce the selected shirt visually from saved values.
+- Add goalkeeper kit selection.
+- Add the first mechanics for team/player generation through a temporary debug player generator tool on the career start page.
+- Generate players with names, appearance values, skill ratings, and a calculated overall rating.
+
+Scope for this prompt file:
+- Implement the team kit selection flow.
+- Implement shirt data modelling and shirt rendering/decoding.
+- Implement goalkeeper kit selection.
+- Add a temporary player generator debug tool in place of the real team selector.
+- Generate a single random player from selected overall rating and position.
+- Display all generated player details including raw skills and calculated overall.
+
+Important scope rules:
+- Do not build the full team selector yet.
+- Do not build the full squad builder yet.
+- Do not treat the temporary player generator as final game UI.
+- The debug player generator is only a temporary interface to exercise the underlying generation mechanics.
+- The underlying player generation logic should still be written in a reusable way because it will be used later by the real game systems.
+- The layout should remain full-width and responsive.
+- Keep the code modular and aligned to the existing project patterns.
+
+Implementation status (2026-03-07):
+- FEAT-001: done
+- FEAT-002: done
+- FEAT-003: done
+- FEAT-004: done
+- FEAT-005: done
+- FEAT-006: done
+- FEAT-007: done
+- FEAT-008: done
+- FEAT-009: done
+- FEAT-010: done
+- FEAT-011: done
+- FEAT-012: done
+- FEAT-013: done
+- FEAT-014: done
+- FEAT-015: done
+- FEAT-016: done
+
+================================================================
+FEAT-001 - Add team kit data structure to career team setup
+================================================================
+
+Purpose:
+Expand the team setup state so it can store the full kit information needed by the game.
+
+Outcome:
+The player's team can now store home kit, away kit, home colour, away colour, and goalkeeper kit data in a structured way.
+
+Prompt:
+Implement FEAT-001 for EPIC-002.
+
+Goal:
+Add the required kit data structure to the player team setup state and prepare it to be saved into the team data in gameContext.
+
+Requirements:
+- Extend the team setup/team data shape so it can store:
+  - homeKit
+  - awayKit
+  - homeColour
+  - awayColour
+  - goalkeeperKit
+- The shirt data model should support:
+  - a main colour
+  - an optional detail colour
+  - a shirt pattern/type
+- The main colour of the home shirt becomes homeColour.
+- The main colour of the away shirt becomes awayColour.
+- Goalkeeper kit is a single selection shared across both home and away goalkeeper use.
+
+Implementation notes:
+- Keep the data shape clean and serialisable.
+- The shirt value should be something that can later be decoded by a renderer component to recreate the exact shirt.
+- Prefer a simple structured object rather than a hard-to-maintain encoded string unless the existing architecture strongly benefits from encoding.
+- This feature is about state shape and persistence readiness, not the full editing UI.
+
+Acceptance criteria:
+- Team/team setup state now includes homeKit, awayKit, homeColour, awayColour, and goalkeeperKit.
+- homeColour and awayColour derive from the main shirt colours.
+- The data shape is reusable and suitable for saving in gameContext.
+- The structure is ready for the kit builder UI in later features.
+
+================================================================
+FEAT-002 - Build reusable shirt pattern system
+================================================================
+
+Purpose:
+Define the shirt pattern options and rendering rules that power kit selection and later display across the game.
+
+Outcome:
+The game has a controlled set of supported shirt styles that can be selected and rendered consistently.
+
+Prompt:
+Implement FEAT-002 for EPIC-002.
+
+Goal:
+Create a reusable shirt pattern system for team kits.
+
+Requirements:
+- Add a controlled list of supported shirt pattern/style options.
+- Patterns should be easy to render and easy for players to understand.
+- Supported styles should include simple options such as:
+  - solid
+  - vertical stripes
+  - horizontal bars
+  - centre bar
+  - half and half
+  - spots
+  - any other simple pattern that is easy to implement cleanly
+- Each shirt uses:
+  - one main colour
+  - optionally one detail colour
+- Some patterns may visually use the detail colour heavily.
+- Some patterns may work fine even if the detail colour is absent or matches the main colour.
+
+Implementation notes:
+- Keep the pattern list finite and manageable.
+- The pattern system must be shared by both the kit editor and the shirt render/decoder component.
+- Avoid overly complex patterns that are difficult to reproduce consistently.
+- Focus on clean deterministic rendering.
+
+Acceptance criteria:
+- A reusable pattern list/config exists.
+- Each pattern has enough information to be rendered consistently.
+- The pattern system can be consumed by both editor and renderer components.
+- The implementation is modular and ready for reuse.
+
+================================================================
+FEAT-003 - Build team kit selection component
+================================================================
+
+Purpose:
+Allow the player to create a home shirt and an away shirt during career setup.
+
+Outcome:
+The player can select shirt patterns and colours for both home and away kits.
+
+Prompt:
+Implement FEAT-003 for EPIC-002.
+
+Goal:
+Build a kit selection component for the Career Start flow that lets the player configure home and away shirts.
+
+Requirements:
+- Add a team kit selection section to the career start page.
+- The player must be able to configure:
+  - Home shirt
+  - Away shirt
+- For each shirt, the player should be able to choose:
+  - pattern/style
+  - main colour
+  - detail colour
+- The main colour becomes the saved homeColour or awayColour respectively.
+- The UI should clearly separate home and away kit editing.
+- The layout should be responsive and visually structured.
+
+Implementation notes:
+- A kit in this game is only the shirt, not shorts/socks.
+- Keep the controls clear and simple.
+- Use the shared shirt pattern system from the previous feature.
+- Do not implement final polishing beyond what is needed for a solid working selection flow.
+
+Acceptance criteria:
+- Home shirt can be configured.
+- Away shirt can be configured.
+- Both shirts can store a pattern, main colour, and detail colour.
+- The selected main colours are saved as homeColour and awayColour.
+- The component integrates with the career start team setup state cleanly.
+
+================================================================
+FEAT-004 - Enforce home vs away colour contrast rules
+================================================================
+
+Purpose:
+Prevent kit clashes by ensuring the away kit contrasts clearly with the home kit.
+
+Outcome:
+The away shirt main colour must maintain sufficient contrast from the home shirt main colour, including when randomised.
+
+Prompt:
+Implement FEAT-004 for EPIC-002.
+
+Goal:
+Add contrast validation and enforcement between home and away shirt main colours.
+
+Requirements:
+- The away shirt main colour must have good visual contrast with the home shirt main colour.
+- This rule must apply both when the player selects colours manually and when colours are randomised.
+- Prevent or correct invalid away colours that are too close to the home colour.
+- Surface the rule clearly in the UI so the player understands why some combinations are blocked or adjusted.
+
+Implementation notes:
+- Use a simple practical contrast rule suitable for game kit clash avoidance.
+- The exact implementation can be colour-distance based, luminance based, or another straightforward method, as long as it is deterministic and produces clearly different main shirt colours.
+- Prefer a solution that is robust and easy to reason about rather than visually perfect.
+- Make the logic reusable for future random generation.
+
+Acceptance criteria:
+- Home and away main colours cannot end up too similar.
+- Manual selection respects the contrast rule.
+- Randomisation respects the contrast rule.
+- The logic is reusable and modular.
+- The saved away colour always has acceptable contrast with the home colour.
+
+================================================================
+FEAT-005 - Add kit randomisation controls
+================================================================
+
+Purpose:
+Allow the player to quickly generate shirt combinations while still respecting the game rules.
+
+Outcome:
+The player can randomise shirt selections for home and away kits and still get valid contrasting results.
+
+Prompt:
+Implement FEAT-005 for EPIC-002.
+
+Goal:
+Add randomisation support to the kit selection component.
+
+Requirements:
+- Add a way to randomise kit selections.
+- Randomisation should cover at least:
+  - shirt pattern
+  - main colour
+  - detail colour
+- Randomisation can be done per shirt or as a full kit set, whichever best fits the current UI.
+- Any generated away shirt must still follow the contrast rule against the home shirt.
+- Randomised shirts must still produce valid saved kit data.
+
+Implementation notes:
+- Keep the UX straightforward.
+- Randomisation should feel varied.
+- Avoid producing obviously broken combinations.
+- Detail colour can be randomised more freely, but it should still work reasonably with the chosen pattern and main colour.
+
+Acceptance criteria:
+- The user can randomise shirt selections.
+- Randomised results save correctly into the kit state.
+- Away shirt randomisation always respects contrast with the home shirt.
+- Randomisation integrates with the same validation/state flow as manual editing.
+
+================================================================
+FEAT-006 - Add goalkeeper kit selection
+================================================================
+
+Purpose:
+Let the player set the goalkeeper shirt choice with a simplified fixed-option system.
+
+Outcome:
+The team setup includes a goalkeeper kit shared across home and away goalkeeper use.
+
+Prompt:
+Implement FEAT-006 for EPIC-002.
+
+Goal:
+Add goalkeeper kit selection to the career start team setup.
+
+Requirements:
+- Add a goalkeeper kit selector to the kit setup area.
+- The goalkeeper kit is a single selection used for both home and away goalkeeper appearance.
+- The only allowed choices are:
+  - orange
+  - green
+  - yellow
+  - black
+- Save the selected goalkeeper kit into the team setup/team state.
+
+Implementation notes:
+- This is intentionally much simpler than the outfield shirt system.
+- A simple button group, dropdown, or segmented selection is fine.
+- Keep the selected value easy to render later.
+
+Acceptance criteria:
+- Goalkeeper kit can be selected from the four allowed options.
+- The selected value is saved in team/team setup state.
+- The value is ready for reuse by other UI and rendering systems.
+
+================================================================
+FEAT-007 - Save selected kit data into gameContext team data
+================================================================
+
+Purpose:
+Ensure the selected kit configuration becomes part of the actual saved team state for the career.
+
+Outcome:
+Team kit data is persisted into the main team/game state rather than only living inside temporary UI state.
+
+Prompt:
+Implement FEAT-007 for EPIC-002.
+
+Goal:
+Persist the completed kit selection into the team data stored in gameContext.
+
+Requirements:
+- Wire the kit selection data into the player team data in gameContext.
+- Ensure the saved team data includes:
+  - homeKit
+  - awayKit
+  - homeColour
+  - awayColour
+  - goalkeeperKit
+- The stored values must exactly match what the player selected/generated.
+- Keep the update flow clean and future-proof.
+
+Implementation notes:
+- This should integrate with the career start flow from the previous epic.
+- Prefer a single source of truth for saved team data.
+- Avoid duplicate state that can drift out of sync.
+
+Acceptance criteria:
+- Kit selections are persisted into gameContext team data.
+- Saved values match the current UI selections exactly.
+- The structure is ready for reuse across the rest of the game.
+
+================================================================
+FEAT-008 - Build reusable shirt renderer/decoder component
+================================================================
+
+Purpose:
+Create the shared rendering component that can reproduce shirts from saved team kit data anywhere in the game.
+
+Outcome:
+A shirt can be rendered identically from its saved value without depending on the original editor UI.
+
+Prompt:
+Implement FEAT-008 for EPIC-002.
+
+Goal:
+Build a reusable component that takes a saved shirt value and renders the shirt exactly as configured by the player.
+
+Requirements:
+- Create a reusable shirt render/decoder component.
+- The component should accept the saved shirt data object/value as input.
+- It should render the shirt deterministically using:
+  - pattern/style
+  - main colour
+  - detail colour
+- The rendered result must visually match the shirt the player created in the kit selector.
+- The component should be reusable in many places across the game.
+
+Implementation notes:
+- This component is important and should not depend on the editor internals.
+- Keep the rendering logic shared with the pattern system.
+- It can be implemented as SVG, layered divs, canvas, or another clean approach, but it should be stable and reusable.
+- Prefer an approach that is easy to size and reuse in different screen contexts.
+
+Acceptance criteria:
+- A shirt can be rendered from saved data alone.
+- The output matches the player's selected shirt design.
+- The component is reusable and not tightly coupled to the career start page.
+- It works for both home and away shirts.
+
+================================================================
+FEAT-009 - Replace team selector placeholder with temporary debug player generator
+================================================================
+
+Purpose:
+Introduce the first player generation mechanics through a temporary debug interface on the career start page.
+
+Outcome:
+The team selector area now contains a debug player generator instead of a static placeholder.
+
+Prompt:
+Implement FEAT-009 for EPIC-002.
+
+Goal:
+Replace the current team selector placeholder on the career start page with a temporary debug player generator tool.
+
+Requirements:
+- In the team selector state/section on the career start page, add a debug tool called Player Generator.
+- This is not final game UI.
+- The generator interface should include:
+  - a rating dropdown from 70 to 100
+  - a position dropdown with options:
+    - GK
+    - DF
+    - MD
+    - AT
+  - a button to generate a random player
+- The underlying generation logic should be written in a reusable way because it will later power the real game systems.
+- The debug UI itself can remain scoped to the career start page for now.
+
+Implementation notes:
+- Keep the debug tool clearly separated from the final player/team selection vision.
+- The focus here is on mechanics and inspectability.
+- The generated result should be easy to read on screen.
+
+Acceptance criteria:
+- Team selector placeholder is replaced with a Player Generator debug tool.
+- The tool has rating and position dropdowns.
+- The tool can generate a random player from those selected values.
+- The generation logic is reusable and modular.
+
+================================================================
+FEAT-010 - Create reusable player generation model and output shape
+================================================================
+
+Purpose:
+Define the player data produced by the generator so it can later be reused by the full squad/team systems.
+
+Outcome:
+Generated players follow a consistent data model with name, appearance, position, skills, and overall.
+
+Prompt:
+Implement FEAT-010 for EPIC-002.
+
+Goal:
+Create the reusable player generation model and output shape for the new player generator system.
+
+Requirements:
+- A generated player should include at minimum:
+  - firstName
+  - lastName
+  - fullName
+  - position
+  - targetRating
+  - appearance
+  - skills
+  - calculatedOverall
+- appearance should be an array of 3 numbers.
+- Each appearance number must be in the range 1 to 5 inclusive.
+- Example valid appearance:
+  - [1,4,2]
+- skills must include:
+  - Goalkeeping
+  - Tackling
+  - Marking
+  - Passing
+  - Control
+  - Dribbling
+  - Off Ball
+  - Shooting
+- Each skill must be a value from 1 to 100 inclusive.
+
+Implementation notes:
+- Keep naming consistent with the rest of the codebase.
+- The player object should be serialisable and reusable in future systems.
+- targetRating should be the selected generation input.
+- calculatedOverall should be derived from the generated skills, not copied from targetRating.
+
+Acceptance criteria:
+- A reusable player output model exists.
+- Generated player objects always include the required fields.
+- appearance values always follow the 3-number 1-to-5 rule.
+- All skill values always stay within 1 to 100.
+
+================================================================
+FEAT-011 - Add parody-style name generation pools
+================================================================
+
+Purpose:
+Give generated players names with a slightly playful football parody flavour.
+
+Outcome:
+Generated players have names built from first-name and surname pools with a slight parody edge.
+
+Prompt:
+Implement FEAT-011 for EPIC-002.
+
+Goal:
+Create a random player name generator using curated first-name and last-name pools with a slight parody edge.
+
+Requirements:
+- Create a pool of first names.
+- Create a pool of last names.
+- Generated player names should be assembled from those pools.
+- The naming style should have a slight parody edge, but still feel football-like and believable enough for the game world.
+- Avoid names that are exact copies of famous real players if possible.
+- The system should generate a good range of combinations.
+
+Implementation notes:
+- Keep the tone light and fun rather than silly.
+- Names should still fit the football setting.
+- The pools should be large enough to avoid obvious repetition in testing.
+
+Acceptance criteria:
+- Generated players always receive a first name and last name.
+- Full name is displayed correctly.
+- The names have a slight parody flavour without feeling totally random or broken.
+- The name generation logic is reusable.
+
+================================================================
+FEAT-012 - Generate appearance values
+================================================================
+
+Purpose:
+Add the first simple appearance system for generated players.
+
+Outcome:
+Generated players receive a valid random appearance array.
+
+Prompt:
+Implement FEAT-012 for EPIC-002.
+
+Goal:
+Generate the appearance value for new players.
+
+Requirements:
+- Generate an appearance array of exactly 3 numbers.
+- Each number must be randomly selected from 1 to 5 inclusive.
+- Example:
+  - [1,4,2]
+- The generation should always respect these constraints.
+
+Implementation notes:
+- This is a temporary/simple appearance model for now.
+- The structure should still be reusable later by real player visuals.
+- Keep the logic isolated so it can be swapped/expanded later without touching the rest of the player generation system.
+
+Acceptance criteria:
+- Every generated player has an appearance array.
+- The array always has length 3.
+- Every entry is always between 1 and 5 inclusive.
+
+================================================================
+FEAT-013 - Generate weighted player skill ratings by position
+================================================================
+
+Purpose:
+Generate believable skill distributions based on the selected position and target rating.
+
+Outcome:
+Each player gets eight skills between 1 and 100, weighted by positional priorities.
+
+Prompt:
+Implement FEAT-013 for EPIC-002.
+
+Goal:
+Generate player skill ratings using position-based weighting and a selected target overall rating.
+
+Required skills:
+- Goalkeeping
+- Tackling
+- Marking
+- Passing
+- Control
+- Dribbling
+- Off Ball
+- Shooting
+
+Requirements:
+- Each skill must be between 1 and 100 inclusive.
+- Generation must be influenced by the chosen position.
+- Use the following weighting table, where higher numbers mean stronger influence:
+
+Position weights:
+GK
+- Goalkeeping: 3
+- Tackling: 1
+- Marking: 1
+- Passing: 1
+- Control: 1
+- Dribbling: 0
+- Off Ball: 0
+- Shooting: 0
+
+DF
+- Goalkeeping: 0
+- Tackling: 3
+- Marking: 3
+- Passing: 2
+- Control: 2
+- Dribbling: 1
+- Off Ball: 1
+- Shooting: 1
+
+MD
+- Goalkeeping: 0
+- Tackling: 2
+- Marking: 2
+- Passing: 3
+- Control: 3
+- Dribbling: 3
+- Off Ball: 3
+- Shooting: 2
+
+AT
+- Goalkeeping: 0
+- Tackling: 1
+- Marking: 1
+- Passing: 2
+- Control: 3
+- Dribbling: 3
+- Off Ball: 2
+- Shooting: 3
+
+Quality bands:
+- Bad: below 50
+- Poor: 50-59
+- Ok: 60-69
+- Good: 70-79
+- Very Good: 80-89
+- Elite: 90+
+
+Behaviour expectations:
+- The selected target rating should influence the generated player quality.
+- The weighted skills should generally support that rating and position.
+- Strongly weighted skills should usually trend higher than weakly weighted skills for that position.
+- Zero-weighted skills should still remain valid 1-100 numbers but should generally not receive meaningful investment.
+
+Implementation notes:
+- The system does not need to be perfectly realistic yet, but it should produce believable spreads.
+- Avoid totally flat distributions where all skills are almost the same.
+- Keep the logic deterministic enough that the calculated overall can be meaningfully compared against the selected target rating.
+- Write the logic in a reusable generator utility/module.
+
+Acceptance criteria:
+- Every generated player receives all 8 skill values.
+- Every skill value is between 1 and 100.
+- Skill distributions visibly reflect the selected position weights.
+- Higher selected target ratings generally lead to stronger generated players.
+- The generator logic is reusable and modular.
+
+================================================================
+FEAT-014 - Calculate overall rating independently from generated skills
+================================================================
+
+Purpose:
+Verify that generated players can be reverse-engineered from their skills and compared against the selected target rating.
+
+Outcome:
+Each generated player has an independently calculated overall based on their skills and position.
+
+Prompt:
+Implement FEAT-014 for EPIC-002.
+
+Goal:
+Calculate a player's overall rating independently from their generated skills so the target generation rating can be compared against the actual result.
+
+Requirements:
+- Create a calculatedOverall value derived from the player's generated skills.
+- Do not copy the originally selected target rating into this field.
+- The overall calculation should respect the player's position so it values the most relevant skills more highly.
+- The output should be comparable to the selected input rating.
+- The purpose is to show that the player can be reverse-engineered correctly from the skills.
+
+Implementation notes:
+- Use a weighted average or similar clean method based on the same positional skill priorities.
+- The exact formula does not need to be final forever, but it should be rational, consistent, and explainable.
+- Keep the calculation utility separate from the random generation utility where possible.
+- The result should usually be reasonably close to the selected target rating, while still allowing some variance from the generation process.
+
+Acceptance criteria:
+- calculatedOverall is always derived from the actual generated skills.
+- The overall formula respects position.
+- The selected target rating and calculatedOverall can be displayed side by side for comparison.
+- The implementation is reusable and modular.
+
+================================================================
+FEAT-015 - Display full generated player debug output
+================================================================
+
+Purpose:
+Make it easy to inspect generated players and validate the generation logic.
+
+Outcome:
+The debug player generator clearly shows the entire generated player profile, including input rating and calculated overall.
+
+Prompt:
+Implement FEAT-015 for EPIC-002.
+
+Goal:
+Display the full generated player details in the Player Generator debug UI.
+
+Requirements:
+- After generating a player, display:
+  - full name
+  - first name
+  - last name
+  - position
+  - selected target rating
+  - calculated overall
+  - appearance array
+  - each skill value:
+    - Goalkeeping
+    - Tackling
+    - Marking
+    - Passing
+    - Control
+    - Dribbling
+    - Off Ball
+    - Shooting
+- Present the information clearly so the generator can be validated visually.
+- The UI should make it obvious that the target rating is the input and calculated overall is derived from the skill output.
+
+Implementation notes:
+- This is debug-oriented, so readability is more important than polish.
+- A clean card, table, or grouped layout is fine.
+- Keep the output easy to scan.
+
+Acceptance criteria:
+- Generating a player shows all required details.
+- Target rating and calculated overall are both visible.
+- All 8 skill values are visible.
+- The output is readable and suitable for validating the generation logic.
+
+================================================================
+FEAT-016 - Reconnect career start validation to real kit data and temporary player state
+================================================================
+
+Purpose:
+Advance the career setup flow so it now recognises real kit data and the temporary player generation area.
+
+Outcome:
+The start-career validation now uses the implemented kit state and a placeholder-valid team/player state path for the next epic.
+
+Prompt:
+Implement FEAT-016 for EPIC-002.
+
+Goal:
+Update the Career Start validation so it uses the real kit implementation from this epic and remains ready for the future full team selector implementation.
+
+Requirements:
+- Replace any old placeholder kit validation with validation against the real selected kit data.
+- Ensure the career start flow can confirm that:
+  - home kit exists
+  - away kit exists
+  - home colour exists
+  - away colour exists
+  - goalkeeper kit exists
+- For the players/team selection part, keep the current state flow compatible with the temporary debug setup and future full selector work.
+- Do not falsely treat the temporary single debug player as a completed final squad unless the current architecture explicitly needs a temporary bridge state for testing.
+
+Implementation notes:
+- Keep the validation logic honest to the real game setup requirements.
+- This feature is mainly about replacing fake/placeholder kit state assumptions from the previous epic.
+- The final team completion rules can remain unfinished if squad building is still for a later epic, but the structure should be ready.
+
+Acceptance criteria:
+- Career start validation now uses real kit data from the kit selector.
+- Placeholder kit assumptions from the previous epic are removed.
+- The state structure remains compatible with future full player/team selection work.
+- The implementation is clean and future-proof.
+
+================================================================
+Definition of done for this prompt file
+================================================================
+
+This prompt file is complete when:
+- The team setup state includes full kit data and goalkeeper kit.
+- The player can create a home and away shirt using patterns and colours.
+- Away shirt colour is forced to contrast well with the home shirt colour.
+- Kit randomisation exists and also respects contrast rules.
+- Goalkeeper kit can be selected from orange, green, yellow, and black.
+- Kit data is saved into the team data in gameContext.
+- A reusable shirt renderer/decoder component can recreate saved shirts accurately.
+- The old team selector placeholder is replaced with a temporary Player Generator debug tool.
+- The Player Generator takes rating and position and creates a random player.
+- Generated players have parody-style names, appearance arrays, weighted skill values, and an independently calculated overall.
+- The debug UI displays all player details clearly, including selected target rating and calculated overall.
+- The implementation remains modular, responsive, and ready for later expansion into the real team selector/squad system.

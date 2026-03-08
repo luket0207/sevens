@@ -1,0 +1,93 @@
+BUG-001 - Overall Value Displayed in Wrong Place
+
+Repro steps:
+1. Open `/career/start`.
+2. Go to `Players` and generate player choices.
+3. Inspect a player choice card.
+
+Expected behavior:
+- Overall should be shown as the first value inside `careerStart__skillsGrid`.
+- Overall should be visually more significant than the rest of the stat values.
+
+Actual behavior:
+- Overall was rendered in the card header and not inside the skills grid.
+
+Suspected cause:
+- `careerPlayerCard.jsx` rendered `overall` in the header (`careerStart__playerOverall`) and skill rows only included core skills.
+
+Attempted fixes:
+- Moved overall rendering from header into the start of `careerStart__skillsGrid`.
+- Added dedicated style variants (`careerStart__skillRow--overall` and `careerStart__ratingValue--overall`) to emphasize the value.
+
+Final fix:
+- Updated `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`:
+  - removed header overall badge
+  - added `Overall` row as first item in `careerStart__skillsGrid`
+- Updated `src/game/careerStart/careerStart.scss`:
+  - removed obsolete `careerStart__playerOverall` style
+  - added emphasized styles for overall row/value
+
+Status: fixed
+
+
+BUG-002 - Overall Row Spans Both Skill Columns
+
+Repro steps:
+1. Open `/career/start`.
+2. Go to `Players` and generate player choices.
+3. Inspect `careerStart__skillsGrid` on an outfield player card.
+
+Expected behavior:
+- Overall should occupy one normal grid cell.
+- Skill grid should lay out as a balanced `4 row x 2 column` set for outfield cards (`overall + 7 skills`).
+
+Actual behavior:
+- Overall row was spanning both columns, breaking the desired 2-column rhythm.
+
+Suspected cause:
+- `careerStart__skillRow--overall` had `grid-column: 1 / -1` in `careerStart.scss`.
+
+Attempted fixes:
+- Removed the full-width grid span from `careerStart__skillRow--overall`.
+- Kept emphasis styling without changing grid placement rules.
+
+Final fix:
+- Updated `src/game/careerStart/careerStart.scss`:
+  - removed `grid-column: 1 / -1` from `.careerStart__skillRow--overall`
+  - retained highlight styling so overall remains visually distinct.
+
+Status: fixed
+
+
+BUG-003 - Overall Value Should Always Be Whole Number
+
+Repro steps:
+1. Open `/career/start`.
+2. Go to `Players` and generate player choices.
+3. Inspect overall values in player cards/debug output.
+
+Expected behavior:
+- Overall should always be a whole number.
+- Any non-integer value should be rounded to nearest whole number.
+
+Actual behavior:
+- Overall was displayed with decimal formatting in some views (for example `25.00`).
+
+Suspected cause:
+- UI was rendering overall with `toFixed(2)`.
+- Generator output did not explicitly normalize overall to an integer field.
+
+Attempted fixes:
+- Rounded overall at generator output level.
+- Updated UI display paths to render integer overall values.
+
+Final fix:
+- Updated `src/game/playerGeneration/playerGenerationUtils.js`:
+  - round calculated overall using `Math.round(...)` before storing `player.overall`
+  - use rounded overall for potential generation input
+- Updated `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`:
+  - overall row now renders rounded integer value
+- Updated `src/game/careerStart/components/playerGenerationDebug.jsx`:
+  - calculated overall display now renders rounded integer value
+
+Status: fixed

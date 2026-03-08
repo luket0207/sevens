@@ -1,0 +1,625 @@
+EPIC-005 - Career Generation, League Setup, and Team Creation
+
+Overview
+The goal of this epic is to generate the full starting career data after the user clicks "Start Career" on /career/start.
+
+This epic introduces:
+- a career generation loading screen
+- generation of all leagues and AI teams
+- generation of all team data
+- generation of all players for every team
+- saving the generated career structure into gameContext
+- a debug view on /career/home to inspect the generated output
+
+This is the first real career-generation epic. The focus is on producing the full starting competition structure and team data before the player enters the main career home screen.
+
+================================================================
+Core Career Generation Scope
+================================================================
+
+When the user clicks "Start Career" on /career/start:
+
+1. The app should leave /career/start
+2. A loading screen should be shown while the career is being generated
+3. The system should generate all required leagues and teams
+4. Each team should be generated with all required data
+5. All generated career data should be saved into gameContext
+6. Once complete, the app should navigate to /career/home
+7. /career/home should expose a debugging view to inspect the generated leagues, teams, and players
+
+================================================================
+Competition Structure
+================================================================
+
+The career must generate the following teams and league groupings:
+
+- 7 teams rated 20 to 25 - League 5
+- 8 teams rated 25 to 30 - League 4
+- 8 teams rated 30 to 35 - League 3
+- 8 teams rated 35 to 40 - League 2
+- 8 teams rated 40 to 45 - League 1
+- 7 teams rated 40 to 50 - Foreign teams for the Champions Cup
+
+This gives a total of:
+- 39 domestic league teams
+- 7 foreign teams
+- 46 generated AI teams overall
+
+These should be generated fresh when a new career is started.
+
+================================================================
+Per-Team Generation Requirements
+================================================================
+
+Each generated team must include:
+
+- team name
+- stadium name
+- home kit
+- away kit
+- home colour
+- away colour
+- goalkeeper kit if required by the existing team model
+- players
+
+The team generation should use the systems already created in earlier epics where possible, especially:
+- team kit generation / storage model
+- player generation hook / generator
+- influence rule system
+- generated player metadata such as:
+  - name
+  - appearance
+  - potential
+  - influenceRule
+
+================================================================
+Player Generation Model for Teams
+================================================================
+
+Each generated team must contain exactly 7 players:
+- 1 goalkeeper
+- 2 defenders
+- 2 midfielders
+- 2 attackers
+
+The team overall should be used to derive the 7 player overall targets.
+
+Rule:
+- create 7 player overall target values
+- those 7 values must average exactly to the team's overall value
+- they should have a spread of up to 5 either side of the team overall where possible
+
+Example:
+If team overall is 25, valid player overall targets could look like:
+[20, 27, 28, 24, 25, 26, 25]
+
+Then assign them as:
+
+1. first value -> goalkeeper
+2. second value -> defender 1
+3. third value -> defender 2
+4. fourth value -> midfielder 1
+5. fifth value -> midfielder 2
+6. sixth value -> attacker 1
+7. seventh value -> attacker 2
+
+Generation rules by slot:
+
+Goalkeeper
+- generate as goalkeeper using the goalkeeper player type
+
+Defenders
+- both defenders must be generated as outfield players
+- both defenders must force:
+  - Influence Defender
+
+Midfielders
+- both midfielders must be generated as outfield players
+- each midfielder must force either:
+  - Influence Defensive Mid
+  - Influence Attacking Mid
+- each midfielder should choose between the two with a 50/50 chance
+
+Attackers
+- both attackers must be generated as outfield players
+- each attacker must force either:
+  - Influence Attacker
+  - Influence Goalscorer
+- each attacker should choose between the two with a 50/50 chance
+
+================================================================
+Generation Efficiency Expectations
+================================================================
+
+This epic should aim for a good balance between:
+- believable randomness
+- maintainable logic
+- acceptable generation speed
+
+The user is comfortable with career generation taking around 20 to 30 seconds if needed, so absolute optimisation is not required at the expense of variety.
+
+However, the implementation should still make sensible attempts to avoid wasteful generation.
+
+Guidance:
+- Reuse shared generators and utilities rather than duplicating logic
+- Avoid unnecessary repeated setup work inside loops
+- Prefer clean batched generation where practical
+- Team names, stadium names, and similar data can be generated from curated pools/templates rather than expensive bespoke logic every time
+- Player skill generation should remain properly randomised through the shared player generator
+- If useful, use a simple prebuilt pool/schema approach for team names, stadium names, and similar decorative data
+- Choose the approach that best balances strong random-feeling output with efficient implementation
+
+The purpose of this epic is not micro-optimisation, but it should still be implemented sensibly.
+
+================================================================
+Loading Screen Behaviour
+================================================================
+
+A loading screen is required for career generation.
+
+This loading screen should appear after the user clicks "Start Career" on /career/start and before they arrive on /career/home.
+
+Requirements:
+- show a loading spinner or equivalent loading visual
+- show progress feedback
+- progress feedback should try to be meaningfully accurate
+- the screen should communicate that the career is being generated
+
+The progress system should reflect actual generation work as much as reasonably possible.
+
+Examples of useful progress stages:
+- preparing career data
+- generating leagues
+- generating teams
+- generating players
+- finalising career
+- saving to gameContext
+
+The exact UI wording can vary, but the user should feel the process is genuinely progressing, not frozen.
+
+================================================================
+Career Home Debug View
+================================================================
+
+Once generation is complete and the user lands on /career/home, the generated data should be inspectable through a debug view.
+
+Requirements:
+- display the resulting generated array/data structure for leagues and teams
+- include full team details
+- include player details
+- use an expandable nested accordion-style arrangement
+- make it easy to scan:
+  - leagues
+  - teams inside leagues
+  - players inside teams
+
+This is a debug/development aid so the generated structure can be verified clearly.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-501 - Create Career Generation Flow Trigger
+----------------------------------------------------------------
+
+Description
+Hook the Start Career action into the new career generation flow.
+
+Requirements
+- When the user clicks "Start Career" on /career/start, begin the career generation process.
+- The old direct/simple progression path should be replaced with the real generation flow.
+- The flow should move from:
+  - /career/start
+  - to a loading screen
+  - then to /career/home once generation is complete
+- The flow should not allow the user to enter /career/home before generation finishes.
+
+Acceptance Criteria
+- Clicking Start Career begins real career generation.
+- The loading step appears before /career/home.
+- /career/home is reached only after generation completes.
+
+----------------------------------------------------------------
+FEAT-502 - Add Career Generation Loading Screen
+----------------------------------------------------------------
+
+Description
+Create the loading screen shown while the career data is being generated.
+
+Requirements
+- Add a dedicated loading screen or loading-state route/view between /career/start and /career/home.
+- Display a loading spinner or similar visual feedback.
+- Show progress information to the user.
+- The progress should try to reflect actual completed work rather than fake timing alone.
+- The layout should match the game style and remain responsive.
+
+Acceptance Criteria
+- A loading screen is shown while career generation is in progress.
+- The screen shows visible loading feedback.
+- The screen displays progress that updates during generation.
+- The user is moved onward when generation completes.
+
+----------------------------------------------------------------
+FEAT-503 - Define Career Competition Structure
+----------------------------------------------------------------
+
+Description
+Create the data structure for the leagues and competitions generated at the start of a career.
+
+Requirements
+- Define the generated competition structure for:
+  - League 5
+  - League 4
+  - League 3
+  - League 2
+  - League 1
+  - Foreign Champions Cup teams
+- Store the required team counts and team overall ranges for each group:
+  - League 5 -> 7 teams rated 20 to 25
+  - League 4 -> 8 teams rated 25 to 30
+  - League 3 -> 8 teams rated 30 to 35
+  - League 2 -> 8 teams rated 35 to 40
+  - League 1 -> 8 teams rated 40 to 45
+  - Foreign Champions Cup -> 7 teams rated 40 to 50
+- Keep the competition schema reusable and easy to iterate over during generation.
+
+Acceptance Criteria
+- A single source of truth exists for the league/team generation schema.
+- The schema correctly describes the 46 AI teams required for a new career.
+
+----------------------------------------------------------------
+FEAT-504 - Generate Team Overall Values per Competition
+----------------------------------------------------------------
+
+Description
+Generate the target team overall values for every AI team in the career.
+
+Requirements
+- For every team slot in every competition group, generate a team overall within the allowed range for that group.
+- Respect the min/max range of the team’s league.
+- Keep the generation varied across teams in the same league.
+- Store the generated overall on the team data so it can drive player generation later.
+
+Acceptance Criteria
+- Every generated AI team has a valid team overall.
+- Team overall values always fall inside the configured competition range.
+- Teams in the same competition still show a spread of ratings.
+
+----------------------------------------------------------------
+FEAT-505 - Build Shared Team Generator
+----------------------------------------------------------------
+
+Description
+Create the shared generator that builds a full team object from a target team overall.
+
+Requirements
+- Build a reusable team generator utility/module.
+- Given a target team overall, generate a full team object including:
+  - team name
+  - stadium name
+  - home kit
+  - away kit
+  - home colour
+  - away colour
+  - goalkeeper kit if part of the current team model
+  - players
+  - team overall
+- The generator should reuse existing systems where sensible.
+- Avoid duplicating logic already implemented elsewhere.
+
+Acceptance Criteria
+- A team can be generated from a target overall using a shared generator.
+- The returned object contains all required team fields.
+- The generator is reusable for all leagues and future systems.
+
+----------------------------------------------------------------
+FEAT-506 - Generate Team Names and Stadium Names
+----------------------------------------------------------------
+
+Description
+Generate the decorative identity data for each AI team.
+
+Requirements
+- Generate a team name for every AI team.
+- Generate a stadium name for every AI team.
+- Use a method that balances variety with efficient generation.
+- A curated/template-driven approach is acceptable and encouraged if it improves clarity and performance.
+- Team names and stadium names should feel suitable for the football game world.
+- Avoid obvious duplication where practical.
+
+Acceptance Criteria
+- Every generated AI team has a team name.
+- Every generated AI team has a stadium name.
+- Names are varied enough for the scale of the career generation.
+
+----------------------------------------------------------------
+FEAT-507 - Generate Team Kits for AI Teams
+----------------------------------------------------------------
+
+Description
+Generate the home/away kit data for every AI team.
+
+Requirements
+- Reuse the existing team kit model from earlier epics.
+- Generate:
+  - home kit
+  - away kit
+  - home colour
+  - away colour
+  - goalkeeper kit if part of the existing model
+- Ensure home and away kits remain valid according to the existing contrast rules.
+- Keep generated kits serialisable and compatible with the existing shirt renderer/decoder component.
+
+Acceptance Criteria
+- Every generated AI team has valid home and away kit data.
+- Home and away colours are present.
+- Generated kit data works with the existing shirt rendering system.
+
+----------------------------------------------------------------
+FEAT-508 - Generate 7 Player Overall Targets per Team
+----------------------------------------------------------------
+
+Description
+Generate the 7 player overall targets that will be used to build each team’s squad.
+
+Requirements
+- For each team overall, generate 7 player overall target values.
+- The 7 values must average exactly to the team overall.
+- The 7 values should have a spread of up to 5 either side of the team overall where possible.
+- Keep the values believable and varied.
+- The output should be suitable for assignment to:
+  - 1 goalkeeper
+  - 2 defenders
+  - 2 midfielders
+  - 2 attackers
+
+Acceptance Criteria
+- Every team receives 7 player overall target values.
+- The average of the 7 values equals the team overall exactly.
+- The values show believable spread rather than all being identical.
+
+----------------------------------------------------------------
+FEAT-509 - Assign Team Player Roles and Forced Influence Rules
+----------------------------------------------------------------
+
+Description
+Map the generated 7 player overall targets to the team’s required player slots and role generation rules.
+
+Requirements
+- Assign the 7 generated overall values to these slots:
+  - 1 goalkeeper
+  - 2 defenders
+  - 2 midfielders
+  - 2 attackers
+- Slot rules:
+  - goalkeeper -> generate as goalkeeper
+  - defender 1 -> generate as outfield with forced Influence Defender
+  - defender 2 -> generate as outfield with forced Influence Defender
+  - midfielder 1 -> generate as outfield with forced Influence Defensive Mid or Influence Attacking Mid, 50/50
+  - midfielder 2 -> generate as outfield with forced Influence Defensive Mid or Influence Attacking Mid, 50/50
+  - attacker 1 -> generate as outfield with forced Influence Attacker or Influence Goalscorer, 50/50
+  - attacker 2 -> generate as outfield with forced Influence Attacker or Influence Goalscorer, 50/50
+- Preserve these role assignments in a way that is useful for later debugging and future systems if practical.
+
+Acceptance Criteria
+- Every team has the correct 7-player role structure.
+- Defenders always use Influence Defender.
+- Midfielders choose between the two midfielder influences with a 50/50 split.
+- Attackers choose between the two attacker influences with a 50/50 split.
+
+----------------------------------------------------------------
+FEAT-510 - Generate Full Team Players Through Shared Hook
+----------------------------------------------------------------
+
+Description
+Generate the actual team players using the existing shared player generation hook/system.
+
+Requirements
+- Use the existing shared player generation hook/system to generate all team players.
+- For each team:
+  - generate 1 goalkeeper
+  - generate 2 defenders
+  - generate 2 midfielders
+  - generate 2 attackers
+- Pass the correct overall target into the player generator.
+- Pass forced influence rules into the player generator when required.
+- Ensure generated players retain all normal generated data, including:
+  - skills
+  - overall
+  - influenceRule
+  - name
+  - appearance
+  - potential
+
+Acceptance Criteria
+- Every generated team contains 7 fully generated players.
+- Player generation uses the shared generator path rather than duplicated logic.
+- Forced influence rules are respected correctly.
+
+----------------------------------------------------------------
+FEAT-511 - Generate All Career Teams and Organise by League
+----------------------------------------------------------------
+
+Description
+Generate the full set of AI teams for the career and place them into the correct competition groups.
+
+Requirements
+- Iterate through the career competition schema.
+- Generate all required teams for each competition.
+- Organise the results by league/competition in a stable structure.
+- Keep domestic leagues and foreign teams clearly separated in the resulting data model.
+
+Acceptance Criteria
+- All 46 AI teams are generated.
+- Teams are placed into the correct competition buckets.
+- The resulting structure is suitable for saving into gameContext.
+
+----------------------------------------------------------------
+FEAT-512 - Save Generated Career Data into gameContext
+----------------------------------------------------------------
+
+Description
+Persist the generated career data so it becomes the active career state.
+
+Requirements
+- Save the full generated career data into gameContext.
+- Include:
+  - leagues/competitions
+  - teams
+  - team details
+  - team players
+- Keep the stored data shape clean and future-proof.
+- Ensure /career/home can read from this saved data.
+
+Acceptance Criteria
+- The generated career structure is stored in gameContext.
+- /career/home can consume the stored generated data.
+- The generated state persists correctly for the active session.
+
+----------------------------------------------------------------
+FEAT-513 - Add Career Generation Progress Tracking
+----------------------------------------------------------------
+
+Description
+Track and expose meaningful generation progress to the loading screen.
+
+Requirements
+- Add progress tracking to the career generation process.
+- Progress should reflect real steps completed as much as reasonably possible.
+- At minimum, progress should be able to communicate advancement through major phases such as:
+  - preparing generation
+  - generating competitions
+  - generating teams
+  - generating players
+  - finalising / saving
+- Prefer progress based on completed units of work rather than arbitrary timers.
+
+Acceptance Criteria
+- Career generation progress updates while the process runs.
+- The loading screen can display useful progress information.
+- Progress feels meaningfully connected to actual generation work.
+
+----------------------------------------------------------------
+FEAT-514 - Add Career Home Debug Accordion View
+----------------------------------------------------------------
+
+Description
+Display the generated career structure on /career/home in a debug-friendly expandable format.
+
+Requirements
+- Add a debugging section to /career/home.
+- Display the generated data in a nested accordion-style arrangement.
+- The structure should allow inspection of:
+  - leagues / competitions
+  - teams inside each league
+  - players inside each team
+- Show enough detail to verify:
+  - team names
+  - team overall
+  - kit data
+  - player names
+  - player overalls
+  - player skills
+  - influenceRule and other generation metadata where useful
+- The arrangement should make scanning large generated datasets practical.
+
+Acceptance Criteria
+- /career/home shows the generated career data in nested expandable sections.
+- Leagues, teams, and players can all be inspected.
+- The structure is easy to scan during debugging.
+
+----------------------------------------------------------------
+FEAT-515 - Replace Start Career Completion Path with Real Career Generation
+----------------------------------------------------------------
+
+Description
+Wire the full generation flow into the existing career setup completion process.
+
+Requirements
+- Once all career-start requirements are valid and the user clicks Start Career, use the real EPIC-005 generation flow instead of any temporary placeholder completion path.
+- Ensure the player-selected starting team from previous epics still remains part of the broader career state.
+- Integrate the new AI team generation alongside the existing player team setup.
+- Preserve compatibility with the broader career start state and validation model.
+
+Acceptance Criteria
+- Starting a career now runs the real generation flow.
+- The user’s chosen starting team remains intact.
+- AI leagues and teams are generated alongside the player’s team.
+
+----------------------------------------------------------------
+FEAT-516 - Add Sensible Generation Performance Improvements
+----------------------------------------------------------------
+
+Description
+Apply reasonable performance-minded structure to keep career generation practical without sacrificing too much randomness.
+
+Requirements
+- Review the generation pipeline and avoid obvious inefficiencies.
+- Reuse constant pools/schemas where appropriate for:
+  - team names
+  - stadium names
+  - decorative/generated identity data
+- Avoid unnecessary regeneration of static supporting data inside loops.
+- Prefer clear reusable utilities over repeated ad hoc logic.
+- Do not over-optimise prematurely, but do implement the system sensibly for the target generation scale.
+
+Acceptance Criteria
+- The generation flow is structured sensibly for the size of the career being produced.
+- Static data is not needlessly rebuilt inside tight loops.
+- The implementation balances acceptable speed with strong random-feeling output.
+
+----------------------------------------------------------------
+FEAT-517 - Add Career Generation Debug/Test Utilities
+----------------------------------------------------------------
+
+Description
+Provide development support for validating the generated career data and generation pipeline.
+
+Requirements
+- Add lightweight debug/test support for inspecting:
+  - generated competition structure
+  - team overall distribution by league
+  - generated player target overall spreads inside teams
+  - influence-rule distributions for generated outfield players
+  - progress state during generation
+- Keep this support scoped to development/debug use and do not let it replace the real user flow.
+
+Acceptance Criteria
+- Developers can inspect and validate the generated career structure and internals more easily.
+- Debug support helps verify that leagues, teams, and players are generated as intended.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- Clicking Start Career launches the real career generation flow.
+- A loading screen appears between /career/start and /career/home.
+- The loading screen shows progress that meaningfully updates during generation.
+- The career generates:
+  - 7 teams for League 5 rated 20 to 25
+  - 8 teams for League 4 rated 25 to 30
+  - 8 teams for League 3 rated 30 to 35
+  - 8 teams for League 2 rated 35 to 40
+  - 8 teams for League 1 rated 40 to 45
+  - 7 foreign teams rated 40 to 50
+- Every generated team includes:
+  - team name
+  - stadium name
+  - kit data
+  - colours
+  - players
+- Every generated team has exactly 7 players:
+  - 1 goalkeeper
+  - 2 defenders
+  - 2 midfielders
+  - 2 attackers
+- The 7 player overall targets for each team average exactly to the team overall.
+- Defenders always use Influence Defender.
+- Midfielders choose 50/50 between Influence Defensive Mid and Influence Attacking Mid.
+- Attackers choose 50/50 between Influence Attacker and Influence Goalscorer.
+- The full generated career structure is saved into gameContext.
+- /career/home displays the generated leagues, teams, and players in a nested accordion debug view.
+- The system is implemented in a way that is sensible for the size of the generation workload and ready for future career systems.

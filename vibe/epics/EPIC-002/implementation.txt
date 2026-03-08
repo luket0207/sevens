@@ -1,0 +1,291 @@
+EPIC-002 Implementation Log
+Date: 2026-03-07
+
+Engine components considered for every feature in this epic:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+FEAT-001 - Add team kit data structure to career team setup
+Status: done
+What was implemented:
+- Extended `career.setup` shape in `gameContext` to include `homeKit`, `awayKit`, `homeColour`, `awayColour`, `goalkeeperKit`, and `playerGenerator`.
+- Added serialisable shirt object model (`pattern`, `mainColour`, `detailColour`).
+Engine components used:
+- `gameContext` for persisted setup/team data.
+Engine components not used:
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not required for state-shape definition).
+Files changed:
+- `src/engine/gameContext/gameContext.jsx`
+
+FEAT-002 - Build reusable shirt pattern system
+Status: done
+What was implemented:
+- Added finite reusable shirt pattern registry and validation helpers.
+- Added reusable shirt style decoding utility for deterministic rendering.
+Engine components used:
+- None required directly.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (pattern system is feature-local utility logic).
+Files changed:
+- `src/game/careerStart/kit/shirtPatterns.js`
+- `src/game/careerStart/kit/shirtStyles.js`
+
+FEAT-003 - Build team kit selection component
+Status: done
+What was implemented:
+- Added home/away shirt editor UI with pattern, main colour, and detail colour controls.
+- Bound all controls to `gameContext` via `career.setup` values.
+Engine components used:
+- `button` for randomisation actions.
+- `gameContext` through `CareerStart` state updates.
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (not required for basic editor controls).
+Files changed:
+- `src/game/careerStart/components/teamKitSelector.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+
+FEAT-004 - Enforce home vs away colour contrast rules
+Status: done
+What was implemented:
+- Added deterministic RGB-distance contrast rule and valid-away-colour filtering.
+- Enforced contrast for manual selection and automatic correction flows.
+- Added in-UI messaging when colours are auto-corrected.
+Engine components used:
+- None required directly.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (feature logic handled in kit utilities/components).
+Files changed:
+- `src/game/careerStart/kit/kitContrast.js`
+- `src/game/careerStart/components/teamKitSelector.jsx`
+
+FEAT-005 - Add kit randomisation controls
+Status: done
+What was implemented:
+- Added `Randomise Home`, `Randomise Away`, and `Randomise Full Set` controls.
+- Randomised pattern/main/detail values and enforced away contrast in generated output.
+Engine components used:
+- `rng` utility (`randomInt`) via reusable randomiser module.
+- `button` for UI actions.
+Engine components not used:
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/kit/kitRandomizer.js`
+- `src/game/careerStart/components/teamKitSelector.jsx`
+
+FEAT-006 - Add goalkeeper kit selection
+Status: done
+What was implemented:
+- Added fixed goalkeeper kit options: `orange`, `green`, `yellow`, `black`.
+- Added UI selector and persisted selected value in `career.setup.goalkeeperKit`.
+Engine components used:
+- `gameContext` through `CareerStart` state updates.
+Engine components not used:
+- `bars`, `button` (not used for GK option pills), `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/kit/goalkeeperKits.js`
+- `src/game/careerStart/components/teamKitSelector.jsx`
+
+FEAT-007 - Save selected kit data into gameContext team data
+Status: done
+What was implemented:
+- Wired all kit editor changes to `career.setup` as single source of truth.
+- Persisted exact selected/generated values for `homeKit`, `awayKit`, `homeColour`, `awayColour`, `goalkeeperKit`.
+Engine components used:
+- `gameContext`.
+Engine components not used:
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng` (already used in FEAT-005), `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/components/teamKitSelector.jsx`
+
+FEAT-008 - Build reusable shirt renderer/decoder component
+Status: done
+What was implemented:
+- Added reusable `ShirtRenderer` component that renders from saved shirt data only.
+- Added decoder preview on Career Start to prove render from persisted state values.
+Engine components used:
+- None required directly.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/components/shirtRenderer.jsx`
+- `src/game/careerStart/careerStart.jsx`
+
+FEAT-009 - Replace team selector placeholder with temporary debug player generator
+Status: done
+What was implemented:
+- Replaced static players placeholder with `Player Generator` debug tool.
+- Added rating dropdown (70-100), position dropdown (`GK`, `DF`, `MD`, `AT`), and generate action.
+Engine components used:
+- `button` for generate action.
+- `gameContext` for debug generator state persistence.
+Engine components not used:
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/components/playerGeneratorDebug.jsx`
+- `src/game/careerStart/careerStart.jsx`
+
+FEAT-010 - Create reusable player generation model and output shape
+Status: done
+What was implemented:
+- Added reusable `generatePlayer` model with required fields:
+  - `firstName`, `lastName`, `fullName`, `position`, `targetRating`, `appearance`, `skills`, `calculatedOverall`.
+- Guaranteed appearance length 3 with values 1-5 and skill values 1-100.
+Engine components used:
+- `rng` utility (`randomInt`) in generation utilities.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorConstants.js`
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+
+FEAT-011 - Add parody-style name generation pools
+Status: done
+What was implemented:
+- Added curated first-name and surname pools with light parody style.
+- Integrated random full-name assembly into generator pipeline.
+Engine components used:
+- `rng` utility (`randomInt`).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorConstants.js`
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+
+FEAT-012 - Generate appearance values
+Status: done
+What was implemented:
+- Added reusable `generateAppearance()` returning exactly 3 values in range 1-5.
+Engine components used:
+- `rng` utility (`randomInt`).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+
+FEAT-013 - Generate weighted player skill ratings by position
+Status: done
+What was implemented:
+- Implemented positional weight table and weighted skill generation for all 8 required skills.
+- Added bounded random generation and rebalancing step towards target rating while preserving weight priority.
+Engine components used:
+- `rng` utility (`randomInt`).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorConstants.js`
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+
+FEAT-014 - Calculate overall rating independently from generated skills
+Status: done
+What was implemented:
+- Added standalone `calculateOverall()` utility based on positional weights and generated skill values.
+- Kept `targetRating` as input and `calculatedOverall` as derived output.
+Engine components used:
+- None required directly.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+
+FEAT-015 - Display full generated player debug output
+Status: done
+What was implemented:
+- Added readable debug output card showing all required player fields and all 8 skills.
+- Clearly separated input target rating from derived calculated overall.
+Engine components used:
+- `button`.
+Engine components not used:
+- `gameContext` (updated in parent), `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/components/playerGeneratorDebug.jsx`
+- `src/game/careerStart/careerStart.scss`
+
+FEAT-016 - Reconnect career start validation to real kit data and temporary player state
+Status: done
+What was implemented:
+- Replaced placeholder kit validation with real validation against:
+  - `homeKit`, `awayKit`, `homeColour`, `awayColour`, `goalkeeperKit`.
+- Added validation for shirt pattern/colour integrity and home-away contrast.
+- Kept players completion path separate from temporary single-player debug output (debug generation does not populate final `players` array).
+Engine components used:
+- `gameContext` (state values used by validation flow).
+Engine components not used:
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+Files changed:
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/careerStart/careerStart.jsx`
+
+Tradeoffs / follow-up tasks:
+- Debug player generator remains temporary and intentionally does not complete squad state.
+- Shirt rendering is stable and reusable but can be refined visually in later polish passes.
+
+BUG-001 - Balance player rating generation and stamp archetypes
+Status: done
+What was implemented:
+- Reworked player generator constants into separate balancing config sets:
+  - `POSITION_IMPACT_WEIGHTS` for overall impact only.
+  - `POSITION_GENERATION_BIAS` for generation profile only.
+  - `POSITION_ARCHETYPES` and `POSITION_ARCHETYPE_BIAS` for positional variation.
+  - `LOW_BIASED_SKILL_RULES` and positional low-biased skill mapping.
+- Replaced flat weighted generation with a multi-stage pipeline:
+  - select archetype for position.
+  - generate skills using position bias + archetype bias + controlled variance.
+  - apply low-biased roll logic for structurally weak skills.
+  - hard-force outfield Goalkeeping in range `1..14`.
+  - calculate overall from skills with weighted base + weakness penalty + role-strength bonus.
+  - run bounded correction loops to converge generated skills to target overall while preserving archetype identity.
+- Updated generated player model to persist `archetype`.
+- Updated debug UI to display archetype in generated output.
+Engine components used:
+- `rng` (`randomInt`) for archetype selection, variance rolls, and low-biased roll bands.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (not required for generator math/config changes; existing integration paths remain unchanged).
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorConstants.js`
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+- `src/game/careerStart/components/playerGeneratorDebug.jsx`
+Tradeoffs / follow-up tasks:
+- Full statistical balancing checks (large sample distribution snapshots by position/archetype) are still manual and should be automated in a future generator test suite.
+
+BUG-002 - Reduce unrealistic high skill spikes at lower target ratings
+Status: done
+What was implemented:
+- Added target-relative skill ceilings in generator/correction bounds so lower-rated players cannot spike into unrealistic high 80s/90s for role-critical skills.
+- Added target-aware bias compression so generation bias/archetype bias is scaled down more at lower ratings and scales up toward high target ratings.
+- Reworked correction candidate ordering so positive corrections prioritize weaker role-relevant skills before pushing already-high core skills.
+- Reduced correction upward caps for high-impact skills to avoid extreme inflation during convergence.
+- Softened the core weakness penalty curve constants to reduce over-punishment of weak secondary skills (which previously forced core stats too high to hit target overall).
+Engine components used:
+- `rng` (`randomInt`) in existing player generation path (unchanged utility dependency).
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` (BUG-002 is contained to generator math and balancing internals).
+Files changed:
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js`
+Tradeoffs / follow-up tasks:
+- Balancing values are tuned for realism at the current `70..100` target range and should be revisited when full-squad/statistical automated tests are introduced.
+
+BUG-003 - Remove temporary player generation system
+Status: done
+What was implemented:
+- Removed the temporary debug player generator from Career Start UI and replaced it with a neutral placeholder message.
+- Removed all player-generator-specific state wiring from Career Start (`playerGenerator` read/write/update paths).
+- Removed default `playerGenerator` state from `gameContext` career setup defaults.
+- Deleted temporary player generation source files and component:
+  - `components/playerGeneratorDebug.jsx`
+  - `playerGenerator/playerGeneratorConstants.js`
+  - `playerGenerator/playerGeneratorUtils.js`
+- Removed now-unused player-generator SCSS blocks from `careerStart.scss`.
+Engine components used:
+- `gameContext` (cleanup of legacy default state shape).
+Engine components not used:
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` (this bug is removal/cleanup, not a new interactive engine feature).
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/components/playerGeneratorDebug.jsx` (deleted)
+- `src/game/careerStart/playerGenerator/playerGeneratorConstants.js` (deleted)
+- `src/game/careerStart/playerGenerator/playerGeneratorUtils.js` (deleted)
+Tradeoffs / follow-up tasks:
+- Player generation is intentionally unavailable until the next epic introduces the new system.

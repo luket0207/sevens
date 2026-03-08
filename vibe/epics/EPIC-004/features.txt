@@ -1,0 +1,548 @@
+EPIC-004 - Career Team Selector
+
+Overview
+The goal of this epic is to build the player team selector for Career Mode.
+
+This component allows the user to choose their 7 starting players for the career:
+- 1 Goalkeeper
+- 6 Outfield Players
+
+Players do not need positional assignments at this stage.
+The user is simply choosing the 7 players they want to start their career with.
+
+The selection flow is staged:
+- Choice 1 is always a goalkeeper choice
+- Choices 2 to 7 are always outfield player choices
+
+Each choice presents exactly 3 randomly generated players.
+The user must pick exactly 1 player from each set of 3 before progressing.
+
+This means the full generated pool for the flow is:
+- 3 goalkeepers for the goalkeeper choice
+- 18 outfield players total for the 6 outfield choices
+- The 18 outfield players are then distributed randomly into 6 groups of 3
+
+The selection is complete and valid only when:
+- 1 goalkeeper has been chosen
+- 6 outfield players have been chosen
+
+This epic should use the player generation system already created in EPIC-003.
+
+================================================================
+Core Behaviour
+================================================================
+
+Goalkeeper Choice
+- The first selection screen/step should present 3 goalkeeper players.
+- The user selects 1 of them.
+- This completes the goalkeeper selection.
+
+Outfield Choices
+- The next 6 selection steps should each present 3 outfield players.
+- The user selects 1 player from each set.
+- This results in 6 outfield players selected overall.
+
+Chosen Players
+- A visible chosen-player list should always be displayed while making selections.
+- The chosen list should show all selected players so far and their details.
+
+Player Details
+- While making each choice, all visible players should show their stats.
+- Chosen players should also show their stats/details in the selected list.
+
+Validation
+- Team selection is valid only when the user has selected:
+  - 1 goalkeeper
+  - 6 outfield players
+
+================================================================
+Outfield Player Pool Rules
+================================================================
+
+The 18 outfield players must all be generated at once before being split into the 6 choices.
+
+Target overall range for all 18 outfield players:
+- minimum overall: 20
+- maximum overall: 25
+
+Desired frequency weighting across the 18-player pool:
+- 20 = rare
+- 21 = common
+- 22 = slightly more common
+- 23 = common
+- 24 = uncommon
+- 25 = rare
+
+The system does not need to force a perfectly fixed count for each rating every time, but it should bias generation so the spread tends to follow that pattern.
+
+================================================================
+Forced Influence Rules in Outfield Pool
+================================================================
+
+To guarantee a good spread of player types, 10 of the 18 generated outfield players must be created using forced influence rules.
+
+The following influence rules must each be forced exactly twice:
+- Influence Defender
+- Influence Defensive Mid
+- Influence Attacking Mid
+- Influence Attacker
+- Influence Goalscorer
+
+This creates 10 forced-influence players total.
+
+The remaining 8 outfield players:
+- should use the normal random influence rule behaviour from EPIC-003
+- meaning the standard 1 in 6 rule selection should apply to those players
+
+After all 18 outfield players are generated:
+- shuffle them
+- split them into 6 groups of 3
+- use those 6 groups as the 6 outfield selection choices
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-401 - Create Career Team Selector Flow
+----------------------------------------------------------------
+Status: done
+
+Description
+Build the overall team selection flow for Career Mode where the user picks 7 starting players.
+
+Requirements
+- Create the team selector flow/component for Career Mode.
+- The flow must collect:
+  - 1 goalkeeper
+  - 6 outfield players
+- The flow must be structured as 7 sequential choices.
+- Choice 1 must be the goalkeeper choice.
+- Choices 2 to 7 must be outfield player choices.
+- The component should be integrated into the career start process in the correct place.
+
+Acceptance Criteria
+- The user can enter the team selector flow.
+- The flow contains 7 total choices.
+- The first choice is for a goalkeeper.
+- The next 6 choices are for outfield players.
+- The flow structure is stable and ready for the later selection features in this epic.
+
+----------------------------------------------------------------
+FEAT-402 - Generate Goalkeeper Choice Pool
+----------------------------------------------------------------
+Status: done
+
+Description
+Generate the 3 goalkeepers used for the first selection choice.
+
+Requirements
+- Use the EPIC-003 player generation system.
+- Generate exactly 3 goalkeeper players for the goalkeeper choice.
+- These players should be available as a single group of 3.
+- Keep this pool separate from the outfield pool.
+- The generated goalkeeper objects should include their normal generated data and metadata.
+
+Acceptance Criteria
+- The first choice always has exactly 3 goalkeepers.
+- The goalkeepers are generated through the shared player generator.
+- The goalkeeper choice pool is isolated correctly from the outfield choice pool.
+
+----------------------------------------------------------------
+FEAT-403 - Generate Full Outfield Player Pool
+----------------------------------------------------------------
+Status: done
+
+Description
+Generate the full pool of 18 outfield players up front before the 6 outfield choices are shown.
+
+Requirements
+- Use the EPIC-003 player generation system.
+- Generate exactly 18 outfield players up front.
+- All 18 outfield players must have overall ratings between 20 and 25 inclusive.
+- The full pool should exist before it is split into choices.
+- Each generated outfield player should contain all normal generation data including influenceRule.
+
+Acceptance Criteria
+- Exactly 18 outfield players are generated.
+- Every outfield player has an overall from 20 to 25 inclusive.
+- The entire outfield pool is created before grouping into choices.
+
+----------------------------------------------------------------
+FEAT-404 - Bias Outfield Overall Distribution
+----------------------------------------------------------------
+Status: done
+
+Description
+Ensure the generated 18-player outfield pool tends toward the intended rating spread.
+
+Requirements
+- When assigning target overall values to the 18 outfield players, bias them with this intended frequency pattern:
+  - 20 = rare
+  - 21 = common
+  - 22 = slightly more common
+  - 23 = common
+  - 24 = uncommon
+  - 25 = rare
+- This does not need to be a perfectly fixed count each time.
+- It should favour mid values over edge values across normal generations.
+- Keep the implementation deterministic enough to be testable and understandable.
+
+Acceptance Criteria
+- Generated outfield pools usually contain more 21–23 rated players than 20 or 25 rated players.
+- 22 tends to appear slightly more often than 21 and 23.
+- 24 appears less often than 21–23.
+- 20 and 25 appear rarely.
+
+----------------------------------------------------------------
+FEAT-405 - Force Influence Spread Across Outfield Pool
+----------------------------------------------------------------
+Status: done
+
+Description
+Guarantee a useful spread of player types by forcing specific influence rules into part of the 18-player outfield pool.
+
+Requirements
+- Of the 18 generated outfield players:
+  - 2 must be generated with forced Influence Defender
+  - 2 must be generated with forced Influence Defensive Mid
+  - 2 must be generated with forced Influence Attacking Mid
+  - 2 must be generated with forced Influence Attacker
+  - 2 must be generated with forced Influence Goalscorer
+- This creates 10 forced-influence players total.
+- Use the forced influence support already added to the generator hook/system.
+- The remaining 8 outfield players should use normal random influence selection.
+- Each generated player must retain the final influenceRule used.
+
+Acceptance Criteria
+- The outfield pool always includes exactly 2 players for each forced influence rule listed above.
+- The remaining 8 outfield players use normal random influence logic.
+- Every outfield player stores the influenceRule actually used.
+
+----------------------------------------------------------------
+FEAT-406 - Shuffle and Split Outfield Pool into 6 Choices
+----------------------------------------------------------------
+Status: done
+
+Description
+Randomly distribute the generated 18-player outfield pool into the 6 outfield selection choices.
+
+Requirements
+- Once all 18 outfield players are generated, shuffle the full pool.
+- Split the shuffled pool into 6 groups of 3.
+- These groups become the 6 outfield choices shown in the selector flow.
+- Preserve the player data exactly during shuffling and grouping.
+- Ensure each outfield player appears once and only once.
+
+Acceptance Criteria
+- The 18 outfield players are shuffled before grouping.
+- The result is exactly 6 groups of 3.
+- No player is duplicated.
+- No player is lost.
+- The 6 groups are ready for the 6 outfield choices.
+
+----------------------------------------------------------------
+FEAT-407 - Build Player Choice Card UI
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the UI used to display players as selectable options during each choice.
+
+Requirements
+- Build a reusable player card/panel for selection choices.
+- Each visible player option must display their details and stats.
+- At minimum, show:
+  - overall
+  - influenceRule if relevant
+  - core skill values
+- Goalkeeper cards should display goalkeeper skills:
+  - Shot Stopping
+  - Distribution
+  - Control
+- Outfield cards should display outfield skills:
+  - Tackling
+  - Marking
+  - Passing
+  - Movement
+  - Control
+  - Dribbling
+  - Shooting
+- The card should clearly communicate that the player can be selected.
+
+Acceptance Criteria
+- Every player choice is shown using a reusable player display component.
+- Visible players show their stats clearly.
+- Goalkeepers and outfield players display the correct skill set.
+- The player options are understandable and easy to compare.
+
+----------------------------------------------------------------
+FEAT-408 - Implement Sequential Choice Interaction
+----------------------------------------------------------------
+Status: done
+
+Description
+Allow the user to make one selection at a time through the 7-stage team selection process.
+
+Requirements
+- The selector flow must move through the choices sequentially.
+- The user chooses exactly 1 player from the current set of 3.
+- Once a player is selected for the current choice, the flow advances to the next choice.
+- The previously selected player must be saved into the chosen-player list/state.
+- The current choice index/state should be tracked cleanly.
+- Prevent skipping choices.
+- Prevent choosing more than one player from a single group.
+
+Acceptance Criteria
+- The user can select exactly one player from each choice.
+- After selection, the flow progresses correctly.
+- A selected player is stored correctly before moving on.
+- The user cannot complete the flow without making all required selections.
+
+----------------------------------------------------------------
+FEAT-409 - Display Persistent Chosen Player List
+----------------------------------------------------------------
+Status: done
+
+Description
+Show the currently selected players at all times while the user is making their team choices.
+
+Requirements
+- Add a persistent selected-player list to the team selector UI.
+- This list should always be visible while the user is making choices.
+- It must update immediately when a new player is selected.
+- It should show all chosen players so far and their details.
+- At minimum, show enough detail to identify and compare selected players, including their stats.
+- The first chosen slot should be the goalkeeper once selected, followed by selected outfield players as they are chosen.
+
+Acceptance Criteria
+- A persistent chosen-player list is visible during selection.
+- The list updates as each player is selected.
+- Chosen players show their relevant details and stats.
+- The user can always see their current team as it is being assembled.
+
+----------------------------------------------------------------
+FEAT-410 - Add Team Selection State and Validation
+----------------------------------------------------------------
+Status: done
+
+Description
+Track the selected players in state and determine when the team selector is valid/complete.
+
+Requirements
+- Maintain team selection state for:
+  - selected goalkeeper
+  - selected outfield players
+- The selector should be considered valid only when:
+  - exactly 1 goalkeeper has been selected
+  - exactly 6 outfield players have been selected
+- Expose a clear validity/completion state for the rest of the career setup flow.
+- Ensure this state can integrate cleanly with the wider career start validation.
+
+Acceptance Criteria
+- The selector tracks selected players correctly.
+- Team selection becomes valid only when all 7 required players have been chosen.
+- The completion state can be used by the wider career setup flow.
+
+----------------------------------------------------------------
+FEAT-411 - Connect Team Selector to Career Start Requirements
+----------------------------------------------------------------
+Status: done
+
+Description
+Replace the previous placeholder player-selection section in career start with the real team selector from this epic.
+
+Requirements
+- Integrate the new team selector into the career start flow where the player-selection requirement belongs.
+- Remove or replace the old placeholder/debug team selection path as appropriate.
+- Ensure the team selector now fulfills the player requirement for starting a career.
+- Preserve compatibility with existing career start validation and state structure.
+
+Acceptance Criteria
+- The placeholder player selection area is replaced by the real team selector.
+- The team selector now fulfills the player requirement in career start.
+- Career setup validation recognises the selected 7-player team correctly.
+
+----------------------------------------------------------------
+FEAT-412 - Add Team Selector Debug/Test Utility
+----------------------------------------------------------------
+Status: done
+
+Description
+Add lightweight debug/testing support so the generated pools and selections can be inspected during development.
+
+Requirements
+- Add a simple development-friendly way to inspect:
+  - generated goalkeeper pool
+  - generated outfield pool
+  - influence spread across outfield pool
+  - overall distribution across outfield pool
+  - chosen player state
+- This should help validate the selector logic during development.
+- Keep this utility lightweight and scoped appropriately so it does not become the final user-facing flow.
+
+Acceptance Criteria
+- Developers can inspect the generated pools and selection state during implementation.
+- Influence spread and rating spread can be checked easily.
+- Debug support helps validate this epic without replacing the real selector flow.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The career team selector exists and is integrated into the career start flow.
+- The user selects exactly 1 goalkeeper and 6 outfield players.
+- The first choice always shows 3 goalkeepers.
+- The next 6 choices each show 3 outfield players.
+- The 18 outfield players are generated up front and then shuffled into 6 groups of 3.
+- All outfield players have overall ratings from 20 to 25 inclusive.
+- The outfield rating spread is biased so:
+  - 20 and 25 are rare
+  - 24 is uncommon
+  - 21 and 23 are common
+  - 22 is slightly more common
+- The outfield pool always includes exactly 2 players for each of the 5 forced influence rules.
+- The remaining 8 outfield players use normal random influence generation.
+- All visible player choices show their stats.
+- The chosen-player list is always displayed and updates live.
+- Team selection becomes valid only when the user has chosen all 7 required players.
+- The selector is ready to act as the real player-selection step for Career Mode.
+
+----------------------------------------------------------------
+FEAT-413 - Add Skill Rating Colour Spectrum Display
+----------------------------------------------------------------
+Status: done
+
+Description
+Add colour values to displayed player skill ratings so the user can understand at a glance which ratings are weak and which are strong.
+
+Requirements
+- Introduce a reusable rating-to-colour mapping system for player skill values.
+- The system should work as a full spectrum across the rating range.
+- The colour should change in rating bands of 10.
+- Each 10-point band should have its own distinct colour step.
+- Lower ratings should appear redder and higher ratings should move progressively through a more positive colour spectrum.
+
+Required banding:
+- 1 to 10 = darkest red
+- 11 to 20 = lighter red
+- 21 to 30 = red-orange
+- 31 to 40 = orange
+- 41 to 50 = amber / yellow-orange
+- 51 to 60 = yellow
+- 61 to 70 = yellow-green
+- 71 to 80 = green
+- 81 to 90 = stronger green
+- 91 to 100 = brightest / best green
+
+Implementation notes
+- The exact final colours can be tuned to match the game's visual style, but the progression should clearly communicate poor to strong ratings.
+- The mapping should be reusable anywhere player skill values are shown.
+- Keep the logic centralised rather than duplicating colour decisions in multiple components.
+- The colour treatment can be applied to the text, background, badge, pill, or another clear UI treatment that fits the existing design system.
+- Ensure the display remains readable and accessible, especially for lower and higher extremes.
+- Prefer a shared utility or config map for the rating bands.
+
+Suggested reusable utility
+- Example shape:
+  - getRatingColour(value)
+- Or a richer helper if needed:
+  - getRatingDisplayMeta(value)
+    - colour
+    - bandLabel
+    - bandRange
+
+Acceptance Criteria
+- Displayed skill ratings use a consistent colour spectrum based on the rating value.
+- Colour changes happen in 10-point increments across the full 1 to 100 range.
+- 1 to 10 ratings appear darkest red and progressively improve in colour through to 91 to 100.
+- The colour system is reusable across all player stat displays.
+- Skill values remain clear and readable while gaining quick visual meaning.
+
+----------------------------------------------------------------
+FEAT-414 - Add Name, Appearance, and Potential to Generated Players
+----------------------------------------------------------------
+Status: done
+
+Description
+Expand the player generation output so every generated player includes a name, an appearance array, and a potential value in addition to their skill set.
+
+Requirements
+- Update the shared player generation system so every generated player includes:
+  - name
+  - appearance
+  - potential
+- These values must be generated as part of the standard player creation flow for both goalkeepers and outfield players.
+- These values should be returned anywhere the player generator is used, including the team selector flow.
+
+Name
+- Generate a random name for each player.
+- Build names from:
+  - a pool of first names
+  - a pool of last names
+- Combine one first name and one last name to produce the final player name.
+- The names should have a slight parody feel to them, but still feel believable enough for the football game world.
+- Avoid using exact famous real player names where possible.
+- Keep the name generator reusable and easy to expand later.
+
+Suggested output shape for name
+- Either:
+  - name
+- Or, if useful for future expansion:
+  - firstName
+  - lastName
+  - name
+- If split values are stored, name should still be available as the combined display value.
+
+Appearance
+- Generate an appearance array for each player.
+- The appearance value must be an array of exactly 3 numbers.
+- Each number must be a random integer from 1 to 5 inclusive.
+- Example valid values:
+  - [1,5,3]
+  - [4,2,4]
+  - [2,1,5]
+- This value is for future use and does not need visual rendering in this feature.
+- Keep it stored on the player object for later systems.
+
+Potential
+- Generate a potential value for each player.
+- Potential is based on the player's generated current overall rating.
+- Use this exact logic:
+
+  Potential Max = 50 - Current Overall Rating
+
+  Potential = random integer between 1 and Potential Max
+
+- Use the player's final generated current overall, not the original target before generation corrections.
+- Potential must always be valid within that calculated range.
+- Because current overall is capped at 50 in this system:
+  - lower-rated players can have larger potential ranges
+  - players already near 50 have very limited room to improve
+- Handle the edge case where Current Overall is 50 so the result remains valid and stable.
+- The implementation should avoid producing invalid ranges or runtime errors when Potential Max is very small.
+
+Implementation notes
+- Do not bolt these values on in the UI layer.
+- They should be part of the core generated player object returned by the shared generator.
+- Keep each generation concern modular:
+  - name generation utility
+  - appearance generation utility
+  - potential generation utility
+- The generator should remain deterministic in structure and easy to test.
+- Make sure these values flow through to any existing hooks/utilities that return generated players.
+
+Acceptance Criteria
+- Every generated player includes a random name.
+- Names are built from a first-name pool and a last-name pool.
+- Names have a slight parody feel without being direct copies of famous real players.
+- Every generated player includes an appearance array of exactly 3 integers.
+- Each appearance value is always between 1 and 5 inclusive.
+- Every generated player includes a potential value.
+- Potential is calculated from:
+  - Potential Max = 50 - Current Overall
+  - Potential = random integer between 1 and Potential Max
+- The implementation handles high-overall edge cases safely.
+- These new values are part of the shared generated player object and are available everywhere the generator is used.

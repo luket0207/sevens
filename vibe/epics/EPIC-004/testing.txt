@@ -1,0 +1,262 @@
+﻿EPIC-004 Testing Log
+Date: 2026-03-08
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed on existing repository-wide baseline issues in unrelated engine/info modules.
+- `npm.cmd exec eslint -- src/game/careerStart/careerStart.jsx src/game/careerStart/components/teamSelector/careerTeamSelector.jsx src/game/careerStart/components/teamSelector/careerPlayerCard.jsx src/game/careerStart/components/teamSelector/teamSelectorDebugPanel.jsx src/game/careerStart/utils/teamSelectorGeneration.js src/game/careerStart/utils/teamSelectorPoolUtils.js src/game/careerStart/utils/teamSelectorValidation.js src/game/careerStart/utils/teamSelectorState.js src/game/careerStart/utils/careerSetupValidation.js`: passed.
+- `npm.cmd exec eslint -- src/game/playerGeneration/ratingDisplayUtils.js src/game/playerGeneration/index.js src/game/careerStart/components/teamSelector/careerPlayerCard.jsx src/game/careerStart/components/playerGenerationDebug.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/playerGeneration/nameGenerationUtils.js src/game/playerGeneration/appearanceGenerationUtils.js src/game/playerGeneration/potentialGenerationUtils.js src/game/playerGeneration/playerGenerationUtils.js src/game/playerGeneration/index.js src/game/careerStart/components/teamSelector/careerPlayerCard.jsx src/game/careerStart/components/playerGenerationDebug.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/playerGeneration/playerGenerationUtils.js src/game/careerStart/components/teamSelector/careerPlayerCard.jsx src/game/careerStart/components/playerGenerationDebug.jsx`: passed.
+
+Manual verification note:
+- Browser/manual checklist below still needs to be executed in-app to fully close EPIC-004 QA.
+
+FEAT-401 - Create Career Team Selector Flow
+Manual steps:
+1. Open `/career/start` and go to the Players section.
+2. Click `Generate Player Choices`.
+Expected:
+- Team selector flow appears with sequential choices.
+- Total flow is 7 choices (1 GK + 6 outfield).
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass on FEAT-414 utility/generator/component updates.
+Automated needed:
+- Add component-level tests for flow initialization and choice progression.
+Status: in progress
+
+FEAT-402 - Generate Goalkeeper Choice Pool
+Manual steps:
+1. Generate selector choices.
+2. Inspect the first choice cards.
+Expected:
+- Exactly 3 goalkeeper players are shown.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass for BUG-003 updated generator/UI files.
+Automated needed:
+- Unit test for goalkeeper pool size and player types.
+Status: in progress
+
+FEAT-403 - Generate Full Outfield Player Pool
+Manual steps:
+1. Generate selector choices.
+2. Open debug panel and inspect outfield pool data.
+Expected:
+- Exactly 18 outfield players are generated.
+- Target overalls are in range `20..25`.
+Automated completed:
+- pending
+Automated needed:
+- Unit test verifying outfield pool count and overall range.
+Status: in progress
+
+FEAT-404 - Bias Outfield Overall Distribution
+Manual steps:
+1. Regenerate pools multiple times.
+2. Compare debug "Outfield Overall Spread".
+Expected:
+- `21..23` usually appear more than `20`/`25`.
+- `22` tends to be slightly more frequent than `21` and `23`.
+- `24` appears less than `21..23`.
+Automated completed:
+- pending
+Automated needed:
+- Statistical unit test over many generations for weighting tendency.
+Status: in progress
+
+FEAT-405 - Force Influence Spread Across Outfield Pool
+Manual steps:
+1. Generate selector choices.
+2. Open debug "Outfield Influence Spread".
+Expected:
+- Exactly 2 each for forced rules:
+  - Influence Defender
+  - Influence Defensive Mid
+  - Influence Attacking Mid
+  - Influence Attacker
+  - Influence Goalscorer
+- Remaining 8 players use normal random influence behavior.
+Automated completed:
+- pending
+Automated needed:
+- Unit test asserting exact forced counts and remaining random count.
+Status: in progress
+
+FEAT-406 - Shuffle and Split Outfield Pool into 6 Choices
+Manual steps:
+1. Generate selector choices.
+2. Advance beyond GK choice and inspect all 6 outfield rounds.
+Expected:
+- Exactly 6 outfield choices with 3 players each.
+- No duplicated player IDs across choices.
+Automated completed:
+- pending
+Automated needed:
+- Unit test ensuring 18 unique outfield players are distributed once.
+Status: in progress
+
+FEAT-407 - Build Player Choice Card UI
+Manual steps:
+1. Review option cards for GK and outfield choices.
+Expected:
+- Cards show overall, influence, and correct skill sets by player type.
+Automated completed:
+- pending
+Automated needed:
+- Component tests for card rendering of skill rows by type.
+Status: in progress
+
+FEAT-408 - Implement Sequential Choice Interaction
+Manual steps:
+1. Select one player from each current choice.
+Expected:
+- Flow advances one step at a time after each selection.
+- Cannot skip directly to later choices.
+- Only one player can be selected per choice.
+Automated completed:
+- pending
+Automated needed:
+- Component tests for index advancement and per-choice selection limits.
+Status: in progress
+
+FEAT-409 - Display Persistent Chosen Player List
+Manual steps:
+1. Generate choices and make selections.
+Expected:
+- Chosen list is always visible.
+- List updates immediately and shows selected player details/stats.
+Automated completed:
+- pending
+Automated needed:
+- Component tests for persistent chosen-list updates.
+Status: in progress
+
+FEAT-410 - Add Team Selection State and Validation
+Manual steps:
+1. Select fewer than 7 required players.
+2. Observe `Start Career` button state.
+3. Complete all 7 selections.
+Expected:
+- Validation is false before full team is selected.
+- Validation becomes true only at `1 GK + 6 outfield`.
+Automated completed:
+- pending
+Automated needed:
+- Unit tests for `hasValidCareerStartingPlayers` and selector completion rules.
+Status: in progress
+
+FEAT-411 - Connect Team Selector to Career Start Requirements
+Manual steps:
+1. Confirm Players section uses team selector flow, not old debug tool.
+2. Complete full setup requirements and start career.
+Expected:
+- Real selector fulfills the player requirement in career setup validation.
+Automated completed:
+- pending
+Automated needed:
+- Integration test for career setup completion path with selected players.
+Status: in progress
+
+FEAT-412 - Add Team Selector Debug/Test Utility
+Manual steps:
+1. Open selector debug panel in Players section.
+Expected:
+- Can inspect goalkeeper pool, outfield pool, influence spread, overall spread, and chosen state.
+Automated completed:
+- pending
+Automated needed:
+- Component test confirming debug panel visibility and key summaries.
+Status: in progress
+
+FEAT-413 - Add Skill Rating Colour Spectrum Display
+Manual steps:
+1. Open `/career/start`, go to Players, and generate player choices.
+2. Inspect displayed skill values on visible player cards.
+3. Select players and inspect skill values in the chosen-player list.
+4. (Optional) Use the legacy player generation debug view if exposed elsewhere in development.
+Expected:
+- Skill ratings display colour-coded bands in 10-point increments.
+- Low values (`1-10`) appear darkest red and higher bands progress toward bright green (`91-100`).
+- Colour mapping is consistent between current choice cards and selected/chosen displays.
+- Rating text remains readable at low and high extremes.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass on FEAT-413 utility/component updates.
+Automated needed:
+- Unit tests for rating-band utility output across boundary values (10/11, 20/21, ... 90/91).
+- Component tests asserting skill rating class application by band.
+Status: in progress
+
+FEAT-414 - Add Name, Appearance, and Potential to Generated Players
+Manual steps:
+1. Open `/career/start`, go to Players, and generate player choices.
+2. Inspect visible player cards in current choice and chosen list.
+3. Confirm players now include display names and potential.
+4. Open selector debug panel and inspect player JSON for appearance/name/potential fields.
+5. Use generator debug view (if available) to generate one or batch and inspect name/appearance/potential values.
+Expected:
+- Every generated player includes a generated `name`.
+- Name is built from first+last name pools and returned on the player object.
+- Every generated player includes `appearance` as an array of exactly 3 integers in `1..5`.
+- Every generated player includes `potential`.
+- Potential stays valid for generated overall, including safe handling when overall reaches 50.
+- New fields are available through shared generator outputs used by selector/debug flows.
+Automated completed:
+- pending
+Automated needed:
+- Unit tests for:
+  - name utility output shape (`firstName`, `lastName`, `name`)
+  - appearance array length and bounds
+  - potential calculation across boundary overalls (`49`, `50`)
+- Integration tests ensuring hook-generated players include all new metadata fields.
+Status: in progress
+
+BUG-001 - Overall Value Displayed in Wrong Place
+Manual steps:
+1. Open `/career/start`, go to Players, and generate player choices.
+2. Inspect a choice card and chosen card.
+Expected:
+- Overall appears as the first row inside `careerStart__skillsGrid`.
+- Overall row is visually more prominent than normal skill rows.
+- Overall is no longer displayed in the card header.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass for updated player card component.
+Automated needed:
+- Component test asserting overall row ordering and class styling.
+Status: passed
+
+BUG-002 - Overall Row Spans Both Skill Columns
+Manual steps:
+1. Open `/career/start`, go to Players, and generate player choices.
+2. Inspect outfield player `careerStart__skillsGrid`.
+Expected:
+- Overall occupies a single grid cell (not full-width).
+- Grid presents as 2 columns with overall flowing into normal item order.
+- Outfield cards show a balanced 4-row, 2-column stat grid.
+Automated completed:
+- Build compile pass.
+Automated needed:
+- UI/component regression test asserting overall row does not use full-column span styles.
+Status: passed
+
+BUG-003 - Overall Value Should Always Be Whole Number
+Manual steps:
+1. Open `/career/start`, go to Players, and generate player choices.
+2. Check overall value in choice cards and selected cards.
+3. Check overall value in player generation debug output.
+Expected:
+- Overall values are always whole numbers.
+- Decimal formatted overall values are no longer shown.
+- If a non-integer overall were produced, it is rounded to nearest whole number.
+Automated completed:
+- pending
+Automated needed:
+- Unit test for `playerGenerationUtils` asserting `player.overall` is integer.
+- UI tests asserting integer rendering in selector/debug views.
+Status: in progress
+
+

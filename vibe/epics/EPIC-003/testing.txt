@@ -1,0 +1,188 @@
+EPIC-003 Testing Log
+Date: 2026-03-07
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline issues in unrelated engine/info modules.
+- `npm.cmd exec eslint -- src/game/playerGeneration/playerGenerationConstants.js src/game/playerGeneration/skillTransferUtils.js src/game/playerGeneration/influenceUtils.js src/game/playerGeneration/playerGenerationUtils.js src/game/playerGeneration/index.js`: passed.
+- `npm.cmd exec eslint -- src/game/careerStart/components/playerGenerationDebug.jsx src/game/careerStart/careerStart.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/playerGeneration/hooks/usePlayerGeneration.js src/game/playerGeneration/index.js src/game/careerStart/components/playerGenerationDebug.jsx`: passed.
+- `npm.cmd exec eslint -- src/game/playerGeneration/playerGenerationConstants.js src/game/playerGeneration/influenceUtils.js src/game/playerGeneration/playerGenerationUtils.js src/game/playerGeneration/hooks/usePlayerGeneration.js src/game/playerGeneration/index.js src/game/careerStart/components/playerGenerationDebug.jsx src/game/careerStart/careerStart.jsx`: passed.
+
+FEAT-401 - Replace Existing Player Generator
+Manual steps:
+1. Import `generatePlayer` from `src/game/playerGeneration`.
+2. Generate one `GK` and one `OUTFIELD` player at a chosen target overall.
+Expected:
+- Generator returns a structured player object for both types.
+- `overall` equals the average of skill values.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass on new generator module.
+Automated needed:
+- Unit test asserting generator output shape and required fields.
+Status: passed
+
+FEAT-402 - Implement Base Skill Spread Generator
+Manual steps:
+1. Generate multiple players of the same type and target overall.
+2. Compare skill arrays.
+Expected:
+- Skills show spread/variation rather than all skills staying identical.
+- Overall remains equal to target.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Unit tests proving total-sum preservation before/after base spread.
+Status: passed
+
+FEAT-403 - Implement Influence Rule Selection
+Manual steps:
+1. Generate many outfield players and inspect `influenceRule`.
+Expected:
+- Only one of six allowed rule names appears.
+- All generated outfield players include the field.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Statistical test validating approximately even 1-in-6 distribution over large samples.
+Status: passed
+
+FEAT-404 - Implement Skill Transfer System
+Manual steps:
+1. Generate outfield players and inspect role-shape differences after influence.
+2. Verify overall remains unchanged.
+Expected:
+- Transfer behavior modifies source/target skill groups as expected.
+- Overall remains exact average of skill set.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Unit tests for transfer amount distribution and transfer-count bounds (2-4).
+Status: passed
+
+FEAT-405 - Implement Influence Rule Logic
+Manual steps:
+1. Generate several players per influence rule (forcing/mocking rule in future tests).
+Expected:
+- Defender-like rules increase defending skill groups relative to take-from groups.
+- Attacker/goalscorer rules strengthen movement/shooting/offensive profile.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Rule-specific unit tests validating relative directional changes per rule definition.
+Status: passed
+
+FEAT-406 - Implement Skill Cap Enforcement
+Manual steps:
+1. Generate large batches at different target overalls.
+2. Inspect all skill values.
+Expected:
+- Every skill remains within `1..100`.
+- Transfer overflow does not produce invalid values.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Unit tests covering boundary cases near min/max and overflow scenarios.
+Status: passed
+
+FEAT-407 - Add Player Influence Metadata
+Manual steps:
+1. Generate one GK and one outfield player.
+Expected:
+- Both include `influenceRule`.
+- Outfield value matches applied rule.
+- Goalkeeper uses `No Influence`.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Unit tests asserting metadata consistency with applied rule path.
+Status: passed
+
+FEAT-408 - Add Generator Testing Utilities
+Manual steps:
+1. Call `generatePlayerBatch` with a target overall and count > 1.
+Expected:
+- Returns requested number of generated players.
+- Each player preserves average-overall rule.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass.
+Automated needed:
+- Unit tests validating batch counts, type handling, and range clamping behavior.
+Status: passed
+
+FEAT-409 - Add Career Start Debug Access for New Generator
+Manual steps:
+1. Open `/career/start` and navigate to `Players`.
+Expected:
+- New generator debug controls are visible (type, target overall, batch count).
+2. Set player type and target overall, then click `Generate One`.
+Expected:
+- One player card is shown with type, target, calculated overall, influence rule, and skills.
+3. Set batch count and click `Generate Batch`.
+Expected:
+- Multiple player cards are rendered and count matches selected batch count.
+4. Click `Clear Output`.
+Expected:
+- Generated list is removed.
+5. Change debug inputs, navigate away and return to `/career/start`.
+Expected:
+- Debug values/output persist through `gameContext` state.
+Automated completed:
+- `npm run build` passed.
+- `npm run lint` still fails only on known unrelated repository baseline issues.
+- File-scoped eslint pass for new debug component and updated page passed.
+Automated needed:
+- Add component-level tests for debug controls, output rendering, and persistence behavior.
+Status: passed
+
+FEAT-409 (Hook) - Expose Player Generation Through Reusable Hook
+Manual steps:
+1. Import `usePlayerGeneration` from `src/game/playerGeneration`.
+2. Call hook with and without `defaultPlayerType`.
+Expected:
+- Hook returns callable generator functions without requiring generation logic duplication in consuming components.
+3. Call `generatePlayer(targetOverall)` and `generatePlayerBatch(targetOverall, count)`.
+Expected:
+- Returned player objects match EPIC-003 generator output shape and include `skills`, `overall`, `influenceRule`, and metadata.
+4. Use hook through `/career/start` debug page.
+Expected:
+- Debug UI continues to generate single and batch players correctly via hook-backed path.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass for new hook, index export, and debug component integration.
+Automated needed:
+- Add dedicated hook tests verifying default type behavior and override behavior.
+Status: passed
+
+FEAT-410 - Allow Forced Influence Rule in Player Generation Hook
+Manual steps:
+1. Use `usePlayerGeneration` and call `generatePlayer(targetOverall)` without forced rule.
+Expected:
+- Influence rule is selected randomly (existing behavior unchanged).
+2. Call `generatePlayer(targetOverall, "Influence Defender")`.
+Expected:
+- Returned player has `influenceRule: "Influence Defender"`.
+3. Call `generatePlayer(targetOverall, "None")`.
+Expected:
+- Returned player uses no influence transfer path and includes no-influence rule metadata.
+4. Call `generatePlayerBatch(targetOverall, count, "Influence Goalscorer")`.
+Expected:
+- Every returned player uses `Influence Goalscorer`.
+5. In `/career/start` Players debug controls, select forced influence and generate one/batch.
+Expected:
+- Output reflects selected forced influence; when set to `Auto (Random)`, random behavior resumes.
+Automated completed:
+- Build compile pass.
+- File-scoped eslint pass for forced-rule utility/hook/debug integration files.
+Automated needed:
+- Add unit tests for forced-rule validation, alias handling (`None`), and invalid forced-rule errors.
+- Add hook tests for pass-through behavior to shared generator utilities.
+Status: passed

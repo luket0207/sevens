@@ -1,0 +1,457 @@
+EPIC-003 - Player Generation System Rebuild
+
+Overview
+The goal of this epic is to completely replace the current player generation system with a new, simpler and more controllable model.
+
+The new system generates only two player types:
+
+- Goalkeepers
+- Outfield Players
+
+Players are generated with a defined set of skills and an overall rating.
+
+The overall rating is always calculated as the exact average of the player's skill ratings.
+
+This epic focuses only on generation logic and correctness. It does not include UI changes or gameplay integration beyond replacing the existing generator.
+
+================================================================
+
+Core Design
+
+Overall Rating
+- Range: 1 to 50
+- Overall rating is calculated as the average of all skills.
+
+Skill Cap
+- All skills must be between 1 and 100.
+- Skills cannot exceed 100.
+
+Player Types
+
+Goalkeepers use 3 skills:
+- Shot Stopping
+- Distribution
+- Control
+
+Outfield players use 7 skills:
+- Tackling
+- Marking
+- Passing
+- Movement
+- Control
+- Dribbling
+- Shooting
+
+The overall rating is calculated as:
+
+Goalkeepers
+overall = (ShotStopping + Distribution + Control) / 3
+
+Outfield
+overall = (Tackling + Marking + Passing + Movement + Control + Dribbling + Shooting) / 7
+
+Generation must ensure the overall equals the target value.
+
+================================================================
+
+Influence Rules
+
+When generating outfield players, one rule is randomly selected.
+
+Each rule has a probability of 1 in 6.
+
+Rules:
+
+1. No Influence
+2. Influence Defender
+3. Influence Defensive Mid
+4. Influence Attacking Mid
+5. Influence Attacker
+6. Influence Goalscorer
+
+Only one rule may be applied per generation.
+
+Players must store the rule that was applied.
+
+Example field:
+influenceRule: "Influence Defender"
+
+================================================================
+
+Influence Behaviour
+
+Influence rules work by transferring skill points.
+
+Points are removed from certain skills and added to others.
+
+This preserves the total sum of skills, therefore preserving the player's overall rating.
+
+Transfer Rules
+
+Each influence rule performs 2 to 4 transfers.
+
+Transfer sizes:
+
+70% chance
+5 to 8 points
+
+25% chance
+9 to 12 points
+
+5% chance
+13 to 20 points
+
+Transfers must respect:
+
+Minimum skill value = 1
+Maximum skill value = 100
+
+If a target skill cannot accept the full transfer because it would exceed 100, the unused portion must remain with the source skill.
+
+================================================================
+
+Influence Definitions
+
+Influence Defender
+
+Take from:
+- Dribbling
+- Shooting
+
+Give to:
+- Tackling
+- Marking
+- Control
+
+Goal:
+Create strong defensive players with weak attacking skills.
+
+----------------------------------------------------------------
+
+Influence Defensive Mid
+
+Take from:
+- Dribbling
+- Shooting
+- Movement
+
+Give to:
+- Passing
+- Control
+- Tackling
+- Marking
+
+Goal:
+Create defensive midfielders with strong passing and defensive ability.
+
+----------------------------------------------------------------
+
+Influence Attacking Mid
+
+Take from:
+- Tackling
+- Marking
+
+Give to:
+- Passing
+- Control
+- Movement
+
+Goal:
+Create creative midfield players with weaker defending.
+
+----------------------------------------------------------------
+
+Influence Attacker
+
+Take from:
+- Tackling
+- Marking
+
+Give to:
+- Movement
+- Control
+- Dribbling
+- Shooting
+
+Goal:
+Create attacking players with strong offensive skills.
+
+----------------------------------------------------------------
+
+Influence Goalscorer
+
+Take from:
+- Passing
+- Tackling
+- Marking
+
+Give to:
+- Movement
+- Shooting
+
+Goal:
+Create striker-style players focused on scoring goals.
+
+================================================================
+
+Feature List
+
+----------------------------------------------------------------
+FEAT-401 - Replace Existing Player Generator
+----------------------------------------------------------------
+Status: done
+
+Description
+Remove the current player generation logic and replace it with the new system described in this epic.
+
+Requirements
+- Existing generator must no longer be used.
+- New generator must support:
+  - Goalkeepers
+  - Outfield players
+- Generator must accept a target overall value.
+- Generator must return a skill set whose average equals the target overall.
+
+Acceptance Criteria
+- A player can be generated with a specified overall rating.
+- The average of generated skills equals the target overall.
+
+----------------------------------------------------------------
+FEAT-402 - Implement Base Skill Spread Generator
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the initial spread of skill values around the overall rating.
+
+Requirements
+- Start with equal values for all skills equal to the overall rating.
+- Introduce spread across skills.
+- Maintain total skill sum so the average remains unchanged.
+- Ensure skills remain within 1–100.
+
+Acceptance Criteria
+- Generated players have varied skill distributions.
+- Overall remains correct.
+
+----------------------------------------------------------------
+FEAT-403 - Implement Influence Rule Selection
+----------------------------------------------------------------
+Status: done
+
+Description
+Add the influence rule randomisation system.
+
+Requirements
+- Randomly select one of six outcomes.
+- Probability of each outcome: 1 in 6.
+- Store the selected rule with the player.
+
+Acceptance Criteria
+- Generated players include an influenceRule property.
+- Influence rule distribution is roughly even over many generations.
+
+----------------------------------------------------------------
+FEAT-404 - Implement Skill Transfer System
+----------------------------------------------------------------
+Status: done
+
+Description
+Create the system used by influence rules to transfer skill points.
+
+Requirements
+- Each rule performs 2–4 transfers.
+- Transfer sizes follow defined probability distribution.
+- Transfers must respect skill limits.
+
+Acceptance Criteria
+- Transfers preserve the player's overall.
+- Transfers never push skills outside 1–100.
+
+----------------------------------------------------------------
+FEAT-405 - Implement Influence Rule Logic
+----------------------------------------------------------------
+Status: done
+
+Description
+Apply influence-specific transfer rules to the generated player.
+
+Requirements
+- Each rule uses defined source and target skills.
+- Transfers occur using the skill transfer system.
+
+Acceptance Criteria
+- Defender rules produce stronger defensive stats.
+- Attacker rules produce stronger offensive stats.
+- Goalscorer rules emphasise shooting and movement.
+
+----------------------------------------------------------------
+FEAT-406 - Implement Skill Cap Enforcement
+----------------------------------------------------------------
+Status: done
+
+Description
+Ensure skills never exceed defined limits.
+
+Requirements
+- All skills must remain between 1 and 100.
+- Overflow points must return to source skills.
+
+Acceptance Criteria
+- No generated skill ever exceeds 100.
+
+----------------------------------------------------------------
+FEAT-407 - Add Player Influence Metadata
+----------------------------------------------------------------
+Status: done
+
+Description
+Store the applied influence rule on generated players.
+
+Requirements
+- Player object must contain influenceRule field.
+- Field must match the rule used during generation.
+
+Acceptance Criteria
+- Generated players clearly show which influence rule was applied.
+
+----------------------------------------------------------------
+FEAT-408 - Add Generator Testing Utilities
+----------------------------------------------------------------
+Status: done
+
+Description
+Create utilities to quickly generate test players for balancing.
+
+Requirements
+- Ability to generate players at specific overall values.
+- Ability to generate multiple players in sequence.
+
+Acceptance Criteria
+- Developers can easily generate batches of players to inspect balance.
+
+----------------------------------------------------------------
+FEAT-409 - Add Career Start Debug Access for New Generator
+----------------------------------------------------------------
+Status: done
+
+Description
+Expose the rebuilt EPIC-003 generator from `/career/start` so it can be manually debugged in-app.
+
+Requirements
+- Add temporary debug controls in Career Start to generate:
+  - one player
+  - a batch of players
+- Allow selecting:
+  - player type (GK / Outfield)
+  - target overall (1-50)
+  - batch count
+- Display generated output including:
+  - player type
+  - target overall
+  - calculated overall
+  - influence rule
+  - all generated skills
+- Persist debug control values and generated output in `gameContext` under career setup state.
+
+Acceptance Criteria
+- `/career/start` allows generating and inspecting players from the new EPIC-003 generator.
+- Generated output reflects the rebuilt system and is visible for debugging.
+- State survives normal in-app navigation via `gameContext`.
+
+================================================================
+
+Epic Completion Criteria
+
+This epic is complete when:
+
+- The new generation system replaces the old one.
+- Goalkeepers and outfield players generate correctly.
+- Overall rating always equals the average of skills.
+- Influence rules produce believable player variations.
+- Skills never exceed the 1–100 range.
+- Players record the influence rule used during generation.
+- The system is stable and ready to be used by the team generation features in later epics.
+
+
+----------------------------------------------------------------
+FEAT-409 - Expose Player Generation Through Reusable Hook
+----------------------------------------------------------------
+Status: done
+
+Description
+Make the new player generation system available through a reusable hook so other parts of the game can generate players without duplicating logic.
+
+Requirements
+- Create a dedicated hook for player generation.
+- The hook should expose a simple interface where the caller provides the target overall value.
+- The hook should generate a player using the new EPIC-003 generation system and return the generated player object.
+- The hook should support generating the correct player type based on the calling context or a clean default approach already used by the codebase.
+- The hook must not reimplement the generation logic inside the hook. It should call into the shared generator utilities from this epic.
+- Keep the hook reusable for future systems such as:
+  - team generation
+  - squad generation
+  - scouting
+  - transfer market
+  - opponent generation
+- Keep the API clean and simple so it is easy to use throughout the app.
+
+Suggested interface
+- Example shape:
+  - generatePlayer(targetOverall)
+- Example return:
+  - full generated player object including:
+    - skills
+    - overall
+    - influenceRule
+    - and any other generation metadata already produced by the system
+
+Acceptance Criteria
+- A reusable hook exists for player generation.
+- The hook can be called with a target overall value.
+- The hook returns a generated player object from the shared EPIC-003 generator.
+- No generation logic is duplicated inside the hook.
+- The hook is ready to be used by future game systems.
+
+----------------------------------------------------------------
+FEAT-410 - Allow Forced Influence Rule in Player Generation Hook
+----------------------------------------------------------------
+Status: done
+
+Description
+Expand the player generation hook so callers can optionally force a specific influence rule instead of always using random influence selection.
+
+Requirements
+- Update the reusable player generation hook interface so it can accept an optional forced influence rule argument alongside the target overall value.
+- If a forced influence rule is provided, the generator must use that exact rule.
+- If no forced influence rule is provided, the generator should continue to use the normal random 1-in-6 rule selection.
+- Supported forced influence values should match the existing valid rule set exactly:
+  - None
+  - Influence Defender
+  - Influence Defensive Mid
+  - Influence Attacking Mid
+  - Influence Attacker
+  - Influence Goalscorer
+- The generated player object must still store the final influenceRule value that was used.
+- Do not duplicate rule logic inside the hook. The hook should pass the optional override through to the shared generator utilities.
+- Keep the hook API simple and reusable for future systems that may need more controlled generation, such as:
+  - squad templates
+  - opponent balancing
+  - scouting archetypes
+  - tutorial/debug flows
+  - scripted content
+
+Suggested interface
+- Example shape:
+  - generatePlayer(targetOverall, forcedInfluenceRule)
+- Or an options-based equivalent if that better matches the codebase:
+  - generatePlayer({ targetOverall, forcedInfluenceRule })
+
+Acceptance Criteria
+- The player generation hook can optionally receive a forced influence rule.
+- When a forced influence rule is supplied, that exact rule is used for generation.
+- When no forced influence rule is supplied, normal random rule selection still works.
+- The returned player object includes the actual influenceRule used.
+- No influence rule logic is duplicated inside the hook.
+- The hook remains clean and reusable for future systems.

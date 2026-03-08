@@ -1,0 +1,19 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.placeholderPage {
+  background: rgba($secondaryBackground, 0.92);
+  color: $secondaryForeground;
+  border-radius: 14px;
+  border: 1px solid rgba($lightText, 0.2);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  display: grid;
+  gap: 0.65rem;
+}
+
+.placeholderPage__title {
+  font-size: 1.2rem;
+}
+
+.placeholderPage__text {
+  color: rgba($secondaryForeground, 0.92);
+}
