@@ -456,3 +456,67 @@ Implementation Status Snapshot (2026-03-09)
 - FEAT-1110: done
 - FEAT-1111: done
 - FEAT-1112: done
+
+
+----------------------------------------------------------------
+FEAT-1113 - Expand and Fully Fictionalise Player, Team, and Place Name Pools
+----------------------------------------------------------------
+
+Description
+Make a major update to the naming system used across the game.
+
+This feature expands the available name pools substantially and tightens the fiction rules around place naming so the world feels larger, more varied, and fully invented.
+
+The update applies to:
+- player names
+- team names
+- foreign team names
+- place names used anywhere in generated naming such as team names, stadium names, or other location-based identity strings
+
+Requirements
+- Substantially increase the amount of names available in the game.
+- For all relevant name pools, increase the volume to roughly triple the current amount.
+- This applies to all major generated name categories, including:
+  - player first names
+  - player last names
+  - domestic team names
+  - foreign team names
+  - stadium/place-based naming pools
+  - any other shared naming pools currently used by procedural generation
+- Keep the naming pools structured, reusable, and easy to expand further later.
+
+Fictional place-name rule
+- All place names must now be completely fictional.
+- Do not base place names on real cities, towns, countries, regions, or recognisable real-world locations.
+- Avoid slight edits of real places that still feel obviously derived from real geography.
+- The generated world should feel fully fictional rather than alternate-history real-world.
+- This rule applies anywhere place names are used in generated content, including:
+  - team names
+  - stadium names
+  - foreign team identities
+  - any location-driven naming systems already in use
+
+Naming quality goals
+- Names should still feel believable inside the tone of the game world.
+- Player names can still keep the light parody flavour already used in the game, but should feel broader and less repetitive due to the expanded pools.
+- Team and foreign team names should feel varied, distinctive, and suitable for football clubs.
+- Stadium/place names should feel like real places within the fictional world, without referencing real geography.
+
+Implementation notes
+- Prefer curated naming pools over overly chaotic random construction if that gives stronger quality and consistency.
+- Keep the pools centralised rather than scattering name fragments across multiple files.
+- Review any current naming content and replace entries that are too close to real places.
+- The expansion should improve variety and reduce visible repetition across generated careers.
+- Keep the naming system efficient and compatible with existing procedural generators.
+
+Acceptance Criteria
+- All relevant name pools are expanded to roughly three times their previous size.
+- Player name variety is substantially improved.
+- Team and foreign team naming variety is substantially improved.
+- Place-name-based naming is fully fictionalised.
+- No place names are directly based on real-world locations.
+- Existing generators use the updated expanded name pools without breaking.
+- The generated world feels larger, more varied, and more distinctly fictional.
+
+Status
+- FEAT-1113: done

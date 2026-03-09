@@ -516,3 +516,30 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - Compatibility matrix currently uses direct tactic-name keys; if tactic IDs are introduced later, map by IDs to decouple display labels from calculation keys.
+
+----------------------------------------------------------------
+BUGFIX - BUG-013 Update Tactic Compatibility Table Values
+Date: 2026-03-09
+Status: done
+
+What was implemented:
+- Updated Team Management tactic compatibility matrix values to match the revised table provided in BUG-013.
+- Left compatibility calculation logic unchanged so Team Management and downstream career simulation consumers automatically read the new values.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None required directly for this data-table update.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this is a constants-only update to tactic compatibility values.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `vibe/epics/EPIC-008/bugs.txt`
+- `vibe/epics/EPIC-008/implementation.txt`
+- `vibe/epics/EPIC-008/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- No logic tradeoffs introduced; if tactic labels are renamed in future, matrix keys and options must stay synchronized.

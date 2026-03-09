@@ -80,3 +80,107 @@ Feature: FEAT-1109 + FEAT-1110 + FEAT-1112 (Start invalid team setup, enforce da
   - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
 - Tradeoffs/follow-up:
   - Gate currently keys on day-of-season `1`; if onboarding span expands later, gate utility should accept configurable day ranges.
+
+Feature: FEAT-1113 (Expand and fully fictionalise player/team/place naming pools)
+- What was implemented:
+  - Expanded player first-name and last-name generation pools to roughly triple prior size.
+  - Expanded domestic and foreign team identity pools (prefix/suffix/extra pools) to roughly triple prior size.
+  - Replaced prior place-like team prefixes, especially foreign prefixes, with fully fictionalised location-style names.
+  - Expanded stadium naming prefixes/suffixes to roughly triple prior size, using fictional/generic world-safe naming.
+  - Kept all changes centralised in existing naming pool sources used by procedural generators.
+- Engine checklist considered:
+  - `rng`: used indirectly via existing random-pick utilities already wired to these pools.
+  - `gameContext`, `button`, `bars`, `modal`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`: reviewed, not needed for data-pool-only update.
+- Files changed:
+  - `src/game/playerGeneration/nameGenerationUtils.js`
+  - `src/game/careerGeneration/constants/teamIdentityPools.js`
+- Tradeoffs/follow-up:
+  - This pass focuses on generation pools; optional next pass could add automated checks to flag duplicate names or disallowed real-world place strings.
+
+Bug Fix: BUG-001 (Calendar day tile event colour scope and icon size)
+- What was implemented:
+  - Updated day-card rendering to apply the primary event visual class to the full day tile.
+  - Removed per-indicator coloured pod backgrounds so tile colour carries the event colour.
+  - Increased event icon footprint and event-cell spacing for clearer readability.
+  - Updated SCSS to use `color.mix` to avoid Sass deprecated global `mix()` warnings.
+- Engine checklist considered:
+  - `tooltip`: retained existing engine tooltip component for icon hover behavior.
+  - `button`, `gameContext`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed, not required for this styling/layout bug fix.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.jsx`
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - For days with multiple event types, tile colour currently follows the first event in the day event list.
+
+Bug Fix: BUG-002 + BUG-003 (Calendar event-icon centering and Team Management skill label contrast)
+- What was implemented:
+  - Centered calendar event icons within the full lower tile section by changing the event container to centered flex-wrap layout.
+  - Adjusted event indicator sizing for consistent icon placement in the centered layout.
+  - Added Team Management-scoped override so `playerSkillsetBars__label` uses light text on dark Team Management backgrounds.
+- Engine checklist considered:
+  - `tooltip`: existing tooltip behavior retained with no functional changes.
+  - `button`, `gameContext`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for these styling bug fixes.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `src/game/teamManagement/teamManagement.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Global skill-bar labels remain dark by default; Team Management now applies a local light-text override for its dark theme.
+
+Bug Fix: BUG-004 (Calendar day tile icon size to 40x40)
+- What was implemented:
+  - Increased calendar event indicator slots to `40px x 40px`.
+  - Increased calendar icon wrapper size to `40px x 40px`.
+  - Increased icon glyph size to maintain readability at the new icon footprint.
+- Engine checklist considered:
+  - `tooltip`: retained existing tooltip trigger/wiring with no behavior changes.
+  - `button`, `gameContext`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for this size-only UI bug fix.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Dense event days may visually fill faster due larger icon footprint; centering layout still applies.
+
+Bug Fix: BUG-005 (Tooltip trigger size alignment for 40x40 calendar icons)
+- What was implemented:
+  - Updated `.seasonCalendar__tooltipTrigger` to explicit `40px x 40px` so tooltip hit-area aligns with the icon wrapper.
+  - Added `line-height: 0` on tooltip trigger to avoid inline baseline offsets.
+- Engine checklist considered:
+  - `tooltip`: reused existing engine tooltip component and only adjusted local trigger sizing.
+  - `button`, `gameContext`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for this CSS-only bug fix.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Trigger area now intentionally equals icon area; if larger tap targets are desired later, both trigger and indicator can be increased together.
+
+Bug Fix: BUG-006 (Render only player-league playoff icon in calendar)
+- What was implemented:
+  - Added playoff-event filtering in `SeasonCalendar` so only the playoff tied to the player's league is rendered.
+  - Added `playerTeamCompetitionId` prop wiring from Career Home into SeasonCalendar.
+  - Updated DayCard event rendering/class selection to use filtered visible events.
+- Engine checklist considered:
+  - `gameContext`: reused existing career world data flow to supply player competition id.
+  - `tooltip`: retained existing tooltip behavior; only event visibility logic changed.
+  - `button`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for this filtering fix.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.jsx`
+  - `src/game/careerHome/careerHome.jsx`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Filtering is currently scoped to playoff events only, as requested.
+
+Bug Fix: BUG-007 + BUG-008 (Calendar tooltip-trigger border removal and 40px width consistency)
+- What was implemented:
+  - Added season-calendar scoped tooltip trigger overrides to remove inherited shared border/background/shadow styling.
+  - Disabled trigger hover transform/shadow in calendar context to prevent visual distortion.
+  - Fixed tooltip-wrapped icon sizing consistency by setting fixed trigger flex basis and zero padding (`40px` footprint).
+- Engine checklist considered:
+  - `tooltip`: reused existing engine tooltip component and resolved issues via local class overrides only.
+  - `gameContext`, `button`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for this CSS-only bug fix.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Override is intentionally scoped to calendar tooltip triggers; shared tooltip style remains unchanged for other areas.

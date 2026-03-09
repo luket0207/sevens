@@ -110,7 +110,7 @@ export const CHAMPIONS_CUP_MATCH_SLOTS = Object.freeze([
   Object.freeze({
     id: "champions-cup-final",
     weekNumber: 16,
-    dayOfWeek: DAY_INDEX.SATURDAY,
+    dayOfWeek: DAY_INDEX.SUNDAY,
     stageLabel: "Final",
     eventType: CALENDAR_EVENT_TYPES.FINAL,
   }),

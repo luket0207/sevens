@@ -391,6 +391,7 @@ const CareerHome = () => {
               currentDayIndex={currentDayIndex}
               simulationState={simulationState}
               playerTeamId={careerWorld?.playerTeam?.id ?? ""}
+              playerTeamCompetitionId={careerWorld?.playerTeam?.competitionId ?? ""}
               onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
               onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
               canGoPreviousMonth={visibleMonthIndex > 0}

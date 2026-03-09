@@ -66,7 +66,7 @@ const CupDraw = () => {
     return progress.revealed >= progress.total;
   };
   const allDrawsRevealed = draws.every((draw) => isDrawFullyRevealed(draw.id));
-  const canContinue = isFirstDaySetupDraw ? allDrawsRevealed : true;
+  const canContinue = allDrawsRevealed;
   const hasCupDraws = drawIdsByType.cupDrawIds.length > 0;
   const hasLeagueDraws = drawIdsByType.leagueDrawIds.length > 0;
   const cupDrawsRevealed = drawIdsByType.cupDrawIds.every((drawId) => isDrawFullyRevealed(drawId));

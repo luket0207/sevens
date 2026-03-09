@@ -733,3 +733,93 @@ Attempted fixes:
 
 Final fix:
 - Day-1 draw controls now include a top `Continue` button beside generation actions, with identical behavior and disabled-state gating as the existing bottom continue button.
+
+
+BUG-027 - Update Match Result Type Matrix values and MRD bands
+Status: fixed
+
+Repro steps:
+1. Inspect the MRD result matrix used by match simulation.
+2. Compare configured band ranges and outcome weights against the latest requested table.
+
+Expected behavior:
+- Matrix uses updated bands and values:
+  - `0-5`: `5 / 35 / 20 / 35 / 5`
+  - `5-12`: `5 / 35 / 17 / 38 / 5`
+  - `12-25`: `3 / 25 / 12 / 50 / 10`
+  - `25-35`: `2 / 20 / 10 / 56 / 12`
+  - `35-50`: `1 / 17 / 10 / 58 / 14`
+  - `50-100`: `1 / 16 / 10 / 60 / 16`
+  - `100-150`: `0.2 / 5.3 / 9.5 / 70 / 20`
+  - `150-300`: `0.1 / 1.8 / 5.1 / 75 / 25`
+  - `300+`: `0 / 0.8 / 2.8 / 56.4 / 40`
+
+Actual behavior:
+- Matrix still used older band splits and older weighting values.
+
+Suspected cause:
+- `MRD_RESULT_MATRIX` had not been updated to latest band boundaries and values.
+
+Attempted fixes:
+- Updated MRD band IDs and min/max thresholds to the requested ranges.
+- Replaced probabilities for all affected rows with the supplied values.
+- Kept existing weighted-outcome flow unchanged so new values are consumed automatically.
+
+Final fix:
+- Updated:
+  - `src/game/careerSimulation/constants/simulationConstants.js`
+
+
+BUG-028 - Player-team match rating too low compared to similar AI teams
+Status: fixed
+
+Repro steps:
+1. Simulate to days with AI fixtures and inspect match debug output.
+2. Compare player-team `MR` values vs other bottom-league teams.
+
+Expected behavior:
+- Player-team match ratings should be generated from saved team-management slot assignments and tactics.
+- Teams with similar strength should produce roughly comparable match-rating ranges.
+
+Actual behavior:
+- Player-team match rating was often much lower (for example around high-80s) while peer AI teams were around 120-130.
+
+Suspected cause:
+- Team match-profile outfield slot assignment mapping used `player.squadSlot` for all teams.
+- Player-team outfield arrangement is persisted under `team.teamManagement.slotAssignments`, so player profile was not using its saved lineup data.
+
+Attempted fixes:
+- Added normalized saved-slot assignment resolution from `team.teamManagement.slotAssignments`.
+- Applied saved slot assignments for player-team profile when present and valid.
+- Kept AI teams on existing `squadSlot` assignment source.
+- Added fallback to `squadSlot` mapping when no saved player-team assignments exist.
+
+Final fix:
+- Updated:
+  - `src/game/careerSimulation/utils/teamMatchProfile.js`
+
+
+BUG-029 - Block cup-draw continue until all draw fixtures are revealed
+Status: fixed
+
+Repro steps:
+1. Open `/cup-draw` on any cup-draw day.
+2. Reveal only part of one or more draw cards.
+3. Attempt to click `Continue`.
+
+Expected behavior:
+- `Continue` remains disabled until all draw fixtures are revealed.
+
+Actual behavior:
+- On non-day-1 draw flows, `Continue` remained enabled before reveals were complete.
+
+Suspected cause:
+- Continue gating only applied to day-1 draw mode, not general cup-draw days.
+
+Attempted fixes:
+- Unified continue gating to use full draw reveal completion across all cup-draw days.
+- Kept existing day-1 grouped control behavior unchanged.
+
+Final fix:
+- Updated:
+  - `src/game/cupDraw/cupDraw.jsx`

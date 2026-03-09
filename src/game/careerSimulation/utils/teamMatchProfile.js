@@ -1,5 +1,6 @@
 import {
   TEAM_MANAGEMENT_DEFAULT_TACTICS,
+  TEAM_MANAGEMENT_SLOT_LAYOUT,
   TACTIC_COMPATIBILITY_MATRIX,
 } from "../../teamManagement/constants/teamManagementConstants";
 import { calculateTacticRatings } from "../../teamManagement/utils/tacticRatings";
@@ -8,7 +9,36 @@ import { normaliseTeamForm } from "./teamForm";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-const buildOutfieldData = (team) => {
+const buildSlotAssignmentsFromSquadSlots = (outfieldPlayers) => {
+  return outfieldPlayers.reduce((state, player) => {
+    if (player?.squadSlot) {
+      state[player.squadSlot] = player.id;
+    }
+    return state;
+  }, {});
+};
+
+const buildNormalisedSavedSlotAssignments = ({ savedSlotAssignments, outfieldPlayers }) => {
+  const validPlayerIds = new Set(outfieldPlayers.map((player) => player.id));
+  const usedPlayerIds = new Set();
+
+  return TEAM_MANAGEMENT_SLOT_LAYOUT.reduce((state, slot) => {
+    const candidatePlayerId = savedSlotAssignments?.[slot.id] ?? null;
+    if (!candidatePlayerId || !validPlayerIds.has(candidatePlayerId) || usedPlayerIds.has(candidatePlayerId)) {
+      state[slot.id] = null;
+      return state;
+    }
+
+    state[slot.id] = candidatePlayerId;
+    usedPlayerIds.add(candidatePlayerId);
+    return state;
+  }, {});
+};
+
+const hasAnyAssignedPlayer = (slotAssignments) =>
+  TEAM_MANAGEMENT_SLOT_LAYOUT.some((slot) => Boolean(slotAssignments?.[slot.id]));
+
+const buildOutfieldData = ({ team, isPlayerTeam }) => {
   const outfieldPlayers = Array.isArray(team?.players)
     ? team.players.filter((player) => player?.playerType === "OUTFIELD")
     : [];
@@ -20,12 +50,14 @@ const buildOutfieldData = (team) => {
     return state;
   }, {});
 
-  const slotAssignments = outfieldPlayers.reduce((state, player) => {
-    if (player?.squadSlot) {
-      state[player.squadSlot] = player.id;
-    }
-    return state;
-  }, {});
+  const fallbackAssignments = buildSlotAssignmentsFromSquadSlots(outfieldPlayers);
+  const savedAssignments = buildNormalisedSavedSlotAssignments({
+    savedSlotAssignments: team?.teamManagement?.slotAssignments ?? null,
+    outfieldPlayers,
+  });
+  const slotAssignments = isPlayerTeam && hasAnyAssignedPlayer(savedAssignments)
+    ? savedAssignments
+    : fallbackAssignments;
 
   return {
     playersById,
@@ -74,7 +106,10 @@ const buildPlayerTeamTactics = (team) => {
 export const buildTeamMatchProfile = ({ team, isPlayerTeam = false, teamForm = [] }) => {
   const tactics = isPlayerTeam ? buildPlayerTeamTactics(team) : buildAiTactics(team);
   const safeOverall = clamp(Math.round(Number(team?.teamOverall) || 0), 0, 100);
-  const { playersById, slotAssignments } = buildOutfieldData(team);
+  const { playersById, slotAssignments } = buildOutfieldData({
+    team,
+    isPlayerTeam,
+  });
   const tacticRatings = calculateTacticRatings({
     slotAssignments,
     playersById,

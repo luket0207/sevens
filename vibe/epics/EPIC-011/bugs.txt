@@ -1,0 +1,231 @@
+BUG-001 - Calendar event colour should fill the whole day tile, and icons should be larger
+
+Repro steps
+1. Open Career Home calendar view.
+2. Go to a day tile with one or more calendar events.
+3. Observe event styling in the day tile.
+
+Expected behaviour
+- The event colour styling is applied to the full day tile background.
+- Event icons are larger and easier to read.
+
+Actual behaviour
+- Event colour styling was only applied to small event pods.
+- Icons were smaller than intended.
+
+Suspected cause
+- Colour classes were applied to `.seasonCalendar__eventIndicator` instead of `.seasonCalendar__day`.
+- Icon wrapper dimensions/font-size were set too small for the tile scale.
+
+Attempted fixes
+- Added event-derived visual class at day-card level in `seasonCalendar.jsx` using the primary event visual key.
+- Moved event colour mapping in SCSS from indicator blocks to day-tile modifier classes.
+- Increased event icon wrapper size and calendar event grid slot sizing.
+
+Final fix
+- Full day tile now receives event background colour class (`seasonCalendar__day--<eventKey>`).
+- Event indicators are icon-only (no coloured pod).
+- Icon size increased from 20x20 to 26x26 with larger icon glyph.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed
+
+BUG-002 - Calendar day tile icons should be centered in the lower tile area
+
+Repro steps
+1. Open Career Home calendar view.
+2. Inspect any day tile with one or more events.
+3. Check icon placement inside the lower (event) area of the tile.
+
+Expected behaviour
+- Icons are centered horizontally and vertically in the lower section of the day tile.
+
+Actual behaviour
+- Icons were aligned toward the top of the event area rather than centered.
+
+Suspected cause
+- Event container used top-aligned grid settings (`align-content: start`) and scroll behavior.
+
+Attempted fixes
+- Switched event container layout from top-aligned grid to centered flex-wrap.
+- Centered horizontally and vertically with `justify-content`, `align-content`, and `align-items`.
+- Sized event indicator slots consistently.
+
+Final fix
+- Event icon area now centers icons in the full bottom section of the tile.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed
+
+BUG-003 - Team Management skill labels should be light on dark backgrounds
+
+Repro steps
+1. Open Team Management page.
+2. Inspect `playerSkillsetBars__label` text in player cards.
+
+Expected behaviour
+- Labels are light and readable against the dark Team Management background.
+
+Actual behaviour
+- Labels inherited dark text styling intended for light-background contexts.
+
+Suspected cause
+- Global `playerSkillsetBars__label` colour was changed to dark for another view and was not overridden in Team Management context.
+
+Attempted fixes
+- Added Team Management-scoped override for `.playerSkillsetBars__label` to use light text.
+
+Final fix
+- Team Management now renders skill labels with light text while keeping the shared component default unchanged elsewhere.
+
+Files changed
+- `src/game/teamManagement/teamManagement.scss`
+
+Status: fixed
+
+BUG-004 - Calendar day tile icons should be 40px by 40px
+
+Repro steps
+1. Open Career Home calendar.
+2. Inspect day-tile event icons.
+
+Expected behaviour
+- Event icons render at 40px x 40px.
+
+Actual behaviour
+- Icons were rendered smaller than 40px x 40px.
+
+Suspected cause
+- Icon wrapper and indicator dimensions were still set below requested size.
+
+Attempted fixes
+- Increased event indicator slot dimensions to 40px x 40px.
+- Increased event icon wrapper dimensions to 40px x 40px.
+- Increased icon glyph size to keep visual balance in the larger wrapper.
+
+Final fix
+- Day tile event icons now render at 40px x 40px.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed
+
+BUG-005 - Tooltip trigger wrapper should match 40x40 icon size
+
+Repro steps
+1. Open Career Home calendar.
+2. Inspect an event icon that renders with a tooltip wrapper.
+3. Compare hover/trigger area against icon dimensions.
+
+Expected behaviour
+- Tooltip trigger area matches the icon footprint at 40px x 40px.
+
+Actual behaviour
+- Tooltip trigger sizing was not explicitly updated after icon size increase.
+
+Suspected cause
+- `.seasonCalendar__tooltipTrigger` had no explicit width/height constraints.
+
+Attempted fixes
+- Added explicit `width` and `height` of `40px` to tooltip trigger class.
+- Set `line-height: 0` to remove inline text-height offset.
+
+Final fix
+- Tooltip trigger wrapper now aligns to the 40x40 icon dimensions.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed
+
+BUG-006 - Show only the player's league playoff icon in calendar
+
+Repro steps
+1. Open Career Home calendar.
+2. Navigate to the playoff week/day.
+3. Inspect playoff icons rendered in the day tile.
+
+Expected behaviour
+- Only the playoff event for the player's current league is shown.
+
+Actual behaviour
+- Playoff events for multiple leagues were shown.
+
+Suspected cause
+- Playoff placeholder events for all leagues were rendered without filtering by player league.
+
+Attempted fixes
+- Added day-event filtering in `SeasonCalendar` for `PLAYOFF_MATCH` events.
+- Passed player team competition id from Career Home into SeasonCalendar.
+- Kept non-playoff events unchanged.
+
+Final fix
+- Calendar now renders only the playoff icon whose `competitionId` matches `${playerTeamCompetitionId}-playoff`.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerHome/careerHome.jsx`
+
+Status: fixed
+
+BUG-007 - Remove tooltipTrigger border for calendar icon elements
+
+Repro steps
+1. Open Career Home calendar.
+2. Inspect a calendar icon that uses tooltip wrapper.
+3. Observe tooltip trigger visual around the icon.
+
+Expected behaviour
+- Calendar icon tooltip trigger should not render an extra border/background ring.
+
+Actual behaviour
+- Tooltip trigger border/background from shared tooltip style was visible around calendar icons.
+
+Suspected cause
+- Shared `.tooltipTrigger` base style includes border/background and was not fully overridden in calendar context.
+
+Attempted fixes
+- Added season-calendar scoped override for `.seasonCalendar__tooltipTrigger` to remove border/background/box-shadow.
+- Disabled hover transform/hover shadow for calendar tooltip triggers.
+
+Final fix
+- Calendar tooltip trigger now renders borderless/transparent and matches icon-only presentation.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed
+
+BUG-008 - Tooltip-wrapped league-match icons render at 38px instead of 40px
+
+Repro steps
+1. Open Career Home calendar.
+2. Compare tooltip-wrapped league-match icon width with non-tooltip icon width.
+3. Inspect computed size of `seasonCalendar__eventIconWrap--leagueMatch` when inside tooltip trigger.
+
+Expected behaviour
+- Tooltip and non-tooltip calendar icons should both render at 40px width.
+
+Actual behaviour
+- Tooltip-wrapped league-match icon appeared at 38px while others rendered at 40px.
+
+Suspected cause
+- Shared tooltip trigger border consumed layout space and caused shrink inside fixed 40px indicator slot.
+
+Attempted fixes
+- Removed trigger border/background and forced fixed flex basis/size for calendar tooltip trigger.
+- Set trigger padding to `0` and disabled hover transform side effects.
+
+Final fix
+- Tooltip-triggered icons now remain 40px wide, matching non-tooltip icons.
+
+Files changed
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+
+Status: fixed

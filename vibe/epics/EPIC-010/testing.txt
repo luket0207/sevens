@@ -74,6 +74,67 @@ Automated still needed:
 
 Test status: passed
 
+BUG-028 - Player-team match rating alignment with saved Team Management setup
+Manual steps:
+1. Open Team Management, fill all six outfield slots, set tactics, and save.
+2. Simulate to a match day and open day-results/debug output containing match-profile data.
+3. Compare player-team MR inputs (`ov`, `dtr`, `atr`, `tc`) against AI teams in the same league.
+4. Confirm player-team `dtr`/`atr` are no longer near-minimum due to missing slot assignments.
+Expected:
+- Player-team profile uses saved `teamManagement.slotAssignments` for match-profile tactic rating calculations.
+- Player-team MR values are in a comparable range to similarly rated league teams instead of being artificially depressed.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit test for `buildTeamMatchProfile` verifying player-team assignment source prioritizes saved team-management slots over `squadSlot`.
+- Integration test comparing match-profile output before/after saved team-management setup.
+
+Test status: passed
+
+BUG-029 - Cup-draw continue blocked until reveal completion
+Manual steps:
+1. Open `/cup-draw` on any draw day (day 1 and a later cup-draw day).
+2. Reveal only part of fixtures on at least one draw card.
+3. Verify top and bottom `Continue` buttons remain disabled.
+4. Reveal all fixtures for all draw cards.
+5. Verify top and bottom `Continue` buttons become enabled and progression works.
+Expected:
+- Continue remains blocked until all draw fixtures are revealed.
+- Behavior is consistent across day-1 and non-day-1 draw flows.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Integration test for `/cup-draw` gating that asserts continue disabled until `allDrawsRevealed === true`.
+
+Test status: passed
+
+BUG-027 - Updated Match Result Type Matrix bands and values
+Manual steps:
+1. Open `src/game/careerSimulation/constants/simulationConstants.js`.
+2. Verify `MRD_RESULT_MATRIX` contains these band IDs in order:
+   - `0-5`, `5-12`, `12-25`, `25-35`, `35-50`, `50-100`, `100-150`, `150-300`, `300+`.
+3. For each row, verify probabilities match the requested values.
+4. Simulate several career days and inspect match-result spread in day results/debug to confirm simulation runs with updated matrix and no runtime errors.
+Expected:
+- New MRD bands and values are present exactly as requested.
+- Match simulation continues to resolve outcomes without errors using the new matrix.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit tests for `resolveMrdBand` coverage across each new boundary (`5`, `12`, `25`, `35`, `50`, `100`, `150`, `300`).
+- Simulation distribution test to sanity-check weighted outcomes for each band over large sample runs.
+
+Test status: passed
+
 BUG-022 - Team overall shown in squad modal header
 Manual steps:
 1. Open Career Home and click a team in the League Table.

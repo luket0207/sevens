@@ -103,3 +103,29 @@ Final fix:
 
 Status: fixed
 
+
+BUG-004 - Champions Cup Final should be on Sunday (not Saturday)
+
+Repro steps:
+1. Open `/career/home`.
+2. Navigate to the final week of the season (week 16).
+3. Inspect the Champions Cup final day in the calendar.
+
+Expected behavior:
+- Champions Cup final appears on Sunday of week 16.
+
+Actual behavior (before fix):
+- Champions Cup final was scheduled on Saturday of week 16.
+
+Suspected cause:
+- `CHAMPIONS_CUP_MATCH_SLOTS` final slot used `DAY_INDEX.SATURDAY`.
+
+Attempted fixes:
+- Updated the Champions Cup final slot day from Saturday to Sunday in shared cup schedule schema.
+- Kept slot week and stage unchanged.
+
+Final fix:
+- Updated `src/game/careerCalendar/constants/cupScheduleSchema.js`:
+  - `champions-cup-final` now uses `DAY_INDEX.SUNDAY`.
+
+Status: fixed

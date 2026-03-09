@@ -988,3 +988,84 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - Day-1 now has duplicated continue controls (top and bottom) by design for faster progression visibility.
+
+BUG-027 - Update match-result matrix bands and values
+Status: done
+
+What was implemented:
+- Updated `MRD_RESULT_MATRIX` in career simulation constants to match the new requested match-result table.
+- Replaced previous band structure with:
+  - `0-5`, `5-12`, `12-25`, `25-35`, `35-50`, `50-100`, `100-150`, `150-300`, `300+`.
+- Updated the probability values for all rows, including new higher-rated big-win weights in higher MRD bands.
+- Kept simulation outcome resolution logic unchanged so it automatically consumes the new matrix.
+
+Engine components considered:
+- `gameContext`, `rng`, `saveGame`.
+
+Engine components used:
+- `rng` remains used by existing weighted-roll simulation flow; no changes required to its API.
+
+Engine components not used:
+- `gameContext` and `saveGame` needed no direct updates because this fix is limited to simulation constants consumed by existing state flow.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Some provided row totals exceed 100; current outcome selection already normalizes probabilities before rolling, so behavior remains stable. If strict 100-sum rows become required, define whether values should be treated as percentages or relative weights.
+
+BUG-028 - Player-team match profile assignment source alignment
+Status: done
+
+What was implemented:
+- Updated team match-profile assembly to resolve player-team slot assignments from saved Team Management state (`team.teamManagement.slotAssignments`) instead of relying only on player `squadSlot`.
+- Added saved-assignment normalization against current outfield player IDs and slot layout to avoid stale/duplicate assignment issues.
+- Added fallback to `squadSlot` mapping when no saved player-team assignments are available.
+- Kept AI team slot-assignment source unchanged (`squadSlot`) so existing AI behavior remains stable.
+
+Engine components considered:
+- `gameContext`, `rng`, `saveGame`.
+
+Engine components used:
+- `gameContext`/saved career world data is consumed through existing state flow (`team.teamManagement`) to build player match profile ratings.
+
+Engine components not used:
+- `rng` and `saveGame` required no direct code changes for this bug fix.
+
+Files changed:
+- `src/game/careerSimulation/utils/teamMatchProfile.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If future systems write player-team arrangement into another source, keep this profile resolver synchronized with the canonical arrangement state.
+
+BUG-029 - Cup draw continue gating on reveal completion
+Status: done
+
+What was implemented:
+- Updated cup-draw continue gating so `Continue` is disabled until all draw fixtures are revealed on every cup-draw day, not just day 1.
+- Retained day-1 grouped generation controls and existing continuation flow destinations.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- `button` for disabled-state gating on both top and bottom continue controls.
+- `gameContext` via existing `setGameState` continuation flow once reveal gating is satisfied.
+
+Engine components not used:
+- No additional engine components were required beyond existing cup-draw page flow.
+
+Files changed:
+- `src/game/cupDraw/cupDraw.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Draw days with zero fixtures remain immediately continuable by design because reveal-completion state is already true.

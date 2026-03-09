@@ -181,3 +181,30 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - On very narrow screens tiles can become visually tighter since the grid now strictly fits within container width without horizontal scrolling.
+
+----------------------------------------------------------------
+BUGFIX - BUG-004 Champions Cup Final Day Shift to Sunday
+Date: 2026-03-09
+Status: done
+
+What was implemented:
+- Moved the Champions Cup final slot from Saturday to Sunday in the shared cup schedule schema.
+- Because simulation and calendar placeholders both consume this schema, the final day change now applies consistently across calendar display and cup fixture scheduling.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None directly (schema constant change only).
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix only updates schedule constants.
+
+Files changed:
+- `src/game/careerCalendar/constants/cupScheduleSchema.js`
+- `vibe/epics/EPIC-007/bugs.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None for this scope; schedule order and stage structure remain unchanged.

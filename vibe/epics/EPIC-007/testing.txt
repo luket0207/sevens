@@ -266,3 +266,19 @@ Automated completed:
 Automated needed:
 - Visual regression test asserting no horizontal overflow in calendar panel at representative viewport sizes.
 Status: passed
+
+----------------------------------------------------------------
+BUG-004 Regression Test - Champions Cup Final Must Be Scheduled on Sunday
+Manual steps:
+1. Open `/career/home`.
+2. Navigate to season week 16 in the calendar.
+3. Locate the Champions Cup final event.
+Expected:
+- Champions Cup final appears on Sunday (not Saturday).
+- Week 16 League Cup final remains on Wednesday.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing unrelated baseline issues in shared engine/info modules.
+Automated needed:
+- Unit test asserting `CHAMPIONS_CUP_MATCH_SLOTS` final slot uses `DAY_INDEX.SUNDAY`.
+Status: passed

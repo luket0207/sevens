@@ -433,8 +433,8 @@ Expected:
 - A third tactic output appears alongside DTR and ATR.
 - Value is taken only from tactic pair matrix (not player skill changes).
 - Example checks:
-  - Low Block + Counter => 80
-  - Offside Trap + Direct => 80
+  - Low Block + Counter => 40
+  - Offside Trap + Direct => 45
   - Mid Block + Direct => 10
 - Debug output includes `tacticCompatibility`.
 Automated completed:
@@ -443,4 +443,31 @@ Automated completed:
 Automated needed:
 - Unit tests for `calculateTacticCompatibility` matrix lookup coverage.
 - Integration test for live compatibility value updates when tactic selects change.
+Status: passed
+
+----------------------------------------------------------------
+BUG-013 Regression Test - Updated Tactic Compatibility Matrix Values
+Manual steps:
+1. Open `/team-management`.
+2. Set defensive tactic to `Low Block`; cycle attacking tactic values and record compatibility.
+3. Set defensive tactic to `High Press`; cycle attacking tactic values and record compatibility.
+4. Set defensive tactic to `Offside Trap` + attacking tactic `Direct` and confirm value.
+Expected:
+- Values match updated matrix:
+  - Low Block + Posession => 10
+  - Low Block + Long Ball => 30
+  - Low Block + Wing Play => 20
+  - Low Block + Counter => 40
+  - Low Block + Direct => 25
+  - High Press + Posession => 40
+  - High Press + Long Ball => 10
+  - High Press + Wing Play => 15
+  - High Press + Counter => 35
+  - High Press + Direct => 25
+  - Offside Trap + Direct => 45
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Unit test coverage for all matrix combinations to prevent regression on future value-table updates.
 Status: passed

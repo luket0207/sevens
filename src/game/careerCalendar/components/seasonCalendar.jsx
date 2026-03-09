@@ -6,6 +6,7 @@ import {
   resolveCalendarEventTooltip,
   resolveCalendarEventVisual,
 } from "../utils/calendarEventDisplay";
+import { CALENDAR_EVENT_TYPES } from "../constants/calendarConstants";
 import "./seasonCalendar.scss";
 
 const EventIndicator = ({ event, dayAbsoluteDayIndex, simulationState, playerTeamId }) => {
@@ -28,7 +29,7 @@ const EventIndicator = ({ event, dayAbsoluteDayIndex, simulationState, playerTea
   );
 
   return (
-    <div className={`seasonCalendar__eventIndicator seasonCalendar__eventIndicator--${visual.visualKey}`}>
+    <div className="seasonCalendar__eventIndicator">
       {tooltipText ? (
         <Tooltip
           text={tooltipText}
@@ -58,8 +59,33 @@ EventIndicator.defaultProps = {
   playerTeamId: "",
 };
 
-const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId }) => {
-  const classes = ["seasonCalendar__day", isCurrentDay ? "seasonCalendar__day--current" : ""]
+const shouldRenderDayEvent = ({ event, playerTeamCompetitionId }) => {
+  if (event?.type !== CALENDAR_EVENT_TYPES.PLAYOFF_MATCH) {
+    return true;
+  }
+
+  const expectedCompetitionId = `${String(playerTeamCompetitionId ?? "").trim()}-playoff`;
+  if (!expectedCompetitionId || expectedCompetitionId === "-playoff") {
+    return false;
+  }
+
+  return String(event?.competitionId ?? "").trim() === expectedCompetitionId;
+};
+
+const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId, playerTeamCompetitionId }) => {
+  const visibleEvents = (Array.isArray(day?.events) ? day.events : []).filter((event) =>
+    shouldRenderDayEvent({
+      event,
+      playerTeamCompetitionId,
+    })
+  );
+  const primaryEvent = visibleEvents.length > 0 ? visibleEvents[0] : null;
+  const primaryEventVisual = primaryEvent ? resolveCalendarEventVisual(primaryEvent) : null;
+  const classes = [
+    "seasonCalendar__day",
+    isCurrentDay ? "seasonCalendar__day--current" : "",
+    primaryEventVisual ? `seasonCalendar__day--${primaryEventVisual.visualKey}` : "",
+  ]
     .join(" ")
     .trim();
 
@@ -70,11 +96,11 @@ const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId }) => {
         <span className="seasonCalendar__dayCount">Day {day.dayOfSeason}</span>
       </header>
 
-      {day.events.length === 0 ? (
+      {visibleEvents.length === 0 ? (
         <p className="seasonCalendar__empty">No events</p>
       ) : (
         <div className="seasonCalendar__events">
-          {day.events.map((event) => (
+          {visibleEvents.map((event) => (
             <EventIndicator
               key={event.id}
               event={event}
@@ -105,11 +131,13 @@ DayCard.propTypes = {
   isCurrentDay: PropTypes.bool.isRequired,
   simulationState: PropTypes.object,
   playerTeamId: PropTypes.string,
+  playerTeamCompetitionId: PropTypes.string,
 };
 
 DayCard.defaultProps = {
   simulationState: null,
   playerTeamId: "",
+  playerTeamCompetitionId: "",
 };
 
 const SeasonCalendar = ({
@@ -122,6 +150,7 @@ const SeasonCalendar = ({
   canGoNextMonth,
   simulationState,
   playerTeamId,
+  playerTeamCompetitionId,
 }) => {
   const visibleMonth = season?.months?.[visibleMonthIndex] ?? null;
   const visibleMonthDays = visibleMonth?.weeks?.flatMap((week) => week.days) ?? [];
@@ -165,6 +194,7 @@ const SeasonCalendar = ({
               isCurrentDay={day.absoluteDayIndex === currentDayIndex}
               simulationState={simulationState}
               playerTeamId={playerTeamId}
+              playerTeamCompetitionId={playerTeamCompetitionId}
               key={day.id}
             />
           ))}
@@ -199,11 +229,13 @@ SeasonCalendar.propTypes = {
   canGoNextMonth: PropTypes.bool.isRequired,
   simulationState: PropTypes.object,
   playerTeamId: PropTypes.string,
+  playerTeamCompetitionId: PropTypes.string,
 };
 
 SeasonCalendar.defaultProps = {
   simulationState: null,
   playerTeamId: "",
+  playerTeamCompetitionId: "",
 };
 
 export default SeasonCalendar;

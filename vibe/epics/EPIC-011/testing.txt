@@ -63,6 +63,131 @@ Feature: FEAT-1109 + FEAT-1110 + FEAT-1112 (Invalid initial setup, forced day-1 
   - Debug panel displays setup completeness, gate active flag, and resolved Continue action.
 - Test status: passed (manual code-path verification + build).
 
+Feature: FEAT-1113 (Expanded and fictionalised naming pools)
+- Steps:
+  1. Start a new career generation run from `/career/start`.
+  2. Inspect generated player names across multiple teams in debug/team views.
+  3. Inspect generated domestic team names, foreign team names, and stadium names.
+  4. Restart generation multiple times and compare variation between runs.
+- Expected:
+  - Player first/last name combinations show significantly broader variety than before.
+  - Domestic and foreign team naming variety is noticeably increased.
+  - Place-like prefixes used in team/stadium generation are fictional and not direct real-world city/location names.
+  - Career generation flow remains stable and completes successfully.
+- Automated tests completed:
+  - `npm run build` passed after FEAT-1113 changes.
+- Automated tests still needed:
+  - Add a small generator pool integrity test (minimum pool sizes, no empty strings, optional denylist for real-world place names).
+- Test status: passed (manual code inspection + build validation).
+
+Bug Fix: BUG-001 (Calendar tile background colour scope + icon size)
+- Steps:
+  1. Open `/career/home` and navigate to any month with event days.
+  2. Compare an event day tile with a no-event day tile.
+  3. Confirm event colour is applied to the full day tile background.
+  4. Confirm the icon inside the tile is visibly larger than before.
+  5. Hover event icons and verify existing tooltip behaviour still works.
+- Expected:
+  - Event day tiles are fully tinted by event type rather than showing only a small coloured pod.
+  - Icons are larger and easier to read.
+  - Tooltip behaviour remains unchanged.
+- Automated tests completed:
+  - `npm run build` passed after the bug fix.
+- Automated tests still needed:
+  - UI snapshot/regression test for day tile class mapping and icon sizing.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-002 (Calendar icon centering in day tile bottom section)
+- Steps:
+  1. Open `/career/home` and navigate to a month with event tiles.
+  2. Inspect the lower event section of event day tiles.
+  3. Verify icon placement vertically and horizontally.
+- Expected:
+  - Icons are centered in the lower section of the day tile (both axes).
+- Automated tests completed:
+  - `npm run build` passed after styling update.
+- Automated tests still needed:
+  - Visual regression check for centered icon layout across responsive breakpoints.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-003 (Team Management skill label light text override)
+- Steps:
+  1. Open `/team-management`.
+  2. Inspect skill labels shown by `playerSkillsetBars`.
+  3. Compare label contrast against dark player-card backgrounds.
+- Expected:
+  - Skill labels render in light text and remain readable on Team Management dark backgrounds.
+- Automated tests completed:
+  - `npm run build` passed after scoped style override.
+- Automated tests still needed:
+  - UI snapshot test for Team Management player card contrast.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-004 (Calendar day tile icon size 40x40)
+- Steps:
+  1. Open `/career/home`.
+  2. Navigate to a month with event days.
+  3. Inspect icon size in day tiles.
+- Expected:
+  - Event icons render at `40px x 40px`.
+- Automated tests completed:
+  - `npm run build` passed after icon sizing update.
+- Automated tests still needed:
+  - Visual regression test asserting icon wrapper dimensions and spacing on event-dense days.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-005 (Tooltip trigger wrapper size for 40x40 icons)
+- Steps:
+  1. Open `/career/home`.
+  2. Hover over day-tile icons that show tooltips.
+  3. Verify hover/trigger area aligns with icon footprint.
+- Expected:
+  - Tooltip trigger wrapper is `40px x 40px` and aligned with icon size.
+- Automated tests completed:
+  - `npm run build` passed after tooltip trigger sizing update.
+- Automated tests still needed:
+  - Visual regression assertion for tooltip-trigger dimensions on calendar icons.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-006 (Only player-league playoff icon shown)
+- Steps:
+  1. Open `/career/home`.
+  2. Navigate to the playoff day in the calendar.
+  3. Inspect playoff icons in the day tile.
+- Expected:
+  - Only one playoff icon is shown, and it corresponds to the player's current league playoff.
+- Automated tests completed:
+  - `npm run build` passed after playoff filtering update.
+- Automated tests still needed:
+  - UI regression check asserting playoff event filtering by player league id.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-007 (Remove calendar tooltip trigger border styling)
+- Steps:
+  1. Open `/career/home`.
+  2. Hover a calendar icon that shows tooltip.
+  3. Inspect trigger container around icon.
+- Expected:
+  - No extra trigger border/background ring appears around the icon.
+- Automated tests completed:
+  - `npm run build` passed after scoped tooltip trigger style override.
+- Automated tests still needed:
+  - Visual regression assertion confirming no border/background on calendar tooltip triggers.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-008 (Tooltip-wrapped icon width consistency at 40px)
+- Steps:
+  1. Open `/career/home`.
+  2. Compare tooltip-wrapped league-match icon size against non-tooltip icons.
+  3. Inspect rendered dimensions for both.
+- Expected:
+  - Tooltip-wrapped and non-tooltip icons both render at 40px width/height.
+- Automated tests completed:
+  - `npm run build` passed after trigger sizing/flex-basis fix.
+- Automated tests still needed:
+  - Visual regression check for 40x40 icon consistency across all event types.
+- Test status: passed (build + manual code-path verification).
+
 Overall epic test status: in progress
 - Reason:
   - Feature-level manual verification is complete in code and build output.

@@ -373,3 +373,34 @@ Final fix:
   - `src/game/teamManagement/teamManagement.scss`
 
 Status: fixed
+
+BUG-013 - Update Tactic Compatibility Table Values
+
+Repro steps:
+1. Open `/team-management`.
+2. Select defensive and attacking tactic pairs.
+3. Compare displayed compatibility value with the updated requested matrix.
+
+Expected behavior:
+- Compatibility values should match the updated table:
+  - Low Block: Posession 10, Long Ball 30, Wing Play 20, Counter 40, Direct 25
+  - Mid Block: Posession 30, Long Ball 30, Wing Play 35, Counter 20, Direct 10
+  - High Press: Posession 40, Long Ball 10, Wing Play 15, Counter 35, Direct 25
+  - Offside Trap: Posession 10, Long Ball 30, Wing Play 30, Counter 10, Direct 45
+  - Zonal: Posession 35, Long Ball 25, Wing Play 25, Counter 20, Direct 20
+
+Actual behavior (before fix):
+- Compatibility values still came from the previous matrix values.
+
+Suspected cause:
+- The matrix constants had not been updated to the new compatibility table.
+
+Attempted fixes:
+- Updated the centralized `TACTIC_COMPATIBILITY_MATRIX` values to the new table.
+- Kept tactic compatibility calculation path unchanged so all consumers use the new values.
+
+Final fix:
+- Updated:
+  - `src/game/teamManagement/constants/teamManagementConstants.js`
+
+Status: fixed
