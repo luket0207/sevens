@@ -287,6 +287,7 @@ export const createInitialCupSimulationState = ({ careerWorld, teamLookup }) => 
         dayOfWeek: stageSlot.dayOfWeek,
         drawWeekNumber: drawSlot?.weekNumber ?? null,
         drawDayOfWeek: drawSlot?.dayOfWeek ?? null,
+        drawStageLabel: drawSlot?.stageLabel ?? "",
         fixtureIds:
           stageKey === "round-1"
             ? roundOneFixtures.map((fixture) => fixture.id)
@@ -347,6 +348,7 @@ export const createInitialCupSimulationState = ({ careerWorld, teamLookup }) => 
         dayOfWeek: slot.dayOfWeek,
         drawWeekNumber: drawSlot?.weekNumber ?? null,
         drawDayOfWeek: drawSlot?.dayOfWeek ?? null,
+        drawStageLabel: drawSlot?.stageLabel ?? "",
         fixtureIds:
           stageKey.startsWith("group-")
             ? championsCupGroupFixtures.fixtureIdsByStage[stageKey]

@@ -872,6 +872,7 @@ Acceptance Criteria
 ----------------------------------------------------------------
 FEAT-1022 - Add Team Form and Home Advantage to Match Simulation
 ----------------------------------------------------------------
+Status: done
 
 Description
 Add team form and home advantage as additional factors in match simulation.
@@ -968,3 +969,193 @@ Acceptance Criteria
 - Foreign teams begin with a randomly generated form array.
 - After their initial form is created, foreign team form updates from Champions Cup matches.
 - The implementation is centralised and reusable within the match simulation system.
+
+
+----------------------------------------------------------------
+FEAT-1023 - Add Goal Scorers, Assists, Clean Sheets, and Player Stat Tables to Match Simulation
+----------------------------------------------------------------
+Status: done
+
+Description
+Expand the match simulation system so generated match results also include:
+- goal scorers
+- goal times
+- assists where applicable
+- goalkeeper clean sheets where applicable
+
+These values should be attached to simulated results and used to build player-level seasonal statistics, including:
+- league top scorer tables
+- league top assists tables
+- league clean sheet tables
+- cup top scorer tables
+- cup top assists tables
+- cup clean sheet tables
+
+Requirements
+- When a simulated match produces goals, assign a scorer to each goal.
+- Each goal must also be assigned a minute from 1 to 90.
+- Goal scorer selection should be random, but weighted by player role.
+
+Goal scorer selection probabilities
+- Goalkeeper: 0%
+- Defender: 5%
+- Midfielder: 35%
+- Attacker: 60%
+
+Implementation notes for scorers
+- Only players from the scoring team can be selected as scorers for that team’s goals.
+- Use the team’s actual player structure:
+  - 1 goalkeeper
+  - 2 defenders
+  - 2 midfielders
+  - 2 attackers
+- Respect the role weighting above when selecting scorers.
+- Goalkeepers must never be selected as scorers.
+- Each goal should store:
+  - scoring player
+  - minute scored
+
+Goal minute generation
+- Every goal should receive a minute from 1 to 90 inclusive.
+- Goal minutes can be random.
+- Keep the output believable and suitable for future match event displays.
+- Two goals cannot be scored in the same minute. So each match every minute value for each goal must be unique.
+
+Assists
+- For each goal, attempt to assign an assist using a separate weighted system.
+- Assists work similarly to scorers, but with a different probability split.
+
+Assist selection probabilities
+- Goalkeeper: 10%
+- Defender: 10%
+- Midfielder: 60%
+- Attacker: 10%
+- No assister: 10%
+
+Implementation notes for assists
+- Only players from the scoring team can be selected as assisters.
+- A goal may have no assister.
+- Keep the assister selection separate from the scorer selection logic, even if they reuse shared helpers.
+- The system does not need to prevent the scorer and assister being the same player unless you decide to add that guard as a sensible validation rule. If that rule is added, keep it centralised and explicit.
+
+Clean sheets
+- If a team finishes a match having conceded 0 goals, that team’s goalkeeper receives a clean sheet.
+- Clean sheets should be tracked as a goalkeeper/player stat.
+- Clean sheets should be stored and persisted in the same way as goals and assists.
+- Only the goalkeeper for the team that conceded 0 gets the clean sheet credit.
+
+Stored match event/stat data
+- Simulated results should now support storing a list of goal events.
+- Each goal event should be able to store:
+  - team
+  - scorer
+  - assister or null
+  - minute
+- Match/player stat resolution should also update goalkeeper clean sheet totals where appropriate.
+
+Stat tracking
+- Update player-level seasonal statistics from generated match results.
+- At minimum, track:
+  - goals
+  - assists
+  - clean sheets
+- These stats should persist in career state and update as simulated fixtures are played.
+
+League stat tables
+- Add the ability to calculate per-league tables for:
+  - top scorers
+  - top assists
+  - clean sheets
+- Top scorer tables should be based on player goal totals from league matches.
+- Top assists tables should be based on player assist totals from league matches.
+- Clean sheet tables should be based on goalkeeper clean sheet totals from league matches.
+- Keep the structures reusable for future UI display even if only debug usage is needed first.
+
+Cup stat tables
+- Add the ability to calculate cup competition tables for:
+  - top scorers
+  - top assists
+  - clean sheets
+- This should apply to the cup competitions in the game, including:
+  - League Cup
+  - Champions Cup
+- Cup stat tables should be based only on matches in that specific competition.
+- Keep league and cup stat tracking distinct so competition-specific tables remain accurate.
+
+Competition scoping rules
+- League player stats should update from league fixtures.
+- Cup player stats should update from cup fixtures in the relevant competition.
+- Do not merge all competitions together when calculating per-competition stat tables unless a separate global table is added later.
+
+Acceptance Criteria
+- Simulated matches assign scorers for every goal.
+- Every simulated goal has a minute from 1 to 90.
+- Scorer selection follows the required positional probabilities:
+  - GK 0%
+  - DF 5%
+  - MD 35%
+  - AT 60%
+- Simulated goals can also receive assists.
+- Assist selection follows the required probabilities:
+  - GK 10%
+  - DF 10%
+  - MD 60%
+  - AT 10%
+  - No assister 10%
+- Goal events are stored in match result data.
+- If a team concedes 0 goals, its goalkeeper receives a clean sheet.
+- Player goal, assist, and clean sheet totals are updated from simulated results.
+- A league top scorer table can be derived from stored player stats.
+- A league top assists table can be derived from stored player stats.
+- A league clean sheet table can be derived from stored player stats.
+- League Cup and Champions Cup each support their own:
+  - top scorer table
+  - top assists table
+  - clean sheet table
+- League and cup stat tracking stay correctly separated by competition.
+
+----------------------------------------------------------------
+FEAT-1024 - Add Team Squad Details Modal from League Table
+----------------------------------------------------------------
+Status: done
+
+Description
+Allow the user to inspect a team’s players directly from the league table.
+
+When the user clicks a team in the league table, show a modal containing that team’s full squad and player details.
+
+Requirements
+- Make each team entry in the league table clickable.
+- When a team is clicked, open a modal showing that team’s players and their details.
+- The modal should display all players in the team.
+- Show each player’s full skill set and details.
+- Reuse the existing player/skill display component(s) where sensible rather than rebuilding the skill display from scratch.
+- Keep the modal content readable and structured.
+
+Player details to show
+- At minimum, show enough information to inspect the team properly, including:
+  - player name
+  - role / player type context if available
+  - overall
+  - full skill set
+  - other generated details already available in the player model where useful
+- If player image components already exist and fit naturally, they may also be shown, but the main requirement is the full skill/details display.
+
+Scrolling behaviour
+- The player list inside the modal should have a max height.
+- If the content exceeds that height, it should scroll vertically.
+- Keep the modal usable for longer team detail views.
+
+Modal behaviour
+- The modal should clearly show which team is being viewed.
+- It should be easy to close and return to the league table.
+- Keep the modal integrated with the existing UI patterns where sensible.
+
+Acceptance Criteria
+- Teams in the league table are clickable.
+- Clicking a team opens a modal with that team’s players.
+- The modal shows all players and their details.
+- The full skill set is displayed for each player.
+- Existing player/skill display components are reused where appropriate.
+- The player list area has a max height and scrolls vertically when needed.
+- The user can inspect teams from the league table without leaving the page.

@@ -486,3 +486,250 @@ Attempted fixes:
 
 Final fix:
 - Cups page now displays a `Back to Calendar` button at the top, routing directly to `/career/home`.
+
+
+BUG-019 - Champions Cup draw flow incomplete and day-1 results panel should be suppressed
+Status: fixed
+
+Repro steps:
+1. Start a fresh career and progress to day 1 end-of-day flow.
+2. Observe whether Champions Cup group draw is shown.
+3. Continue through Champions Cup knockout phases and check draw presentation timing.
+4. Observe day-1 post-simulation panel flow.
+
+Expected behavior:
+- Champions Cup should show a draw flow before fixtures, similar to League Cup draw flow.
+- Champions Cup group draw should appear on day 1 alongside season fixture reveal content.
+- Day 1 should not show the Match Day Results panel.
+
+Actual behavior:
+- Champions Cup group draw was not emitted as a day-1 draw flow.
+- Knockout draw presentation lacked explicit draw labeling consistency.
+- Day 1 still routed through pending day-results panel logic.
+
+Suspected cause:
+- Champions Cup draw-day processing only handled knockout stages and ignored a group-draw stage.
+- Day-1 fixture reveal was still wired through `pendingDayResults` instead of draw flow.
+
+Attempted fixes:
+- Added Champions Cup group draw slot (`group-md-1`) to draw schedule constants.
+- Extended Champions Cup stage metadata to carry `drawStageLabel` for explicit draw labeling.
+- Updated champions draw-day processing to:
+  - emit day-1 group draw entries (group composition lines)
+  - keep knockout draws on draw days with explicit draw labels.
+- Added first-day fallback draw resolution for `group-md-1` to support older save metadata.
+- Added `buildSeasonFixtureDraws` helper and routed day-1 season fixture reveal through `pendingCupDraw` draws.
+- Suppressed day-1 `pendingDayResults` creation so Match Day Results panel does not show on day 1.
+- Set `seasonFixturesRevealed` when day-1 fixture draws are scheduled so reveal state persists correctly.
+
+Final fix:
+- Champions Cup now has a visible day-1 group draw and explicit pre-match draw presentation, and day 1 no longer opens the Match Day Results panel.
+
+
+BUG-020 - Show goalscorers and assisters in match-day results
+Status: fixed
+
+Repro steps:
+1. Advance career flow to `/career/day-results` on any day with at least one scored goal.
+2. Inspect each match result row.
+
+Expected behavior:
+- Match-day result rows should show the goalscorer for every goal.
+- If a goal has an assister, the assister should also be shown.
+
+Actual behavior:
+- Result rows showed only scoreline and simulation metadata (MR/MRD), with no goalscorer/assister breakdown.
+
+Suspected cause:
+- Day-results payload mapping (`buildCompletedDayResults`) did not include `goalEvents`.
+- Day-results UI had no renderer for goal event lines.
+
+Attempted fixes:
+- Extended day-results mapping to include `fixture.result.goalEvents` in each result payload.
+- Added goal-event rendering beneath each result row, sorted by minute.
+- Added formatting for scorer and optional assist text (`Assist: <name>`).
+- Added lightweight goal-event styles for readable centered rows.
+
+Final fix:
+- Match-day results now display per-goal lines that include minute, scoring team, scorer, and assister when present.
+
+
+BUG-021 - Day-1 draw controls should be cup/leagues/all with gated continue
+Status: fixed
+
+Repro steps:
+1. Start a fresh career and advance to day 1 draw flow (`/cup-draw`).
+2. Inspect available reveal controls.
+3. Attempt to continue without revealing draw results.
+
+Expected behavior:
+- Day 1 should use 3 high-level controls:
+  - `Generate Cup`
+  - `Generate Leagues`
+  - `Generate All`
+- League fixture generation should not require revealing league-by-league via individual draw buttons.
+- Continue should be blocked until results are revealed.
+
+Actual behavior:
+- Day 1 draw cards only exposed per-draw `Reveal Next Fixture` / `Reveal All` controls.
+- League fixture reveal was effectively per-league card.
+- Continue button could be pressed before all draw results were shown.
+
+Suspected cause:
+- `cupDraw` used a single per-card reveal interaction model for every draw day.
+- No day-1-specific draw control mode or continuation gate existed.
+
+Attempted fixes:
+- Added day-1 draw control mode in `cupDraw`.
+- Added grouped draw actions:
+  - reveal all cup draws
+  - reveal all league fixture draws
+  - reveal all draws.
+- Hid per-draw reveal buttons during day-1 mode.
+- Added continue gating on day 1 so progression is disabled until all draw results are revealed.
+- Added hint text and control panel styling to make the flow explicit.
+
+Final fix:
+- Day 1 now uses `Generate Cup`, `Generate Leagues`, and `Generate All` controls, and `Continue` stays disabled until all draw results are revealed.
+
+
+BUG-022 - Show team overall in squad modal header
+Status: fixed
+
+Repro steps:
+1. Open Career Home league table.
+2. Click any team to open the squad modal.
+3. Inspect the modal header title.
+
+Expected behavior:
+- Modal header should include the selected team’s overall value.
+
+Actual behavior:
+- Modal header only showed team name and "Squad" without overall value.
+
+Suspected cause:
+- Modal title string in `leagueTablePanel` did not include team-overall data.
+
+Attempted fixes:
+- Added team-overall resolver for modal title:
+  - uses `team.teamOverall` when present
+  - falls back to average player overall when needed.
+- Appended `| OVR <value>` to the modal title when overall is available.
+
+Final fix:
+- Squad modal header now displays team name plus overall value (for example: `Team Name Squad | OVR 73`).
+
+BUG-023 - Add league stats navigation and show cup player stat tables on Cups page
+Status: fixed
+
+Repro steps:
+1. Open Career Home and inspect `Career Controls > Navigation`.
+2. Open `/career/cups` and inspect League Cup and Champions Cup sections.
+3. Try to view league top scorers/assists/clean sheets from career flow.
+
+Expected behavior:
+- A navigation action exists under `Cups` that routes to a dedicated league stats page.
+- League stats page shows league top scorers, top assisters, and clean sheets.
+- Cups page also shows cup top scorers, top assisters, and clean sheets for each cup competition.
+
+Actual behavior:
+- No league-stats navigation existed under `Cups`.
+- No dedicated league-stats page existed.
+- Cups page only showed fixtures/results and did not show cup player stat leaderboards.
+
+Suspected cause:
+- Player stat table data (`simulation.playerStats.leagueTablesByCompetition` / `cupTablesByCompetition`) was persisted but not exposed in dedicated UI routes/components.
+
+Attempted fixes:
+- Added a new reusable player stat table renderer component for top scorers, assists, and clean sheets.
+- Added a new `/career/league-stats` page that renders domestic league leaderboards.
+- Added a new `League Stats` navigation button under `Cups` in the Career Controls panel.
+- Updated Cups page to render cup leaderboards for League Cup and Champions Cup.
+- Registered new route in `routes.jsx`.
+
+Final fix:
+- Career Controls now includes a `League Stats` button directly below `Cups`.
+- `/career/league-stats` now displays top scorers, assists, and clean sheets for all domestic leagues.
+- `/career/cups` now displays cup player leaderboards (top scorers, assists, clean sheets) for both cups.
+
+
+BUG-024 - Update tactic compatibility matrix values used for TC
+Status: fixed
+
+Repro steps:
+1. Open team management and inspect tactical compatibility calculations.
+2. Compare matrix values used in code against the latest requested table.
+
+Expected behavior:
+- Tactic compatibility uses the updated matrix:
+  - Low Block: `20 / 60 / 40 / 80 / 50`
+  - Mid Block: `60 / 60 / 70 / 40 / 20`
+  - High Press: `80 / 20 / 30 / 70 / 50`
+  - Offside Trap: `20 / 60 / 60 / 20 / 90`
+  - Zonal: `70 / 50 / 50 / 40 / 40`
+
+Actual behavior:
+- Matrix values in constants still reflected older compatibility numbers.
+
+Suspected cause:
+- `TACTIC_COMPATIBILITY_MATRIX` in `teamManagementConstants` had not yet been updated to the latest table.
+
+Attempted fixes:
+- Replaced all affected entries in `TACTIC_COMPATIBILITY_MATRIX` with the new values.
+- Kept tactic keys unchanged so team management and simulation compatibility lookups remain stable.
+
+Final fix:
+- Tactic compatibility now uses the updated matrix values across team management and simulation TC calculations.
+
+
+BUG-025 - Clean sheets not always awarded when opposition scores 0
+Status: fixed
+
+Repro steps:
+1. Simulate matches where one team concedes 0 goals.
+2. Inspect player clean-sheet tables for the relevant competition.
+
+Expected behavior:
+- If a team concedes 0 goals, that team’s goalkeeper receives +1 clean sheet.
+
+Actual behavior:
+- Clean sheets were sometimes missing even when opposition scored 0.
+
+Suspected cause:
+- Goalkeeper detection in player-stats update logic depended on `playerType === "goalkeeper"`, while generated player types use `GK`, causing goalkeeper lookup misses.
+
+Attempted fixes:
+- Updated clean-sheet goalkeeper resolver to use shared role-group resolution instead of raw `playerType` string matching.
+- Updated shared role resolution to recognise `GK` as goalkeeper.
+
+Final fix:
+- Clean sheets now award correctly when a team concedes 0, including teams whose goalkeeper uses `playerType: "GK"`.
+
+
+BUG-026 - Add top continue button on day-1 fixture generation controls
+Status: fixed
+
+Repro steps:
+1. Start a new career and progress to the day-1 draw/fixture generation page (`/cup-draw`).
+2. Inspect the top `Day 1 Draw Controls` action row.
+
+Expected behavior:
+- A `Continue` button is available at the top next to:
+  - `Generate Cup`
+  - `Generate Leagues`
+  - `Generate All`
+- Continue follows existing reveal gating rules.
+
+Actual behavior:
+- Continue action existed only at the bottom of the page.
+- No top continue button was present in day-1 controls.
+
+Suspected cause:
+- Day-1 control row only rendered generation buttons and omitted continuation action.
+
+Attempted fixes:
+- Added a top `Continue` button in day-1 draw control actions.
+- Reused existing `continueFlow` handler and `canContinue` gating.
+
+Final fix:
+- Day-1 draw controls now include a top `Continue` button beside generation actions, with identical behavior and disabled-state gating as the existing bottom continue button.

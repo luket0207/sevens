@@ -118,6 +118,13 @@ export const CHAMPIONS_CUP_MATCH_SLOTS = Object.freeze([
 
 export const CHAMPIONS_CUP_DRAW_SLOTS = Object.freeze([
   Object.freeze({
+    id: "champions-cup-draw-groups",
+    stageKey: "group-md-1",
+    weekNumber: 1,
+    dayOfWeek: DAY_INDEX.MONDAY,
+    stageLabel: "Group Draw",
+  }),
+  Object.freeze({
     id: "champions-cup-draw-quarter-finals",
     stageKey: "quarter-finals",
     weekNumber: 10,

@@ -7,6 +7,15 @@ import { buildTeamRolePlan } from "./playerRolePlan";
 import { generatePlayerOverallTargets } from "./playerOverallTargets";
 
 const pickRandom = (items) => items[randomInt(0, items.length - 1)];
+const FORM_RESULT_CODES = Object.freeze(["W", "D", "L"]);
+
+const createInitialTeamForm = (competitionType) => {
+  if (competitionType !== "foreign") {
+    return [];
+  }
+
+  return Array.from({ length: 5 }, () => pickRandom(FORM_RESULT_CODES));
+};
 
 export const generateCareerTeam = ({
   competitionId,
@@ -59,6 +68,7 @@ export const generateCareerTeam = ({
     homeColour: kitSet.homeColour,
     awayColour: kitSet.awayColour,
     goalkeeperKit: pickRandom(GOALKEEPER_KIT_OPTIONS).value,
+    form: createInitialTeamForm(competitionType),
     players,
     manager,
     playerOverallTargets,

@@ -1,5 +1,6 @@
 import { buildCareerGenerationDebugSummary } from "../../careerGeneration/utils/careerGenerationDebug";
 import { DOMESTIC_LEAGUE_IDS, LEAGUE_ID_TO_NAME } from "../../careerSimulation/constants/simulationConstants";
+import { normaliseTeamForm } from "../../careerSimulation/utils/teamForm";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -83,8 +84,39 @@ const buildWorldTotals = (competitions) => {
   };
 };
 
-export const buildNextCareerWorldFromSeasonOutcomes = ({ careerWorld, seasonOutcomes }) => {
+const applyTeamFormToWorld = ({ careerWorld, teamFormByTeamId }) => {
   const nextCareerWorld = clone(careerWorld ?? {});
+  const competitions = Array.isArray(nextCareerWorld.competitions) ? nextCareerWorld.competitions : [];
+
+  nextCareerWorld.competitions = competitions.map((competition) => ({
+    ...competition,
+    teams: (competition.teams ?? []).map((team) => ({
+      ...team,
+      form: normaliseTeamForm(teamFormByTeamId?.[team.id] ?? team.form),
+    })),
+  }));
+
+  if (nextCareerWorld?.playerTeam?.id) {
+    nextCareerWorld.playerTeam = {
+      ...nextCareerWorld.playerTeam,
+      form: normaliseTeamForm(
+        teamFormByTeamId?.[nextCareerWorld.playerTeam.id] ?? nextCareerWorld.playerTeam.form
+      ),
+    };
+  }
+
+  return nextCareerWorld;
+};
+
+export const buildNextCareerWorldFromSeasonOutcomes = ({
+  careerWorld,
+  seasonOutcomes,
+  teamFormByTeamId = {},
+}) => {
+  const nextCareerWorld = applyTeamFormToWorld({
+    careerWorld,
+    teamFormByTeamId,
+  });
   const competitions = Array.isArray(nextCareerWorld.competitions) ? nextCareerWorld.competitions : [];
   const playerTeamId = nextCareerWorld?.playerTeam?.id ?? "";
   const teamLeagueById = competitions

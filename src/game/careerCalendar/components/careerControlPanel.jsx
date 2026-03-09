@@ -4,19 +4,10 @@ import "./careerControlPanel.scss";
 
 const CareerControlPanel = ({
   currentDayLabel,
-  isSeasonComplete,
-  hasPlayerMatchToday,
   isSimulatingDay,
+  primaryButtonLabel,
   onAdvanceDay,
 }) => {
-  const primaryButtonLabel = isSeasonComplete
-    ? "Finish Season"
-    : isSimulatingDay
-    ? "Simulating Match Day..."
-    : hasPlayerMatchToday
-    ? "Go To Match Day"
-    : "Continue to Next Day";
-
   return (
     <section className="careerControlPanel">
       <div className="careerControlPanel__section">
@@ -49,15 +40,10 @@ const CareerControlPanel = ({
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/career/cups">
             Cups
           </Button>
+          <Button variant={BUTTON_VARIANT.SECONDARY} to="/career/league-stats">
+            League Stats
+          </Button>
         </div>
-      </div>
-
-      <div className="careerControlPanel__section">
-        <h3 className="careerControlPanel__subtitle">Simulation</h3>
-        <p className="careerControlPanel__note">
-          Non-player fixtures are simulated on match days. If your team has a scheduled match, Continue Day routes to
-          the temporary Match page for manual result selection.
-        </p>
       </div>
     </section>
   );
@@ -65,14 +51,12 @@ const CareerControlPanel = ({
 
 CareerControlPanel.propTypes = {
   currentDayLabel: PropTypes.string.isRequired,
-  isSeasonComplete: PropTypes.bool.isRequired,
-  hasPlayerMatchToday: PropTypes.bool,
   isSimulatingDay: PropTypes.bool,
+  primaryButtonLabel: PropTypes.string.isRequired,
   onAdvanceDay: PropTypes.func.isRequired,
 };
 
 CareerControlPanel.defaultProps = {
-  hasPlayerMatchToday: false,
   isSimulatingDay: false,
 };
 

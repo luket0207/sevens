@@ -244,6 +244,66 @@ Files changed:
 Tradeoffs / follow-up tasks:
 - None.
 
+FEAT-1022 - Team Form and Home Advantage in Match Simulation
+Status: done
+
+What was implemented:
+- Added persistent team form support using rolling 5-match result arrays (`W`, `D`, `L`) in simulation state.
+- Added form utility module with:
+  - form normalization
+  - win counting
+  - rolling append logic
+  - form win-bonus mapping (`0/1/4/7/10`)
+  - scoreline-to-form-result mapping.
+- Added home-advantage and form-based probability adjustments in match outcome resolution:
+  - home team always gets +2% win chance
+  - stronger-form side gets mapped bonus based on win-count difference
+  - applied after MRD matrix base probabilities
+  - distribution rebalanced/normalized to remain valid.
+- Team profiles now include form arrays and simulation debug now includes applied form/home modifiers.
+- Added automatic form updates after every completed fixture:
+  - league fixtures
+  - cup fixtures
+  - player-forced fixtures
+  - season-end playoffs.
+- Added team-form initialization/hydration:
+  - foreign teams begin with random 5-result form at career generation
+  - domestic teams/player team start empty and build naturally
+  - old save compatibility via runtime form-map hydration.
+- Added cross-season persistence:
+  - team form map carried into new season calendar simulation bootstrap
+  - season transition now applies form arrays back onto world team objects when rolling seasons.
+- Updated default calendar simulation shapes to include `teamFormByTeamId`.
+
+Engine components considered:
+- `gameContext`, `button`, `rng`, `saveGame`.
+
+Engine components used:
+- `rng` (random foreign initial form generation and existing weighted result resolution path).
+- `gameContext` (persistent simulation state shape extended with team form map).
+
+Engine components not used:
+- `button` and `saveGame` required no direct code changes for this feature.
+
+Files changed:
+- `src/game/careerSimulation/utils/teamForm.js`
+- `src/game/careerSimulation/utils/matchSimulation.js`
+- `src/game/careerSimulation/utils/teamMatchProfile.js`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/game/careerGeneration/utils/teamGenerator.js`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerSeasonSummary/utils/seasonTransition.js`
+- `src/game/careerSeasonSummary/careerSeasonSummary.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `vibe/epics/EPIC-010/features.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Form modifier currently shifts probability mass from draw/opponent win buckets proportionally; if future tuning needs exact category-level redistribution rules (normal vs big win), add a dedicated balancing policy layer.
+
 BUG-007 - Highlight player's team in season fixture reveal
 Status: done
 
@@ -612,3 +672,319 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - None.
+
+BUG-019 - Champions Cup day-1 draw flow and first-day results suppression
+Status: done
+
+What was implemented:
+- Added Champions Cup group draw slot on day 1 (`group-md-1`) in draw schedule schema.
+- Extended cup stage metadata with `drawStageLabel` so draw cards display explicit draw labels.
+- Updated Champions Cup draw processing to:
+  - emit a day-1 group draw card showing groups and assigned teams
+  - keep knockout draws on draw days with explicit `... Draw` labels.
+- Added compatibility fallback for older save metadata so `group-md-1` draw still resolves on week 1 Monday.
+- Added `buildSeasonFixtureDraws` helper and moved day-1 league fixture reveal into the draw flow.
+- Updated day progression flow in `careerHome` and `match`:
+  - day 1 no longer creates `pendingDayResults`
+  - day 1 now routes via cup-draw flow only
+  - `seasonFixturesRevealed` is set when day-1 fixture draws are scheduled.
+- Updated cup draw list rendering to support custom display lines for group-draw entries.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`.
+
+Engine components used:
+- `gameContext` (persisted pending draw/results state orchestration and day-flow branching).
+- `button` (existing cup-draw interaction/reveal controls reused).
+
+Engine components not used:
+- `modal` was not required for this flow update.
+
+Files changed:
+- `src/game/careerCalendar/constants/cupScheduleSchema.js`
+- `src/game/careerSimulation/utils/cupSimulationState.js`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerSimulation/index.js`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/match/match.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Cup draw entries now support optional display-only lines for group draws; if richer draw UIs are needed later, split group draw into a dedicated renderer.
+
+FEAT-1023 and FEAT-1024 - Match Goal Events/Player Stat Tables + League Table Squad Modal
+Status: done
+
+What was implemented:
+- Added goal-event generation to simulated fixture resolution:
+  - each goal now stores scorer, assister (or null), and a unique minute between 1-90
+  - scorer weighting implemented by role (GK 0, DF 5, MD 35, AT 60)
+  - assister weighting implemented by role plus no-assist chance (GK 10, DF 10, MD 60, AT 10, none 10).
+- Added persistent player stat tracking in simulation state:
+  - per-competition goals, assists, and clean sheets
+  - league and cup stat scopes are tracked separately
+  - derived top tables are rebuilt per competition for scorers, assists, and clean sheets.
+- Added clean-sheet credit logic:
+  - when a team concedes 0, its goalkeeper receives clean-sheet credit for that fixture competition.
+- Added simulation debug snapshot for player stat tables in `simulation.debug.playerStatsSnapshot`.
+- Added league-table team inspection modal:
+  - team names in the league table are now clickable
+  - clicking opens a modal with that team’s full squad
+  - modal reuses existing player image and skill-bar components
+  - squad list has max-height + vertical scrolling for long content.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `rng` for weighted scorer/assister selection and unique goal-minute generation.
+- `modal` / `modalContext` for team squad details overlay from league table.
+- `bars` indirectly via shared `PlayerSkillsetBars` in the squad modal.
+- `gameContext` for persisted simulation-state shape updates (`playerStats` and debug snapshot defaults).
+
+Engine components not used:
+- `button`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required for this pass.
+
+Files changed:
+- `src/game/careerSimulation/utils/playerMatchEvents.js`
+- `src/game/careerSimulation/utils/playerStats.js`
+- `src/game/careerSimulation/utils/careerSimulationEngine.js`
+- `src/game/shared/utils/teamRoles.js`
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.scss`
+- `src/game/careerCalendar/components/leagueTeamSquadModalContent.jsx`
+- `src/game/careerCalendar/components/leagueTeamSquadModalContent.scss`
+- `src/game/careerHome/careerHome.jsx`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `vibe/epics/EPIC-010/features.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Goal-event generation currently allows scorer and assister to be the same player; this is intentionally left permissive for now.
+- League/cup stat tables are persisted and debug-inspectable; dedicated leaderboard UI can be added later if needed.
+
+BUG-020 - Show goalscorers and assisters in match-day results
+Status: done
+
+What was implemented:
+- Extended day-results payload mapping to include `goalEvents` from each completed fixture result.
+- Added goal-event rendering in `/career/day-results` under each scoreline.
+- Each goal line now shows:
+  - minute
+  - scoring team
+  - goalscorer
+  - assister when present.
+- Added focused goal-event styles in the day-results stylesheet to keep output readable without changing existing scoreline layout.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `toast`.
+
+Engine components used:
+- `gameContext` (existing persisted day-result payload flow reused; no schema migration required).
+- `button` (existing day-results continue controls unchanged and reused).
+
+Engine components not used:
+- `modal`, `toast` were not required for this inline day-results display fix.
+
+Files changed:
+- `src/game/careerSimulation/utils/dayPresentation.js`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerDayResults/careerDayResults.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Goal-event rows currently render as simple text lines; if needed later, add team-color markers/icons for faster scanning.
+
+BUG-021 - Day-1 draw controls for cup/leagues/all and reveal gating
+Status: done
+
+What was implemented:
+- Added a dedicated day-1 draw control mode in `/cup-draw`.
+- Added three high-level actions for day 1:
+  - `Generate Cup`
+  - `Generate Leagues`
+  - `Generate All`.
+- Day-1 flow now hides per-draw `Reveal Next Fixture` / `Reveal All` controls so league fixtures are not revealed league-by-league via individual card actions.
+- Added day-1 continuation gating:
+  - `Continue` stays disabled until all draw results are revealed.
+  - added inline guidance text while reveal is incomplete.
+- Kept non-day-1 draw behavior unchanged.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `toast`.
+
+Engine components used:
+- `button` for new day-1 draw action controls and gated continue state.
+- `gameContext` for existing pending draw state and progression handoff.
+
+Engine components not used:
+- `modal`, `toast` were not required for this flow-control bug fix.
+
+Files changed:
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/cupDraw/cupDraw.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Day-1 control grouping classifies season-fixture draws by `stageKey === "season-fixtures"`; if future draw payload types are added, keep this classification map updated.
+
+BUG-022 - Show team overall in squad modal header
+Status: done
+
+What was implemented:
+- Updated league-table squad modal title creation to include selected team overall value.
+- Added robust overall resolver:
+  - primary source: `team.teamOverall`
+  - fallback: average of player overalls.
+- Modal header now renders as `Team Name Squad | OVR <value>` when overall is available.
+
+Engine components considered:
+- `modal`, `modalContext`, `gameContext`.
+
+Engine components used:
+- `modal` / `modalContext` (existing modal title channel reused for the new overall display).
+
+Engine components not used:
+- `gameContext` required no changes for this UI-only bug fix.
+
+Files changed:
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Overall fallback uses mean player overall when team overall is missing; if alternative calculation is introduced globally later, keep this resolver aligned.
+
+BUG-023 - League stats navigation and cup stat tables on Cups page
+Status: done
+
+What was implemented:
+- Added a new league stats page at `/career/league-stats` to display domestic league player leaderboards.
+- Added a reusable player stat table component that renders:
+  - top scorers
+  - top assists
+  - clean sheets
+  from the persisted simulation player stats model.
+- Added a new `League Stats` navigation button below `Cups` in Career Controls.
+- Updated Cups page to render cup player leaderboards for:
+  - League Cup
+  - Champions Cup.
+- Wired the new page into app routing.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `slidePanel`.
+
+Engine components used:
+- `gameContext` to read persisted `simulation.playerStats` leaderboard data.
+- `button` for route navigation from Career Controls and page actions.
+
+Engine components not used:
+- `modal`, `slidePanel` were not required for this page/navigation/stat-table rendering update.
+
+Files changed:
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/cups/cups.jsx`
+- `src/game/cups/cups.scss`
+- `src/routes.jsx`
+- `src/game/careerStats/components/playerStatTables.jsx`
+- `src/game/careerStats/components/playerStatTables.scss`
+- `src/game/careerLeagueStats/careerLeagueStats.jsx`
+- `src/game/careerLeagueStats/careerLeagueStats.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Leaderboards currently render top 10 entries per table for readability; if full competition tables are required later, add pagination/expand behavior.
+
+BUG-024 - Update tactic compatibility matrix values for TC calculation
+Status: done
+
+What was implemented:
+- Updated `TACTIC_COMPATIBILITY_MATRIX` values to the latest requested table for all defensive/attacking tactic pairings.
+- Kept existing tactic key names and compatibility lookup flow unchanged so both Team Management and career simulation TC calculations consume the new values automatically.
+
+Engine components considered:
+- `gameContext`, `button`, `rng`.
+
+Engine components used:
+- None directly for this constants-only update.
+
+Engine components not used:
+- `gameContext`, `button`, and `rng` required no changes because this fix only updates compatibility constants consumed by existing logic.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If tactic labels are renamed later (for example correcting `Posession` spelling), matrix keys and tactic option constants must be changed together to avoid compatibility lookup misses.
+
+BUG-025 - Clean-sheet goalkeeper attribution fix
+Status: done
+
+What was implemented:
+- Fixed clean-sheet attribution path to resolve goalkeeper by shared role-group logic rather than direct `playerType` string equality.
+- Extended shared role resolver to treat `playerType: "GK"` as goalkeeper.
+- This ensures clean-sheet increments are applied when opposition scores 0, regardless of goalkeeper type label format.
+
+Engine components considered:
+- `gameContext`, `rng`, `button`.
+
+Engine components used:
+- None directly for this utility-logic fix.
+
+Engine components not used:
+- `gameContext`, `rng`, `button` required no direct code changes because this bug fix stays within shared/player-stats utility logic.
+
+Files changed:
+- `src/game/careerSimulation/utils/playerStats.js`
+- `src/game/shared/utils/teamRoles.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Role resolution now supports both textual and abbreviated goalkeeper types; if additional abbreviations are introduced later, keep `resolvePlayerRoleGroup` in sync.
+
+BUG-026 - Top continue button in day-1 draw controls
+Status: done
+
+What was implemented:
+- Added a `Continue` button to the top day-1 draw control row on `/cup-draw`, positioned alongside:
+  - `Generate Cup`
+  - `Generate Leagues`
+  - `Generate All`.
+- Reused existing `continueFlow` action and `canContinue` gating so top and bottom continue controls behave identically.
+
+Engine components considered:
+- `button`, `gameContext`.
+
+Engine components used:
+- `button` for the added top control action.
+- `gameContext` indirectly via existing `continueFlow` state transitions.
+
+Engine components not used:
+- No additional engine components were required beyond existing draw-page flow wiring.
+
+Files changed:
+- `src/game/cupDraw/cupDraw.jsx`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Day-1 now has duplicated continue controls (top and bottom) by design for faster progression visibility.

@@ -15,8 +15,28 @@
   gap: 0.4rem;
 }
 
+.cupDrawPage__drawControlPanel {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.9);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.45rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
 .cupDrawPage__meta {
   color: rgba($lightText, 0.84);
+}
+
+.cupDrawPage__continueHint {
+  margin: 0;
+  color: rgba($tertiaryBackground, 0.95);
+  font-size: 0.86rem;
 }
 
 .cupDrawPage__actions {
@@ -25,15 +45,31 @@
   flex-wrap: wrap;
 }
 
-.cupDrawPage__fixtureList {
+.cupDrawPage__topContinue {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cupDrawPage__drawControlActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cupDrawPage__fixtureRows {
   margin: 0;
-  padding-left: 1rem;
   display: grid;
-  gap: 0.15rem;
+  gap: 0.2rem;
+}
+
+.cupDrawPage__fixtureRow {
+  margin: 0;
+  text-align: center;
+  font-size: 0.86rem;
+  color: rgba($lightText, 0.93);
 }
 
 .cupDrawPage__continue {
   display: flex;
   justify-content: flex-end;
 }
-

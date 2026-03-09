@@ -5,7 +5,7 @@ import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import {
   buildCompletedDayResults,
-  buildSeasonFixturesByLeague,
+  buildSeasonFixtureDraws,
   getSimulationFixtureById,
   simulateCareerDay,
 } from "../careerSimulation";
@@ -64,11 +64,14 @@ const Match = () => {
     });
     const shouldRevealSeasonFixtures =
       currentDay.dayOfSeason === 1 && !calendar?.seasonFixturesRevealed;
-    const seasonFixturesByLeague = shouldRevealSeasonFixtures
-      ? buildSeasonFixturesByLeague({
+    const seasonFixtureDraws = shouldRevealSeasonFixtures
+      ? buildSeasonFixtureDraws({
           simulationState: simulationResult.nextSimulationState,
         })
       : [];
+    const allCupDraws = [...simulationResult.createdCupDraws, ...seasonFixtureDraws];
+    const shouldSuppressDayResultsPanel = currentDay.dayOfSeason === 1;
+    const shouldShowDayResultsPanel = dayResults.length > 0 && !shouldSuppressDayResultsPanel;
 
     setGameState((prev) => ({
       ...prev,
@@ -83,31 +86,35 @@ const Match = () => {
             simulation: simulationResult.nextSimulationState?.debug ?? {},
           },
           pendingCupDraw:
-            simulationResult.createdCupDraws.length > 0
+            allCupDraws.length > 0
               ? {
                   dayOfSeason: currentDay.dayOfSeason,
                   seasonWeekNumber: currentDay.seasonWeekNumber,
                   dayName: currentDay.dayName,
-                  draws: simulationResult.createdCupDraws,
+                  draws: allCupDraws,
                 }
               : null,
-          pendingDayResults: {
-            dayOfSeason: currentDay.dayOfSeason,
-            seasonWeekNumber: currentDay.seasonWeekNumber,
-            dayName: currentDay.dayName,
-            results: dayResults,
-            seasonFixtureReveal: shouldRevealSeasonFixtures ? seasonFixturesByLeague : [],
-          },
+          pendingDayResults: shouldShowDayResultsPanel
+            ? {
+                dayOfSeason: currentDay.dayOfSeason,
+                seasonWeekNumber: currentDay.seasonWeekNumber,
+                dayName: currentDay.dayName,
+                results: dayResults,
+                seasonFixtureReveal: [],
+              }
+            : null,
+          seasonFixturesRevealed:
+            Boolean(prev.career?.calendar?.seasonFixturesRevealed) || shouldRevealSeasonFixtures,
         },
       },
     }));
 
-    if (simulationResult.createdCupDraws.length > 0) {
+    if (allCupDraws.length > 0) {
       navigate("/cup-draw");
       return;
     }
 
-    navigate("/career/day-results");
+    navigate(shouldShowDayResultsPanel ? "/career/day-results" : "/career/home");
   };
 
   return (

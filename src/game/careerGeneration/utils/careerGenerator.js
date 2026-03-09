@@ -7,6 +7,7 @@ import {
 import { buildCareerGenerationDebugSummary } from "./careerGenerationDebug";
 import { generateCareerTeam } from "./teamGenerator";
 import { createTeamIdentityGenerator } from "./teamIdentityGeneration";
+import { createEmptyTeamManagementSlotAssignments } from "../../teamManagement/utils/teamManagementState";
 
 export const CAREER_GENERATION_PHASES = Object.freeze({
   PREPARING: "preparing",
@@ -38,6 +39,7 @@ const calculateTeamOverallFromPlayers = (players) => {
 
 const buildPlayerTeamState = (careerSetup) => {
   const players = Array.isArray(careerSetup?.players) ? careerSetup.players : [];
+  const goalkeeperId = players.find((player) => player?.playerType === "GK")?.id ?? null;
 
   return {
     id: "player-team",
@@ -53,6 +55,17 @@ const buildPlayerTeamState = (careerSetup) => {
     goalkeeperKit: careerSetup?.goalkeeperKit ?? "",
     players,
     teamOverall: calculateTeamOverallFromPlayers(players),
+    form: [],
+    teamManagement: {
+      version: 1,
+      savedAt: "",
+      goalkeeperId,
+      slotAssignments: createEmptyTeamManagementSlotAssignments(),
+      tactics: {},
+      dtr: 0,
+      atr: 0,
+      tacticCompatibility: 0,
+    },
   };
 };
 

@@ -1,8 +1,31 @@
 import { useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import { MODAL_BUTTONS, useModal } from "../../../engine/ui/modal/modalContext";
+import LeagueTeamSquadModalContent from "./leagueTeamSquadModalContent";
 import "./leagueTablePanel.scss";
 
-const LeagueTablePanel = ({ tablesByCompetition, defaultCompetitionId, playerTeamId }) => {
+const resolveTeamOverallValue = (team) => {
+  const directOverall = Number(team?.teamOverall);
+  if (Number.isFinite(directOverall)) {
+    return Math.max(0, Math.round(directOverall));
+  }
+
+  const players = Array.isArray(team?.players) ? team.players : [];
+  if (players.length === 0) {
+    return null;
+  }
+
+  const totalOverall = players.reduce((sum, player) => sum + (Number(player?.overall) || 0), 0);
+  return Math.max(0, Math.round(totalOverall / players.length));
+};
+
+const LeagueTablePanel = ({
+  tablesByCompetition,
+  defaultCompetitionId,
+  playerTeamId,
+  teamLookupById,
+}) => {
+  const { openModal } = useModal();
   const competitionIds = useMemo(
     () => Object.keys(tablesByCompetition ?? {}),
     [tablesByCompetition]
@@ -15,6 +38,21 @@ const LeagueTablePanel = ({ tablesByCompetition, defaultCompetitionId, playerTea
     : competitionIds[0] ?? "";
   const activeTable = tablesByCompetition?.[effectiveCompetitionId] ?? null;
   const entries = Array.isArray(activeTable?.entries) ? activeTable.entries : [];
+
+  const openTeamSquadModal = (teamId) => {
+    const team = teamLookupById?.[teamId];
+    if (!team) {
+      return;
+    }
+    const teamOverall = resolveTeamOverallValue(team);
+    const titleSuffix = Number.isFinite(teamOverall) ? ` | OVR ${teamOverall}` : "";
+
+    openModal({
+      modalTitle: `${team?.teamName ?? "Team"} Squad${titleSuffix}`,
+      modalContent: <LeagueTeamSquadModalContent team={team} />,
+      buttons: MODAL_BUTTONS.NONE,
+    });
+  };
 
   if (!activeTable) {
     return (
@@ -70,12 +108,22 @@ const LeagueTablePanel = ({ tablesByCompetition, defaultCompetitionId, playerTea
               return (
                 <tr
                   key={entry.teamId}
-                  className={isPlayerTeam ? "leagueTablePanel__row leagueTablePanel__row--player" : "leagueTablePanel__row"}
+                  className={
+                    isPlayerTeam
+                      ? "leagueTablePanel__row leagueTablePanel__row--player"
+                      : "leagueTablePanel__row"
+                  }
                 >
                   <td>{entry.position}</td>
                   <td className="leagueTablePanel__teamCell">
-                    {isPlayerTeam ? <span className="leagueTablePanel__playerMarker">★</span> : null}
-                    <span>{entry.teamName}</span>
+                    <button
+                      type="button"
+                      className="leagueTablePanel__teamButton"
+                      onClick={() => openTeamSquadModal(entry.teamId)}
+                    >
+                      {isPlayerTeam ? <span className="leagueTablePanel__playerMarker">*</span> : null}
+                      <span>{entry.teamName}</span>
+                    </button>
                   </td>
                   <td>{entry.played}</td>
                   <td>{entry.won}</td>
@@ -99,12 +147,14 @@ LeagueTablePanel.propTypes = {
   tablesByCompetition: PropTypes.object,
   defaultCompetitionId: PropTypes.string,
   playerTeamId: PropTypes.string,
+  teamLookupById: PropTypes.object,
 };
 
 LeagueTablePanel.defaultProps = {
   tablesByCompetition: {},
   defaultCompetitionId: "",
   playerTeamId: "",
+  teamLookupById: {},
 };
 
 export default LeagueTablePanel;

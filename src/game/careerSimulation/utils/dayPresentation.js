@@ -36,6 +36,18 @@ export const buildCompletedDayResults = ({ simulationState, currentDay }) => {
       awayMatchRating: Number(fixture?.simulation?.awayMatchRating) || 0,
       mrd: Math.abs(Number(fixture?.simulation?.mrd) || 0),
       mrdBandId: String(fixture?.simulation?.mrdBandId ?? ""),
+      goalEvents: Array.isArray(fixture?.result?.goalEvents)
+        ? fixture.result.goalEvents.map((goalEvent) => ({
+            id: goalEvent?.id ?? "",
+            minute: Number(goalEvent?.minute) || 0,
+            teamId: goalEvent?.teamId ?? "",
+            teamName: goalEvent?.teamName ?? "",
+            scorerPlayerId: goalEvent?.scorerPlayerId ?? "",
+            scorerName: goalEvent?.scorerName ?? "Unknown Scorer",
+            assisterPlayerId: goalEvent?.assisterPlayerId ?? "",
+            assisterName: goalEvent?.assisterName ?? "",
+          }))
+        : [],
     }));
 };
 
@@ -78,3 +90,19 @@ export const buildSeasonFixturesByLeague = ({ simulationState }) => {
       }),
     }));
 };
+
+export const buildSeasonFixtureDraws = ({ simulationState }) =>
+  buildSeasonFixturesByLeague({ simulationState }).map((leagueGroup) => ({
+    id: `draw-season-fixtures-${leagueGroup.competitionId}`,
+    competitionId: leagueGroup.competitionId,
+    competitionName: leagueGroup.competitionName,
+    stageKey: "season-fixtures",
+    stageLabel: "Season Fixtures",
+    fixtures: leagueGroup.fixtures.map((fixture) => ({
+      fixtureId: fixture.fixtureId,
+      homeTeamId: fixture.homeTeamId,
+      awayTeamId: fixture.awayTeamId,
+      homeTeamName: fixture.homeTeamName,
+      awayTeamName: fixture.awayTeamName,
+    })),
+  }));

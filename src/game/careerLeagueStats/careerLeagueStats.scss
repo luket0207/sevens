@@ -1,0 +1,28 @@
+@use "../../assets/scss/ui/import" as *;
+
+.careerLeagueStats {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.careerLeagueStats__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.careerLeagueStats__competitionCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.9);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.careerLeagueStats__competitionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}

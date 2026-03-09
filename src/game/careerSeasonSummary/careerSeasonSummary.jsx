@@ -99,9 +99,11 @@ const CareerSeasonSummary = () => {
     const nextCareerWorld = buildNextCareerWorldFromSeasonOutcomes({
       careerWorld,
       seasonOutcomes,
+      teamFormByTeamId: simulationState?.teamFormByTeamId ?? {},
     });
     const nextCalendarState = buildCareerCalendarState({
       careerWorld: nextCareerWorld,
+      carryOverTeamFormByTeamId: simulationState?.teamFormByTeamId ?? {},
     });
 
     setGameState((prev) => ({

@@ -4,6 +4,11 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
+import {
+  getContinueFlowLabel,
+  resolveDayResultsContinueAction,
+} from "../careerFlow/utils/continueFlow";
+import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import "./careerDayResults.scss";
 
 const LEAGUE_SORT_ORDER = Object.freeze({
@@ -22,6 +27,16 @@ const formatScore = (result) => {
 const formatMatchRating = (ratingValue) => {
   const safeValue = Number(ratingValue);
   return Number.isFinite(safeValue) ? Math.max(0, Math.round(safeValue)) : 0;
+};
+
+const formatGoalEventLine = (goalEvent) => {
+  const minute = Math.max(1, Math.min(90, Number(goalEvent?.minute) || 1));
+  const teamName = String(goalEvent?.teamName ?? "").trim();
+  const scorerName = String(goalEvent?.scorerName ?? "Unknown Scorer").trim();
+  const assisterName = String(goalEvent?.assisterName ?? "").trim();
+  const assistSuffix = assisterName ? ` (Assist: ${assisterName})` : "";
+
+  return `${minute}' ${teamName ? `${teamName} - ` : ""}${scorerName}${assistSuffix}`;
 };
 
 const normaliseTeamName = (teamName) => String(teamName ?? "").trim().toLowerCase();
@@ -146,8 +161,33 @@ const CareerDayResults = () => {
   })();
   const rawCurrentDayIndex = Number.isInteger(calendar.currentDayIndex) ? calendar.currentDayIndex : 0;
   const isSeasonComplete = rawCurrentDayIndex >= activeSeason.totalDays - 1;
+  const currentDay = activeSeason?.days?.[rawCurrentDayIndex] ?? null;
+  const dayOneSetupGateState = resolveDayOneSetupGateState({
+    currentDay,
+    playerTeam: careerWorld?.playerTeam ?? null,
+  });
+  const continueAction = resolveDayResultsContinueAction({
+    isDayOneSetupGateActive: dayOneSetupGateState.isGateActive,
+  });
+  const continueButtonLabel = getContinueFlowLabel(continueAction);
 
   const continueToNextDay = () => {
+    if (dayOneSetupGateState.isGateActive) {
+      setGameState((prev) => ({
+        ...prev,
+        career: {
+          ...prev.career,
+          calendar: {
+            ...(prev.career?.calendar ?? {}),
+            pendingDayResults: null,
+          },
+        },
+      }));
+
+      navigate("/team-management");
+      return;
+    }
+
     const nextDayIndex = isSeasonComplete ? rawCurrentDayIndex : rawCurrentDayIndex + 1;
     const nextVisibleMonthIndex = getMonthIndexFromDayIndex(nextDayIndex);
 
@@ -179,7 +219,7 @@ const CareerDayResults = () => {
       <section className="careerDayResults">
         <article className="careerDayResults__actions">
           <Button variant={BUTTON_VARIANT.PRIMARY} onClick={continueToNextDay}>
-            Continue
+            {continueButtonLabel}
           </Button>
         </article>
 
@@ -237,6 +277,27 @@ const CareerDayResults = () => {
                             {formatMatchRating(result.awayMatchRating)} | MRD:{" "}
                             {Math.abs(Number(result.mrd) || 0)}
                           </p>
+                          {(Array.isArray(result.goalEvents) ? result.goalEvents : []).length > 0 ? (
+                            <div className="careerDayResults__goalEvents">
+                              {(result.goalEvents ?? [])
+                                .slice()
+                                .sort((leftEvent, rightEvent) => {
+                                  const minuteDelta =
+                                    (Number(leftEvent?.minute) || 0) - (Number(rightEvent?.minute) || 0);
+                                  if (minuteDelta !== 0) {
+                                    return minuteDelta;
+                                  }
+                                  return String(leftEvent?.id ?? "").localeCompare(
+                                    String(rightEvent?.id ?? "")
+                                  );
+                                })
+                                .map((goalEvent) => (
+                                  <p className="careerDayResults__goalEventLine" key={goalEvent.id}>
+                                    {formatGoalEventLine(goalEvent)}
+                                  </p>
+                                ))}
+                            </div>
+                          ) : null}
                         </div>
                       );
                     })}
@@ -320,7 +381,7 @@ const CareerDayResults = () => {
 
         <article className="careerDayResults__actions">
           <Button variant={BUTTON_VARIANT.PRIMARY} onClick={continueToNextDay}>
-            Continue
+            {continueButtonLabel}
           </Button>
         </article>
       </section>

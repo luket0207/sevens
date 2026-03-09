@@ -60,16 +60,9 @@
 }
 
 .seasonCalendar__day--current {
+  border-width: 2px;
   border-color: rgba($tertiaryBackground, 0.95);
   box-shadow: inset 0 0 0 1px rgba($tertiaryBackground, 0.8);
-}
-
-.seasonCalendar__day--match {
-  background: rgba($secondaryBackground, 0.35);
-}
-
-.seasonCalendar__day--cupDraw {
-  background-image: linear-gradient(180deg, rgba($tertiaryBackground, 0.2), rgba($siteBackground, 0.18));
 }
 
 .seasonCalendar__dayHeader {
@@ -94,53 +87,97 @@
 }
 
 .seasonCalendar__events {
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
   align-content: start;
+  gap: 0.25rem;
   min-height: 0;
   overflow-y: auto;
-  gap: 0.3rem;
 }
 
-.seasonCalendar__event {
-  display: grid;
-  gap: 0.2rem;
+.seasonCalendar__eventIndicator {
+  min-height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
 }
 
-.seasonCalendar__badge {
-  display: inline-block;
-  font-size: 0.67rem;
-  font-weight: 700;
+.seasonCalendar__eventIndicator--leagueMatch {
+  background: $calendarEventLeagueMatchTile;
+}
+
+.seasonCalendar__eventIndicator--leagueCupMatch {
+  background: $calendarEventLeagueCupMatchTile;
+}
+
+.seasonCalendar__eventIndicator--championsCupMatch {
+  background: $calendarEventChampionsCupMatchTile;
+}
+
+.seasonCalendar__eventIndicator--leagueCupDraw {
+  background: $calendarEventLeagueCupDrawTile;
+}
+
+.seasonCalendar__eventIndicator--championsCupDraw {
+  background: $calendarEventChampionsCupDrawTile;
+}
+
+.seasonCalendar__eventIndicator--leagueCupFinal {
+  background: $calendarEventLeagueCupMatchTile;
+}
+
+.seasonCalendar__eventIndicator--championsCupFinal {
+  background: $calendarEventChampionsCupMatchTile;
+}
+
+.seasonCalendar__eventIndicator--playoff {
+  background: $calendarEventLeagueMatchTile;
+}
+
+.seasonCalendar__tooltipTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seasonCalendar__eventIconWrap {
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
-  padding: 0.15rem 0.4rem;
-  width: fit-content;
-  border: 1px solid rgba($lightText, 0.22);
+  background: $calendarEventIconBackground;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
 }
 
-.seasonCalendar__badge--league_match {
-  background: rgba($primaryBackground, 0.5);
+.seasonCalendar__eventIconWrap--leagueMatch {
+  color: $calendarEventLeagueMatchIcon;
 }
 
-.seasonCalendar__badge--cup_match {
-  background: rgba($secondaryBackground, 0.5);
+.seasonCalendar__eventIconWrap--leagueCupMatch {
+  color: $calendarEventLeagueCupMatchIcon;
 }
 
-.seasonCalendar__badge--cup_draw {
-  background: rgba($tertiaryBackground, 0.4);
-  color: $darkText;
+.seasonCalendar__eventIconWrap--championsCupMatch {
+  color: $calendarEventChampionsCupMatchIcon;
 }
 
-.seasonCalendar__badge--playoff_match,
-.seasonCalendar__badge--final {
-  background: rgba($tertiaryBackground, 0.55);
-  color: $darkText;
+.seasonCalendar__eventIconWrap--leagueCupDraw {
+  color: $calendarEventLeagueCupDrawIcon;
 }
 
-.seasonCalendar__eventText {
-  font-size: 0.74rem;
-  line-height: 1.25;
-  color: rgba($lightText, 0.9);
-  overflow-wrap: anywhere;
+.seasonCalendar__eventIconWrap--championsCupDraw {
+  color: $calendarEventChampionsCupDrawIcon;
+}
+
+.seasonCalendar__eventIconWrap--leagueCupFinal,
+.seasonCalendar__eventIconWrap--championsCupFinal {
+  color: $calendarEventFinalIcon;
+}
+
+.seasonCalendar__eventIconWrap--playoff {
+  color: $calendarEventPlayoffIcon;
 }

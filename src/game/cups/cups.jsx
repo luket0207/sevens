@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import { useGame } from "../../engine/gameContext/gameContext";
+import PlayerStatTables from "../careerStats/components/playerStatTables";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import "./cups.scss";
 
@@ -65,6 +66,7 @@ const Cups = () => {
   const calendar = gameState?.career?.calendar ?? null;
   const simulation = calendar?.simulation ?? null;
   const cups = simulation?.cups?.competitions ?? {};
+  const cupTablesByCompetition = simulation?.playerStats?.cupTablesByCompetition ?? {};
   const cupFixturesById = simulation?.cups?.fixturesById ?? {};
   const leagueCup = cups?.leagueCup ?? null;
   const championsCup = cups?.championsCup ?? null;
@@ -79,6 +81,8 @@ const Cups = () => {
 
   const leagueCupStages = Array.isArray(leagueCup?.stageOrder) ? leagueCup.stageOrder : [];
   const championsCupStages = Array.isArray(championsCup?.stageOrder) ? championsCup.stageOrder : [];
+  const leagueCupStatsTables = cupTablesByCompetition?.[leagueCup?.id ?? "league-cup"] ?? null;
+  const championsCupStatsTables = cupTablesByCompetition?.[championsCup?.id ?? "champions-cup"] ?? null;
   const teamNameById = [
     ...(Array.isArray(careerWorld?.competitions) ? careerWorld.competitions : []).flatMap(
       (competition) => competition.teams ?? []
@@ -116,6 +120,10 @@ const Cups = () => {
               return <CupStageCard key={stageKey} stage={stage} fixtures={fixtures} />;
             })}
           </div>
+          <section className="cupsPage__statsSection">
+            <h3>Player Leaderboards</h3>
+            <PlayerStatTables tables={leagueCupStatsTables} emptyText="No cup stats recorded yet." />
+          </section>
         </article>
 
         <article className="cupsPage__competitionCard">
@@ -145,6 +153,11 @@ const Cups = () => {
               return <CupStageCard key={stageKey} stage={stage} fixtures={fixtures} />;
             })}
           </div>
+
+          <section className="cupsPage__statsSection">
+            <h3>Player Leaderboards</h3>
+            <PlayerStatTables tables={championsCupStatsTables} emptyText="No cup stats recorded yet." />
+          </section>
         </article>
       </section>
     </PageLayout>

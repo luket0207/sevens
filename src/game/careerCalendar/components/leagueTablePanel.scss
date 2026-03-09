@@ -62,9 +62,25 @@
 }
 
 .leagueTablePanel__teamCell {
-  display: flex;
+  padding: 0.2rem 0.4rem;
+}
+
+.leagueTablePanel__teamButton {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
 }
 
 .leagueTablePanel__playerMarker {
@@ -74,4 +90,3 @@
 .leagueTablePanel__empty {
   color: rgba($lightText, 0.84);
 }
-

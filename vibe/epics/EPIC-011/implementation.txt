@@ -1,0 +1,82 @@
+Date: 2026-03-09
+Epic: EPIC-011 - Calendar and Career Flow Tidy Up
+
+Feature: FEAT-1101 + FEAT-1111 (Context-aware Continue flow, integrated with day-1 setup gate)
+- What was implemented:
+  - Added central continue-flow resolver/labels in `src/game/careerFlow/utils/continueFlow.js`.
+  - Wired Career Home, Cup Draw, and Day Results to use shared action resolution and shared button labels.
+  - Added day-1 gate resolver in `src/game/careerFlow/utils/dayOneSetupGate.js`.
+- Engine checklist considered:
+  - `gameContext`: used via existing `useGame` state updates and route flow.
+  - `button`: reused for all Continue controls.
+  - `tooltip`, `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed, not required for this flow-label/routing work.
+- Files changed:
+  - `src/game/careerFlow/utils/continueFlow.js`
+  - `src/game/careerFlow/utils/dayOneSetupGate.js`
+  - `src/game/careerHome/careerHome.jsx`
+  - `src/game/cupDraw/cupDraw.jsx`
+  - `src/game/careerDayResults/careerDayResults.jsx`
+  - `src/game/careerCalendar/components/careerControlPanel.jsx`
+- Tradeoffs/follow-up:
+  - Continue action resolution is centralized for key career flow pages; any new flow pages should call the same utility.
+
+Feature: FEAT-1102 + FEAT-1103 + FEAT-1105 (Calendar icon/colour event display, tooltip rules, thicker current-day border)
+- What was implemented:
+  - Replaced text event rows with icon indicators in season calendar day tiles.
+  - Added centralized event visual + tooltip rules in `calendarEventDisplay.js`.
+  - Implemented cup-match tooltip suppression when player team is not in that cup.
+  - Implemented cup-final tooltip override when finalists are known.
+  - Increased current-day tile border thickness by 1px.
+  - Added global colour tokens for all required event tile/icon mappings.
+- Engine checklist considered:
+  - `tooltip`: reused engine tooltip component for hover labels.
+  - `button`: reused existing month navigation controls.
+  - `gameContext`: consumed existing state shape; no new context provider needed.
+  - `bars`, `modal`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer`: not needed for calendar rendering/hover work.
+- Files changed:
+  - `src/game/careerCalendar/components/seasonCalendar.jsx`
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - `src/game/careerCalendar/utils/calendarEventDisplay.js`
+  - `src/assets/scss/ui/colours.scss`
+  - `src/game/careerHome/careerHome.jsx`
+- Tradeoffs/follow-up:
+  - Tooltip accuracy for cup fixtures depends on simulation fixture metadata being present for that day.
+
+Feature: FEAT-1104 + FEAT-1106 + FEAT-1107 + FEAT-1108 (Draw/fixture page tidy-up, top+bottom Continue, remove simulation helper text, fix skill label contrast)
+- What was implemented:
+  - Updated draw fixture rows to centered paragraph lines in `Team A v Team B` format (no list markup).
+  - Ensured Continue controls exist at top and bottom of draw/fixture reveal page.
+  - Removed outdated simulation helper text from career control UI.
+  - Switched `playerSkillsetBars__label` to dark text for light backgrounds.
+- Engine checklist considered:
+  - `button`: reused for top/bottom controls and draw actions.
+  - `gameContext`: existing state handling retained.
+  - `tooltip`, `modal`, `slidePanel`, `toast`, `bars`, `makeDecision`, `rng`, `saveGame`, `timer`: not needed for these presentation updates.
+- Files changed:
+  - `src/game/cupDraw/cupDraw.jsx`
+  - `src/game/cupDraw/cupDraw.scss`
+  - `src/game/careerCalendar/components/careerControlPanel.jsx`
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- Tradeoffs/follow-up:
+  - Day-1 draw flow keeps draw-generation controls separate from top/bottom Continue controls for clearer progression.
+
+Feature: FEAT-1109 + FEAT-1110 + FEAT-1112 (Start invalid team setup, enforce day-1 setup gate, add debug visibility)
+- What was implemented:
+  - Career generation now initializes player team-management state as empty/invalid (`savedAt` empty, empty slot assignments, empty tactics).
+  - Added validation helpers to determine setup completeness from saved team management.
+  - Added enforced routing guard so day 1 cannot progress to day 2 until valid saved setup exists.
+  - Added debug panel visibility for setup validity, gate activity, and resolved Continue action.
+- Engine checklist considered:
+  - `gameContext`: used for persisted state updates and route gating.
+  - `button`: reused for navigation actions.
+  - `modal`: existing Team Management save-confirm modal remains the save gate.
+  - `tooltip`, `slidePanel`, `toast`, `bars`, `makeDecision`, `rng`, `saveGame`, `timer`: not needed for gate logic implementation.
+- Files changed:
+  - `src/game/careerGeneration/utils/careerGenerator.js`
+  - `src/game/teamManagement/utils/teamManagementState.js`
+  - `src/game/careerHome/careerHome.jsx`
+  - `src/game/cupDraw/cupDraw.jsx`
+  - `src/game/careerDayResults/careerDayResults.jsx`
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- Tradeoffs/follow-up:
+  - Gate currently keys on day-of-season `1`; if onboarding span expands later, gate utility should accept configurable day ranges.

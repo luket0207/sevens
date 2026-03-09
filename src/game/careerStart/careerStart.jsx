@@ -54,6 +54,12 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
   simulation: {
     status: "ready",
     pendingPlayerFixtureId: "",
+    teamFormByTeamId: {},
+    playerStats: {
+      byCompetition: {},
+      leagueTablesByCompetition: {},
+      cupTablesByCompetition: {},
+    },
     league: {
       fixturesById: {},
       fixtureIdsByDay: {},
@@ -97,6 +103,10 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
       latestDaySummary: null,
       recentDaySummaries: [],
       recentFixtureLogs: [],
+      playerStatsSnapshot: {
+        leagueTablesByCompetition: {},
+        cupTablesByCompetition: {},
+      },
     },
   },
   debug: {

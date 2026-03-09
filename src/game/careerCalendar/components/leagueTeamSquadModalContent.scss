@@ -1,0 +1,86 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.leagueTeamSquadModal {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.leagueTeamSquadModal__summary {
+  margin: 0;
+  color: rgba($darkText, 0.84);
+  font-size: 0.9rem;
+}
+
+.leagueTeamSquadModal__list {
+  max-height: min(65vh, 560px);
+  overflow-y: auto;
+  display: grid;
+  gap: 0.55rem;
+  padding-right: 0.25rem;
+}
+
+.leagueTeamSquadModal__playerCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  border: 1px solid rgba($darkText, 0.18);
+  border-radius: 10px;
+  padding: 0.6rem;
+  background: rgba($tertiaryBackground, 0.25);
+}
+
+.leagueTeamSquadModal__playerImage {
+  align-self: flex-start;
+}
+
+.leagueTeamSquadModal__playerMain {
+  min-width: 0;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.leagueTeamSquadModal__playerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  h4 {
+    margin: 0;
+    font-size: 0.92rem;
+    color: $darkText;
+  }
+}
+
+.leagueTeamSquadModal__playerMeta {
+  margin: 0;
+  font-size: 0.76rem;
+  color: rgba($darkText, 0.78);
+}
+
+.leagueTeamSquadModal__overall {
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.16rem 0.45rem;
+  color: $darkText;
+  border: 1px solid rgba($darkText, 0.22);
+  background: rgba($siteBackground, 0.08);
+  white-space: nowrap;
+}
+
+.leagueTeamSquadModal__overall--1to10 { background: rgba($ratingBand1To10, 0.32); }
+.leagueTeamSquadModal__overall--11to20 { background: rgba($ratingBand11To20, 0.32); }
+.leagueTeamSquadModal__overall--21to30 { background: rgba($ratingBand21To30, 0.32); }
+.leagueTeamSquadModal__overall--31to40 { background: rgba($ratingBand31To40, 0.32); }
+.leagueTeamSquadModal__overall--41to50 { background: rgba($ratingBand41To50, 0.32); }
+.leagueTeamSquadModal__overall--51to60 { background: rgba($ratingBand51To60, 0.32); }
+.leagueTeamSquadModal__overall--61to70 { background: rgba($ratingBand61To70, 0.32); }
+.leagueTeamSquadModal__overall--71to80 { background: rgba($ratingBand71To80, 0.32); }
+.leagueTeamSquadModal__overall--81to90 { background: rgba($ratingBand81To90, 0.32); }
+.leagueTeamSquadModal__overall--91to100 { background: rgba($ratingBand91To100, 0.32); }
+
+.leagueTeamSquadModal__empty {
+  margin: 0;
+  color: rgba($darkText, 0.8);
+}

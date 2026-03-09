@@ -4,6 +4,7 @@ import {
 } from "../../teamManagement/constants/teamManagementConstants";
 import { calculateTacticRatings } from "../../teamManagement/utils/tacticRatings";
 import { randomInt } from "../../../engine/utils/rng/rng";
+import { normaliseTeamForm } from "./teamForm";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -70,7 +71,7 @@ const buildPlayerTeamTactics = (team) => {
   return TEAM_MANAGEMENT_DEFAULT_TACTICS;
 };
 
-export const buildTeamMatchProfile = ({ team, isPlayerTeam = false }) => {
+export const buildTeamMatchProfile = ({ team, isPlayerTeam = false, teamForm = [] }) => {
   const tactics = isPlayerTeam ? buildPlayerTeamTactics(team) : buildAiTactics(team);
   const safeOverall = clamp(Math.round(Number(team?.teamOverall) || 0), 0, 100);
   const { playersById, slotAssignments } = buildOutfieldData(team);
@@ -87,6 +88,7 @@ export const buildTeamMatchProfile = ({ team, isPlayerTeam = false }) => {
     dtr: clamp(Math.round(tacticRatings?.dtr ?? 50), 0, 100),
     atr: clamp(Math.round(tacticRatings?.atr ?? 50), 0, 100),
     tc: clamp(Math.round(tacticRatings?.tacticCompatibility ?? 50), 0, 100),
+    form: normaliseTeamForm(teamForm),
     tactics,
   };
 };

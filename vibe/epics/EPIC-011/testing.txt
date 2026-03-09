@@ -1,0 +1,69 @@
+Date: 2026-03-09
+Epic: EPIC-011 - Calendar and Career Flow Tidy Up
+
+Automated checks run
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing repository lint baseline issues outside EPIC-011 scope (engine/info components with existing prop-types/hook rule errors).
+- Automated tests completed: build verification only.
+- Automated tests still needed: targeted unit tests for continue-flow resolver and calendar tooltip resolver.
+
+Manual test coverage
+
+Feature: FEAT-1101 + FEAT-1111 (Intelligent Continue labels + day-1 setup integration)
+- Steps:
+  1. Start a fresh career and reach Career Home day 1.
+  2. Observe primary action label before setup is saved.
+  3. Progress to Cup Draw and Day Results flows and verify Continue labels.
+  4. Complete and save Team Management, then return to Career Home.
+- Expected:
+  - Continue label reflects next forced action (team setup, draw, results, match, or next day).
+  - While day-1 setup is incomplete, Continue indicates Team Setup.
+  - After valid save, label returns to normal flow state.
+- Test status: passed (manual code-path verification + build).
+
+Feature: FEAT-1102 + FEAT-1103 + FEAT-1105 (Calendar icon display, tooltips, current-day border)
+- Steps:
+  1. Open Career Home calendar with mixed event types.
+  2. Verify day tile events render as icons (not text labels).
+  3. Hover match icons and inspect tooltip text.
+  4. Compare current-day border thickness against non-current days.
+- Expected:
+  - League/cup/draw/final/playoff mappings render with correct icon groups and event styling.
+  - Match tooltips show opposition when appropriate.
+  - Cup match tooltip hidden when player not in that cup.
+  - Cup final tooltip shown when finalists known.
+  - Current day border is visibly 1px thicker.
+- Test status: passed (manual code-path verification + build).
+
+Feature: FEAT-1104 + FEAT-1106 + FEAT-1107 + FEAT-1108 (Draw layout tidy-up, top/bottom Continue, text removal, skill label contrast)
+- Steps:
+  1. Open Cup Draw/fixture reveal page.
+  2. Verify fixture rows are centered paragraphs in `Team A v Team B` format.
+  3. Verify Continue buttons exist at both top and bottom of the page.
+  4. Open Career Home controls and verify old simulation helper text is absent.
+  5. Inspect player skillset labels on light backgrounds.
+- Expected:
+  - No list markup for fixture rows; centered paragraph formatting used.
+  - Continue controls available at top and bottom.
+  - Outdated simulation helper block does not render.
+  - Skill labels are dark/readable on light backgrounds.
+- Test status: passed (manual code-path verification + build).
+
+Feature: FEAT-1109 + FEAT-1110 + FEAT-1112 (Invalid initial setup, forced day-1 setup gate, debug support)
+- Steps:
+  1. Start a new career and inspect initial player team-management state.
+  2. Attempt to continue day 1 without completing Team Management save.
+  3. Save a valid team arrangement/tactics in Team Management.
+  4. Retry Continue flow from Career Home/Cup Draw/Day Results.
+  5. Open Calendar Debug panel and inspect setup/gate/continue-state lines.
+- Expected:
+  - Initial team-management saved state is empty/invalid.
+  - Progression to day 2 is blocked until valid Team Management is saved.
+  - Day-1 fixture and champions-cup generation still occur.
+  - Debug panel displays setup completeness, gate active flag, and resolved Continue action.
+- Test status: passed (manual code-path verification + build).
+
+Overall epic test status: in progress
+- Reason:
+  - Feature-level manual verification is complete in code and build output.
+  - Full UI playthrough regression remains to be executed end-to-end in-browser for final epic closeout.

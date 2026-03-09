@@ -12,9 +12,11 @@ import {
   SeasonCalendar,
 } from "../careerCalendar";
 import { clampMonthIndex, getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
+import { getContinueFlowLabel, resolveCareerHomeContinueAction } from "../careerFlow/utils/continueFlow";
+import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import {
   buildCompletedDayResults,
-  buildSeasonFixturesByLeague,
+  buildSeasonFixtureDraws,
   getSimulationFixtureById,
   simulateCareerDay,
 } from "../careerSimulation";
@@ -44,6 +46,29 @@ const CareerHome = () => {
     () => (Array.isArray(careerWorld?.competitions) ? careerWorld.competitions : []),
     [careerWorld]
   );
+  const teamLookupById = useMemo(() => {
+    const lookup = {};
+    competitions.forEach((competition) => {
+      (competition?.teams ?? []).forEach((team) => {
+        lookup[team.id] = {
+          ...team,
+          competitionId: competition.id,
+          competitionName: competition.name,
+        };
+      });
+    });
+
+    if (careerWorld?.playerTeam?.id) {
+      lookup[careerWorld.playerTeam.id] = {
+        ...careerWorld.playerTeam,
+        competitionId: careerWorld.playerTeam.competitionId ?? "league-5",
+        competitionName: careerWorld.playerTeam.competitionName ?? "League 5",
+        isPlayerTeam: true,
+      };
+    }
+
+    return lookup;
+  }, [careerWorld, competitions]);
   const calendarState = useMemo(() => gameState?.career?.calendar ?? null, [gameState?.career?.calendar]);
   const simulationState = useMemo(() => calendarState?.simulation ?? null, [calendarState?.simulation]);
   const seasons = useMemo(
@@ -156,6 +181,19 @@ const CareerHome = () => {
       return fixture.homeTeamId === careerWorld?.playerTeam?.id || fixture.awayTeamId === careerWorld?.playerTeam?.id;
     });
   const pendingPlayerFixtureId = simulationState?.pendingPlayerFixtureId ?? "";
+  const dayOneSetupGateState = resolveDayOneSetupGateState({
+    currentDay,
+    playerTeam: careerWorld?.playerTeam ?? null,
+  });
+  const primaryContinueAction = resolveCareerHomeContinueAction({
+    isSeasonComplete,
+    isSimulatingDay,
+    hasPlayerMatchToday: Boolean(currentDayPlayerFixture) || Boolean(pendingPlayerFixtureId),
+    currentDay,
+    isDayOneSetupGateActive: dayOneSetupGateState.isGateActive,
+    seasonFixturesRevealed: Boolean(calendarState?.seasonFixturesRevealed),
+  });
+  const primaryButtonLabel = getContinueFlowLabel(primaryContinueAction);
 
   const updateVisibleMonth = (nextMonthIndex) => {
     setGameValue(
@@ -166,6 +204,11 @@ const CareerHome = () => {
 
   const moveToNextDay = () => {
     if (!currentDay || isSimulatingDay) {
+      return;
+    }
+
+    if (dayOneSetupGateState.isGateActive) {
+      navigate("/team-management");
       return;
     }
 
@@ -217,13 +260,16 @@ const CareerHome = () => {
       });
       const shouldRevealSeasonFixtures =
         currentDay.dayOfSeason === 1 && !calendarState?.seasonFixturesRevealed;
-      const seasonFixturesByLeague = shouldRevealSeasonFixtures
-        ? buildSeasonFixturesByLeague({
+      const seasonFixtureDraws = shouldRevealSeasonFixtures
+        ? buildSeasonFixtureDraws({
             simulationState: simulationResult.nextSimulationState,
           })
         : [];
+      const allCupDraws = [...simulationResult.createdCupDraws, ...seasonFixtureDraws];
+      const shouldSuppressDayResultsPanel = currentDay.dayOfSeason === 1;
+      const shouldShowDayResultsPanel = dayResults.length > 0 && !shouldSuppressDayResultsPanel;
 
-      if (simulationResult.createdCupDraws.length > 0) {
+      if (allCupDraws.length > 0) {
         setGameState((prev) => ({
           ...prev,
           career: {
@@ -241,18 +287,20 @@ const CareerHome = () => {
                 dayOfSeason: currentDay.dayOfSeason,
                 seasonWeekNumber: currentDay.seasonWeekNumber,
                 dayName: currentDay.dayName,
-                draws: simulationResult.createdCupDraws,
+                draws: allCupDraws,
               },
               pendingDayResults:
-                dayResults.length > 0 || shouldRevealSeasonFixtures
+                shouldShowDayResultsPanel
                   ? {
                       dayOfSeason: currentDay.dayOfSeason,
                       seasonWeekNumber: currentDay.seasonWeekNumber,
                       dayName: currentDay.dayName,
                       results: dayResults,
-                      seasonFixtureReveal: shouldRevealSeasonFixtures ? seasonFixturesByLeague : [],
+                      seasonFixtureReveal: [],
                     }
                   : null,
+              seasonFixturesRevealed:
+                Boolean(prev.career?.calendar?.seasonFixturesRevealed) || shouldRevealSeasonFixtures,
             },
           },
         }));
@@ -261,7 +309,7 @@ const CareerHome = () => {
         return;
       }
 
-      if (dayResults.length > 0 || shouldRevealSeasonFixtures) {
+      if (shouldShowDayResultsPanel) {
         setGameState((prev) => ({
           ...prev,
           career: {
@@ -281,7 +329,7 @@ const CareerHome = () => {
                 seasonWeekNumber: currentDay.seasonWeekNumber,
                 dayName: currentDay.dayName,
                 results: dayResults,
-                seasonFixtureReveal: shouldRevealSeasonFixtures ? seasonFixturesByLeague : [],
+                seasonFixtureReveal: [],
               },
             },
           },
@@ -341,6 +389,8 @@ const CareerHome = () => {
               season={activeSeason}
               visibleMonthIndex={visibleMonthIndex}
               currentDayIndex={currentDayIndex}
+              simulationState={simulationState}
+              playerTeamId={careerWorld?.playerTeam?.id ?? ""}
               onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
               onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
               canGoPreviousMonth={visibleMonthIndex > 0}
@@ -351,9 +401,8 @@ const CareerHome = () => {
           <aside className="careerHome__panel careerHome__panel--controls">
             <CareerControlPanel
               currentDayLabel={buildDayTransitionLabel(currentDay)}
-              isSeasonComplete={isSeasonComplete}
-              hasPlayerMatchToday={Boolean(currentDayPlayerFixture) || Boolean(pendingPlayerFixtureId)}
               isSimulatingDay={isSimulatingDay}
+              primaryButtonLabel={primaryButtonLabel}
               onAdvanceDay={moveToNextDay}
             />
           </aside>
@@ -370,6 +419,7 @@ const CareerHome = () => {
             tablesByCompetition={simulationState?.league?.tablesByCompetition ?? {}}
             defaultCompetitionId={careerWorld?.playerTeam?.competitionId ?? "league-5"}
             playerTeamId={careerWorld?.playerTeam?.id ?? ""}
+            teamLookupById={teamLookupById}
           />
         </section>
 
@@ -382,6 +432,10 @@ const CareerHome = () => {
             simulationDebug={calendarState?.simulation?.debug}
             currentDay={currentDay}
             visibleMonthLabel={visibleMonth?.label}
+            isTeamSetupComplete={dayOneSetupGateState.isSetupComplete}
+            isDayOneSetupGateActive={dayOneSetupGateState.isGateActive}
+            continueAction={primaryContinueAction}
+            continueActionLabel={primaryButtonLabel}
           />
         </section>
       </section>

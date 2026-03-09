@@ -6,7 +6,7 @@ import {
 
 const DEFAULT_VERSION = 1;
 
-const createEmptySlotAssignments = () => {
+export const createEmptyTeamManagementSlotAssignments = () => {
   return TEAM_MANAGEMENT_SLOT_LAYOUT.reduce((state, slot) => {
     state[slot.id] = null;
     return state;
@@ -36,7 +36,7 @@ const getGoalkeeperAndOutfieldPlayers = (playerTeam) => {
 };
 
 const normalizeSlotAssignments = ({ sourceAssignments, outfieldPlayers }) => {
-  const normalizedAssignments = createEmptySlotAssignments();
+  const normalizedAssignments = createEmptyTeamManagementSlotAssignments();
   const usedPlayerIds = new Set();
   const allowedPlayerIds = new Set(outfieldPlayers.map((player) => player.id));
 
@@ -65,7 +65,8 @@ export const createInitialTeamManagementDraft = ({ playerTeam }) => {
   const savedTeamManagement = playerTeam?.teamManagement ?? null;
   const { goalkeeper, outfieldPlayers, outfieldById } = getGoalkeeperAndOutfieldPlayers(playerTeam);
   const slotAssignments = normalizeSlotAssignments({
-    sourceAssignments: savedTeamManagement?.slotAssignments ?? createEmptySlotAssignments(),
+    sourceAssignments:
+      savedTeamManagement?.slotAssignments ?? createEmptyTeamManagementSlotAssignments(),
     outfieldPlayers,
   });
 
@@ -134,6 +135,37 @@ export const removePlayerFromAssignments = ({ slotAssignments, playerId, sourceS
 export const isTeamArrangementComplete = (slotAssignments) => {
   return TEAM_MANAGEMENT_SLOT_LAYOUT.every((slot) => Boolean(slotAssignments?.[slot.id]));
 };
+
+const hasCompleteTactics = (tactics) => {
+  return Boolean(tactics?.defensiveTactic) && Boolean(tactics?.attackingTactic);
+};
+
+export const isSavedTeamManagementComplete = (savedTeamManagement) => {
+  if (!savedTeamManagement || typeof savedTeamManagement !== "object") {
+    return false;
+  }
+
+  const savedAt = String(savedTeamManagement.savedAt ?? "").trim();
+  if (!savedAt) {
+    return false;
+  }
+
+  const slotAssignments = savedTeamManagement.slotAssignments ?? {};
+  if (!isTeamArrangementComplete(slotAssignments)) {
+    return false;
+  }
+
+  const assignedPlayerIds = TEAM_MANAGEMENT_SLOT_LAYOUT.map((slot) => slotAssignments?.[slot.id]).filter(Boolean);
+  const hasDuplicateAssignments = new Set(assignedPlayerIds).size !== assignedPlayerIds.length;
+  if (hasDuplicateAssignments) {
+    return false;
+  }
+
+  return hasCompleteTactics(savedTeamManagement.tactics);
+};
+
+export const isPlayerTeamSetupComplete = (playerTeam) =>
+  isSavedTeamManagementComplete(playerTeam?.teamManagement);
 
 export const getUnplacedOutfieldPlayers = ({ outfieldPlayers, slotAssignments }) => {
   const assignedPlayerIds = new Set(

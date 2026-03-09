@@ -16,6 +16,14 @@ import {
   resolveMatchOutcomeTypeFromMatrix,
 } from "./matchSimulation";
 import { buildTeamMatchProfile } from "./teamMatchProfile";
+import {
+  appendTeamFormResult,
+  createRandomTeamForm,
+  normaliseTeamForm,
+  resolveFormResultsFromScoreline,
+} from "./teamForm";
+import { generateMatchGoalEvents } from "./playerMatchEvents";
+import { applyFixtureResultToPlayerStats, createInitialPlayerStatsState } from "./playerStats";
 import { DAY_INDEX, FIXTURE_STATUS, FIXTURE_TYPES } from "../constants/simulationConstants";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -28,6 +36,13 @@ const resolveChampionsDrawDay = (stageMeta) => {
     return {
       drawWeekNumber: stageMeta.drawWeekNumber,
       drawDayOfWeek: stageMeta.drawDayOfWeek,
+    };
+  }
+
+  if (stageMeta?.stageKey === "group-md-1") {
+    return {
+      drawWeekNumber: 1,
+      drawDayOfWeek: DAY_INDEX.MONDAY,
     };
   }
 
@@ -56,6 +71,78 @@ const resolveChampionsDrawDay = (stageMeta) => {
   return {
     drawWeekNumber: Math.floor(drawAbsoluteDayIndex / 7) + 1,
     drawDayOfWeek: drawAbsoluteDayIndex % 7,
+  };
+};
+
+const buildInitialTeamFormByTeamId = ({ careerWorld, carryOverTeamFormByTeamId = {} }) => {
+  const competitions = Array.isArray(careerWorld?.competitions) ? careerWorld.competitions : [];
+  const fromCarryOver = carryOverTeamFormByTeamId ?? {};
+
+  const teamFormByTeamId = competitions.reduce((state, competition) => {
+    (competition.teams ?? []).forEach((team) => {
+      const carryOverForm = normaliseTeamForm(fromCarryOver[team.id]);
+      const teamForm = normaliseTeamForm(team?.form);
+      state[team.id] =
+        carryOverForm.length > 0
+          ? carryOverForm
+          : teamForm.length > 0
+          ? teamForm
+          : competition.type === "foreign"
+          ? createRandomTeamForm()
+          : [];
+    });
+    return state;
+  }, {});
+
+  const playerTeamId = careerWorld?.playerTeam?.id ?? "";
+  if (playerTeamId) {
+    const carryOverPlayerForm = normaliseTeamForm(fromCarryOver[playerTeamId]);
+    const playerForm = normaliseTeamForm(careerWorld?.playerTeam?.form);
+    teamFormByTeamId[playerTeamId] =
+      carryOverPlayerForm.length > 0 ? carryOverPlayerForm : playerForm.length > 0 ? playerForm : [];
+  }
+
+  return teamFormByTeamId;
+};
+
+const mergeTeamFormByTeamId = ({ existingTeamFormByTeamId, careerWorld }) => {
+  const existing = existingTeamFormByTeamId ?? {};
+  const seeded = buildInitialTeamFormByTeamId({
+    careerWorld,
+    carryOverTeamFormByTeamId: existing,
+  });
+  const merged = { ...seeded };
+
+  Object.entries(existing).forEach(([teamId, formValue]) => {
+    merged[teamId] = normaliseTeamForm(formValue);
+  });
+
+  return merged;
+};
+
+const applyFixtureResultToTeamForm = ({ simulationState, fixtureResult }) => {
+  const homeTeamId = fixtureResult?.homeTeamId ?? "";
+  const awayTeamId = fixtureResult?.awayTeamId ?? "";
+  if (!homeTeamId || !awayTeamId) {
+    return;
+  }
+
+  const currentMap = simulationState?.teamFormByTeamId ?? {};
+  const { homeResult, awayResult } = resolveFormResultsFromScoreline({
+    homeGoals: fixtureResult.homeGoals,
+    awayGoals: fixtureResult.awayGoals,
+  });
+
+  simulationState.teamFormByTeamId = {
+    ...currentMap,
+    [homeTeamId]: appendTeamFormResult({
+      existingForm: currentMap[homeTeamId],
+      resultCode: homeResult,
+    }),
+    [awayTeamId]: appendTeamFormResult({
+      existingForm: currentMap[awayTeamId],
+      resultCode: awayResult,
+    }),
   };
 };
 
@@ -110,16 +197,25 @@ const forceCupKnockoutWinnerIfNeeded = ({ fixture, result }) => {
   };
 };
 
-const resolveFixtureSimulationResult = ({ fixture, teamLookup, playerTeamId, forcedPlayerResult = null }) => {
+const resolveFixtureSimulationResult = ({
+  fixture,
+  simulationState,
+  teamLookup,
+  playerTeamId,
+  forcedPlayerResult = null,
+}) => {
   const homeTeam = teamLookup[fixture.homeTeamId];
   const awayTeam = teamLookup[fixture.awayTeamId];
+  const teamFormByTeamId = simulationState?.teamFormByTeamId ?? {};
   const homeProfile = buildTeamMatchProfile({
     team: homeTeam,
     isPlayerTeam: fixture.homeTeamId === playerTeamId,
+    teamForm: teamFormByTeamId[fixture.homeTeamId],
   });
   const awayProfile = buildTeamMatchProfile({
     team: awayTeam,
     isPlayerTeam: fixture.awayTeamId === playerTeamId,
+    teamForm: teamFormByTeamId[fixture.awayTeamId],
   });
   const homeMatchRating = calculateTeamMatchRating(homeProfile);
   const awayMatchRating = calculateTeamMatchRating(awayProfile);
@@ -127,6 +223,8 @@ const resolveFixtureSimulationResult = ({ fixture, teamLookup, playerTeamId, for
   let outcomeTypeData = resolveMatchOutcomeTypeFromMatrix({
     homeMatchRating,
     awayMatchRating,
+    homeForm: homeProfile.form,
+    awayForm: awayProfile.form,
   });
   let scoreline = generateScorelineFromResolvedOutcome({
     outcomeType: outcomeTypeData.outcomeType,
@@ -148,6 +246,13 @@ const resolveFixtureSimulationResult = ({ fixture, teamLookup, playerTeamId, for
     fixture,
     result: {
       ...scoreline,
+      goalEvents: generateMatchGoalEvents({
+        fixtureId: fixture.id,
+        homeTeam,
+        awayTeam,
+        homeGoals: scoreline.homeGoals,
+        awayGoals: scoreline.awayGoals,
+      }),
       homeTeamId: fixture.homeTeamId,
       awayTeamId: fixture.awayTeamId,
       homeTeamName: fixture.homeTeamName,
@@ -177,6 +282,13 @@ const resolveFixtureSimulationResult = ({ fixture, teamLookup, playerTeamId, for
       outcomeType: outcomeTypeData.outcomeType,
       higherRatedSide: outcomeTypeData.higherRatedSide,
       lowerRatedSide: outcomeTypeData.lowerRatedSide,
+      probabilities: outcomeTypeData.probabilities,
+      homeFormWins: outcomeTypeData.homeFormWins,
+      awayFormWins: outcomeTypeData.awayFormWins,
+      formWinDifference: outcomeTypeData.formWinDifference,
+      formAdvantagedSide: outcomeTypeData.formAdvantagedSide,
+      formWinBonusPercent: outcomeTypeData.formWinBonusPercent,
+      homeAdvantageBonusPercent: outcomeTypeData.homeAdvantageBonusPercent,
       homeProfile,
       awayProfile,
       forcedPlayerResult: forcedPlayerResult ?? "",
@@ -349,6 +461,16 @@ const createChampionsKnockoutFixturesIfNeeded = ({ simulationState, stageKey, te
   return [];
 };
 
+const buildChampionsGroupDrawFixtures = ({ championsCup, teamLookup }) =>
+  Object.entries(championsCup?.groups ?? {})
+    .sort(([leftGroupId], [rightGroupId]) => String(leftGroupId).localeCompare(String(rightGroupId)))
+    .map(([groupId, teamIds]) => ({
+      fixtureId: `champions-cup-group-draw-${String(groupId).toLowerCase()}`,
+      displayLabel: `Group ${groupId}: ${teamIds
+        .map((teamId) => teamLookup[teamId]?.teamName ?? teamId)
+        .join(", ")}`,
+    }));
+
 const finalizeChampionsCupChampionIfReady = (simulationState) => {
   const championsCup = simulationState.cups.competitions.championsCup;
   const finalFixtureId = championsCup.stageMeta.final?.fixtureIds?.[0] ?? "";
@@ -362,7 +484,13 @@ const finalizeChampionsCupChampionIfReady = (simulationState) => {
   championsCup.championTeamId = finalFixture?.result?.winnerTeamId ?? "";
 };
 
-const simulatePlayoffFixture = ({ homeTeamId, awayTeamId, teamLookup, playerTeamId }) => {
+const simulatePlayoffFixture = ({
+  homeTeamId,
+  awayTeamId,
+  simulationState,
+  teamLookup,
+  playerTeamId,
+}) => {
   const fixture = {
     id: `playoff-${homeTeamId}-vs-${awayTeamId}`,
     type: FIXTURE_TYPES.PLAYOFF,
@@ -372,11 +500,19 @@ const simulatePlayoffFixture = ({ homeTeamId, awayTeamId, teamLookup, playerTeam
     awayTeamName: teamLookup[awayTeamId]?.teamName ?? awayTeamId,
     stageKey: "playoff",
   };
-  return resolveFixtureSimulationResult({
+  const fixtureResult = resolveFixtureSimulationResult({
     fixture,
+    simulationState,
     teamLookup,
     playerTeamId,
   }).fixtureResult;
+
+  applyFixtureResultToTeamForm({
+    simulationState,
+    fixtureResult,
+  });
+
+  return fixtureResult;
 };
 
 const resolveSeasonOutcomesIfReady = ({ simulationState, teamLookup, playerTeamId }) => {
@@ -401,24 +537,28 @@ const resolveSeasonOutcomesIfReady = ({ simulationState, teamLookup, playerTeamI
   const playoff5 = simulatePlayoffFixture({
     homeTeamId: league5[1]?.teamId,
     awayTeamId: league5[2]?.teamId,
+    simulationState,
     teamLookup,
     playerTeamId,
   });
   const playoff4 = simulatePlayoffFixture({
     homeTeamId: league4[1]?.teamId,
     awayTeamId: league4[2]?.teamId,
+    simulationState,
     teamLookup,
     playerTeamId,
   });
   const playoff3 = simulatePlayoffFixture({
     homeTeamId: league3[1]?.teamId,
     awayTeamId: league3[2]?.teamId,
+    simulationState,
     teamLookup,
     playerTeamId,
   });
   const playoff2 = simulatePlayoffFixture({
     homeTeamId: league2[1]?.teamId,
     awayTeamId: league2[2]?.teamId,
+    simulationState,
     teamLookup,
     playerTeamId,
   });
@@ -454,16 +594,27 @@ const resolveSeasonOutcomesIfReady = ({ simulationState, teamLookup, playerTeamI
   };
 };
 
-export const buildInitialCareerSimulationState = ({ careerWorld }) => {
+export const buildInitialCareerSimulationState = ({
+  careerWorld,
+  carryOverTeamFormByTeamId = {},
+}) => {
   const leagueState = createInitialLeagueSimulationState({ careerWorld });
   const cupState = createInitialCupSimulationState({
     careerWorld,
     teamLookup: leagueState.teamLookup,
   });
+  const teamFormByTeamId = buildInitialTeamFormByTeamId({
+    careerWorld,
+    carryOverTeamFormByTeamId,
+  });
 
   return {
     status: "ready",
     pendingPlayerFixtureId: "",
+    teamFormByTeamId,
+    playerStats: createInitialPlayerStatsState({
+      careerWorld,
+    }),
     league: {
       fixturesById: leagueState.fixturesById,
       fixtureIdsByDay: leagueState.fixtureIdsByDay,
@@ -481,6 +632,10 @@ export const buildInitialCareerSimulationState = ({ careerWorld }) => {
       latestDaySummary: null,
       recentDaySummaries: [],
       recentFixtureLogs: [],
+      playerStatsSnapshot: {
+        leagueTablesByCompetition: {},
+        cupTablesByCompetition: {},
+      },
     },
   };
 };
@@ -496,7 +651,13 @@ export const getSimulationFixtureById = ({ simulationState, fixtureId }) => {
   );
 };
 
-const applyFixtureResultToState = ({ simulationState, fixture, fixtureResult, simulationDebug }) => {
+const applyFixtureResultToState = ({
+  simulationState,
+  fixture,
+  fixtureResult,
+  simulationDebug,
+  teamLookup,
+}) => {
   const fixtureStore = clone(getFixtureStoreByType(simulationState, fixture.type));
   fixtureStore[fixture.id] = {
     ...fixture,
@@ -505,6 +666,10 @@ const applyFixtureResultToState = ({ simulationState, fixture, fixtureResult, si
     simulation: simulationDebug,
   };
   setFixtureStoreByType(simulationState, fixture.type, fixtureStore);
+  applyFixtureResultToTeamForm({
+    simulationState,
+    fixtureResult,
+  });
 
   if (fixture.type === FIXTURE_TYPES.LEAGUE) {
     const table = simulationState.league.tablesByCompetition[fixture.competitionId];
@@ -526,6 +691,13 @@ const applyFixtureResultToState = ({ simulationState, fixture, fixtureResult, si
       awayGoals: fixtureResult.awayGoals,
     });
   }
+
+  simulationState.playerStats = applyFixtureResultToPlayerStats({
+    playerStatsState: simulationState.playerStats,
+    fixture,
+    fixtureResult,
+    teamLookup,
+  });
 };
 
 const processDrawDays = ({ simulationState, currentDay, teamLookup }) => {
@@ -592,12 +764,31 @@ const processDrawDays = ({ simulationState, currentDay, teamLookup }) => {
     if (!stageMeta) {
       return;
     }
-    if (!["quarter-finals", "semi-finals", "final"].includes(stageKey)) {
-      return;
-    }
 
     const { drawWeekNumber, drawDayOfWeek } = resolveChampionsDrawDay(stageMeta);
     if (drawWeekNumber !== currentDay.seasonWeekNumber || drawDayOfWeek !== currentDay.dayOfWeek) {
+      return;
+    }
+
+    if (stageKey === "group-md-1") {
+      const groupDrawFixtures = buildChampionsGroupDrawFixtures({
+        championsCup,
+        teamLookup,
+      });
+      if (groupDrawFixtures.length > 0) {
+        createdCupDraws.push({
+          id: "draw-champions-cup-groups",
+          competitionId: "champions-cup",
+          competitionName: "Champions Cup",
+          stageKey,
+          stageLabel: stageMeta.drawStageLabel || "Group Draw",
+          fixtures: groupDrawFixtures,
+        });
+      }
+      return;
+    }
+
+    if (!["quarter-finals", "semi-finals", "final"].includes(stageKey)) {
       return;
     }
 
@@ -613,7 +804,7 @@ const processDrawDays = ({ simulationState, currentDay, teamLookup }) => {
         competitionId: "champions-cup",
         competitionName: "Champions Cup",
         stageKey,
-        stageLabel: createdFixtures[0]?.stageLabel ?? stageKey,
+        stageLabel: stageMeta.drawStageLabel || `${createdFixtures[0]?.stageLabel ?? stageKey} Draw`,
         fixtures: createdFixtures.map((fixture) => ({
           fixtureId: fixture.id,
           homeTeamId: fixture.homeTeamId,
@@ -637,6 +828,15 @@ export const simulateCareerDay = ({
   const nextSimulationState = clone(simulationState);
   const playerTeamId = careerWorld?.playerTeam?.id ?? "";
   const teamLookup = buildTeamLookup({ careerWorld });
+  nextSimulationState.teamFormByTeamId = mergeTeamFormByTeamId({
+    existingTeamFormByTeamId: nextSimulationState.teamFormByTeamId,
+    careerWorld,
+  });
+  if (!nextSimulationState.playerStats) {
+    nextSimulationState.playerStats = createInitialPlayerStatsState({
+      careerWorld,
+    });
+  }
 
   const createdCupDraws = processDrawDays({
     simulationState: nextSimulationState,
@@ -670,6 +870,7 @@ export const simulateCareerDay = ({
 
     const resolved = resolveFixtureSimulationResult({
       fixture,
+      simulationState: nextSimulationState,
       teamLookup,
       playerTeamId,
       forcedPlayerResult: isForcedPlayerFixture ? forcedPlayerResolution?.selectedResult : null,
@@ -680,6 +881,7 @@ export const simulateCareerDay = ({
       fixture,
       fixtureResult: resolved.fixtureResult,
       simulationDebug: resolved.simulationDebug,
+      teamLookup,
     });
     resolvedFixtureIds.push(fixture.id);
 
@@ -729,6 +931,10 @@ export const simulateCareerDay = ({
     nextSimulationState.debug.latestDaySummary,
     40
   );
+  nextSimulationState.debug.playerStatsSnapshot = {
+    leagueTablesByCompetition: nextSimulationState?.playerStats?.leagueTablesByCompetition ?? {},
+    cupTablesByCompetition: nextSimulationState?.playerStats?.cupTablesByCompetition ?? {},
+  };
 
   return {
     nextSimulationState,

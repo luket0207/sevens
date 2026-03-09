@@ -107,13 +107,19 @@ const buildCalendarDebug = ({
   };
 };
 
-export const buildCareerCalendarState = ({ careerWorld }) => {
+export const buildCareerCalendarState = ({
+  careerWorld,
+  carryOverTeamFormByTeamId = {},
+}) => {
   const { season, dayLookup } = createSeasonScaffold({
     seasonId: "season-1",
     seasonNumber: 1,
   });
 
-  const simulationState = buildInitialCareerSimulationState({ careerWorld });
+  const simulationState = buildInitialCareerSimulationState({
+    careerWorld,
+    carryOverTeamFormByTeamId,
+  });
   const leagueFixtures = simulationState?.league?.playerCalendarEvents ?? [];
   const leagueCupEvents = buildLeagueCupEvents();
   const championsCupEvents = buildChampionsCupCalendarEvents();

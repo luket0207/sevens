@@ -4,9 +4,12 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
+import { getContinueFlowLabel, resolveCupDrawContinueAction } from "../careerFlow/utils/continueFlow";
+import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import "./cupDraw.scss";
 
 const EMPTY_DRAWS = Object.freeze([]);
+const LEAGUE_FIXTURE_DRAW_STAGE_KEY = "season-fixtures";
 
 const CupDraw = () => {
   const navigate = useNavigate();
@@ -19,7 +22,29 @@ const CupDraw = () => {
   const seasons = Array.isArray(calendar?.seasons) ? calendar.seasons : [];
   const activeSeason = seasons.find((season) => season.id === calendar?.activeSeasonId) ?? seasons[0] ?? null;
   const rawCurrentDayIndex = Number.isInteger(calendar?.currentDayIndex) ? calendar.currentDayIndex : 0;
+  const currentDay = activeSeason?.days?.[rawCurrentDayIndex] ?? null;
+  const dayOneSetupGateState = resolveDayOneSetupGateState({
+    currentDay,
+    playerTeam: gameState?.career?.world?.playerTeam ?? null,
+  });
   const [revealedByDrawId, setRevealedByDrawId] = useState({});
+  const isFirstDaySetupDraw = Number(pendingCupDraw?.dayOfSeason) === 1;
+  const drawIdsByType = useMemo(() => {
+    return draws.reduce(
+      (state, draw) => {
+        if (draw?.stageKey === LEAGUE_FIXTURE_DRAW_STAGE_KEY) {
+          state.leagueDrawIds.push(draw.id);
+        } else {
+          state.cupDrawIds.push(draw.id);
+        }
+        return state;
+      },
+      {
+        cupDrawIds: [],
+        leagueDrawIds: [],
+      }
+    );
+  }, [draws]);
 
   const revealProgressByDraw = useMemo(
     () =>
@@ -33,6 +58,24 @@ const CupDraw = () => {
       }, {}),
     [draws, revealedByDrawId]
   );
+  const isDrawFullyRevealed = (drawId) => {
+    const progress = revealProgressByDraw[drawId];
+    if (!progress) {
+      return true;
+    }
+    return progress.revealed >= progress.total;
+  };
+  const allDrawsRevealed = draws.every((draw) => isDrawFullyRevealed(draw.id));
+  const canContinue = isFirstDaySetupDraw ? allDrawsRevealed : true;
+  const hasCupDraws = drawIdsByType.cupDrawIds.length > 0;
+  const hasLeagueDraws = drawIdsByType.leagueDrawIds.length > 0;
+  const cupDrawsRevealed = drawIdsByType.cupDrawIds.every((drawId) => isDrawFullyRevealed(drawId));
+  const leagueDrawsRevealed = drawIdsByType.leagueDrawIds.every((drawId) => isDrawFullyRevealed(drawId));
+  const continueAction = resolveCupDrawContinueAction({
+    hasPendingDayResults: Boolean(calendar?.pendingDayResults),
+    isDayOneSetupGateActive: dayOneSetupGateState.isGateActive,
+  });
+  const continueButtonLabel = getContinueFlowLabel(continueAction);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -59,8 +102,32 @@ const CupDraw = () => {
       [drawId]: total,
     }));
   };
+  const revealAllForDrawIds = (drawIds) => {
+    setRevealedByDrawId((prev) =>
+      drawIds.reduce((state, drawId) => {
+        const progress = revealProgressByDraw[drawId];
+        state[drawId] = progress?.total ?? 0;
+        return state;
+      }, { ...prev })
+    );
+  };
 
   const continueFlow = () => {
+    if (dayOneSetupGateState.isGateActive) {
+      setGameState((prev) => ({
+        ...prev,
+        career: {
+          ...prev.career,
+          calendar: {
+            ...(prev.career?.calendar ?? {}),
+            pendingCupDraw: null,
+          },
+        },
+      }));
+      navigate("/team-management");
+      return;
+    }
+
     if (calendar?.pendingDayResults) {
       setGameState((prev) => ({
         ...prev,
@@ -108,7 +175,47 @@ const CupDraw = () => {
           <p>
             Day {pendingCupDraw.dayOfSeason} - Week {pendingCupDraw.seasonWeekNumber} ({pendingCupDraw.dayName})
           </p>
+          {isFirstDaySetupDraw && !canContinue ? (
+            <p className="cupDrawPage__continueHint">
+              Reveal all draw results before continuing.
+            </p>
+          ) : null}
         </article>
+
+        <article className="cupDrawPage__topContinue">
+          <Button variant={BUTTON_VARIANT.PRIMARY} onClick={continueFlow} disabled={!canContinue}>
+            {continueButtonLabel}
+          </Button>
+        </article>
+
+        {isFirstDaySetupDraw ? (
+          <article className="cupDrawPage__drawControlPanel">
+            <h2>Day 1 Draw Controls</h2>
+            <div className="cupDrawPage__drawControlActions">
+              <Button
+                variant={BUTTON_VARIANT.SECONDARY}
+                onClick={() => revealAllForDrawIds(drawIdsByType.cupDrawIds)}
+                disabled={!hasCupDraws || cupDrawsRevealed}
+              >
+                Generate Cup
+              </Button>
+              <Button
+                variant={BUTTON_VARIANT.SECONDARY}
+                onClick={() => revealAllForDrawIds(drawIdsByType.leagueDrawIds)}
+                disabled={!hasLeagueDraws || leagueDrawsRevealed}
+              >
+                Generate Leagues
+              </Button>
+              <Button
+                variant={BUTTON_VARIANT.PRIMARY}
+                onClick={() => revealAllForDrawIds(draws.map((draw) => draw.id))}
+                disabled={canContinue}
+              >
+                Generate All
+              </Button>
+            </div>
+          </article>
+        ) : null}
 
         {draws.map((draw) => {
           const fixtures = Array.isArray(draw.fixtures) ? draw.fixtures : [];
@@ -123,40 +230,42 @@ const CupDraw = () => {
               <p className="cupDrawPage__meta">
                 Revealed {progress.revealed}/{progress.total}
               </p>
-              <div className="cupDrawPage__actions">
-                <Button
-                  variant={BUTTON_VARIANT.SECONDARY}
-                  onClick={() => revealNextFixture(draw.id)}
-                  disabled={progress.revealed >= progress.total}
-                >
-                  Reveal Next Fixture
-                </Button>
-                <Button
-                  variant={BUTTON_VARIANT.PRIMARY}
-                  onClick={() => revealAllFixtures(draw.id, progress.total)}
-                  disabled={progress.revealed >= progress.total}
-                >
-                  Reveal All
-                </Button>
-              </div>
+              {!isFirstDaySetupDraw ? (
+                <div className="cupDrawPage__actions">
+                  <Button
+                    variant={BUTTON_VARIANT.SECONDARY}
+                    onClick={() => revealNextFixture(draw.id)}
+                    disabled={progress.revealed >= progress.total}
+                  >
+                    Reveal Next Fixture
+                  </Button>
+                  <Button
+                    variant={BUTTON_VARIANT.PRIMARY}
+                    onClick={() => revealAllFixtures(draw.id, progress.total)}
+                    disabled={progress.revealed >= progress.total}
+                  >
+                    Reveal All
+                  </Button>
+                </div>
+              ) : null}
               {visibleFixtures.length === 0 ? (
                 <p className="cupDrawPage__meta">No fixtures revealed yet.</p>
               ) : (
-                <ul className="cupDrawPage__fixtureList">
+                <div className="cupDrawPage__fixtureRows">
                   {visibleFixtures.map((fixture) => (
-                    <li key={fixture.fixtureId}>
-                      {fixture.homeTeamName} vs {fixture.awayTeamName}
-                    </li>
+                    <p className="cupDrawPage__fixtureRow" key={fixture.fixtureId}>
+                      {fixture.displayLabel ?? `${fixture.homeTeamName} v ${fixture.awayTeamName}`}
+                    </p>
                   ))}
-                </ul>
+                </div>
               )}
             </article>
           );
         })}
 
         <article className="cupDrawPage__continue">
-          <Button variant={BUTTON_VARIANT.PRIMARY} onClick={continueFlow}>
-            Continue
+          <Button variant={BUTTON_VARIANT.PRIMARY} onClick={continueFlow} disabled={!canContinue}>
+            {continueButtonLabel}
           </Button>
         </article>
       </section>

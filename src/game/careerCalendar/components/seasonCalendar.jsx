@@ -1,42 +1,65 @@
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button, { BUTTON_VARIANT } from "../../../engine/ui/button/button";
-import { CALENDAR_EVENT_TYPES, MATCH_EVENT_TYPES } from "../constants/calendarConstants";
+import Tooltip, { TOOLTIP_PLACEMENT, TOOLTIP_TYPE } from "../../../engine/ui/tooltip/tooltip";
+import {
+  resolveCalendarEventTooltip,
+  resolveCalendarEventVisual,
+} from "../utils/calendarEventDisplay";
 import "./seasonCalendar.scss";
 
-const EVENT_BADGE_LABELS = Object.freeze({
-  [CALENDAR_EVENT_TYPES.LEAGUE_MATCH]: "League Match",
-  [CALENDAR_EVENT_TYPES.CUP_MATCH]: "Cup Match",
-  [CALENDAR_EVENT_TYPES.CUP_DRAW]: "Cup Draw",
-  [CALENDAR_EVENT_TYPES.PLAYOFF_MATCH]: "Playoff",
-  [CALENDAR_EVENT_TYPES.FINAL]: "Final",
-});
+const EventIndicator = ({ event, dayAbsoluteDayIndex, simulationState, playerTeamId }) => {
+  const visual = resolveCalendarEventVisual(event);
+  const tooltipText = resolveCalendarEventTooltip({
+    event,
+    dayAbsoluteDayIndex,
+    simulationState,
+    playerTeamId,
+  });
 
-const formatEventLine = (event) => {
-  if (event.type === CALENDAR_EVENT_TYPES.CUP_DRAW) {
-    return `${event.competitionName} • ${event.stageLabel}`;
-  }
+  const iconContent = (
+    <span
+      className={`seasonCalendar__eventIconWrap seasonCalendar__eventIconWrap--${visual.visualKey}`}
+      aria-label={visual.ariaLabel}
+      title={tooltipText || visual.ariaLabel}
+    >
+      <FontAwesomeIcon icon={visual.icon} />
+    </span>
+  );
 
-  if (MATCH_EVENT_TYPES.includes(event.type)) {
-    if (event.opponent) {
-      const venuePrefix = event.isHome ? "vs" : "at";
-      return `${event.competitionName} • ${venuePrefix} ${event.opponent}`;
-    }
-    return `${event.competitionName} • ${event.label}`;
-  }
-
-  return `${event.competitionName} • ${event.label}`;
+  return (
+    <div className={`seasonCalendar__eventIndicator seasonCalendar__eventIndicator--${visual.visualKey}`}>
+      {tooltipText ? (
+        <Tooltip
+          text={tooltipText}
+          icon={iconContent}
+          type={TOOLTIP_TYPE.TERTIARY}
+          placement={TOOLTIP_PLACEMENT.TOP}
+          className="seasonCalendar__tooltipTrigger"
+        />
+      ) : (
+        iconContent
+      )}
+    </div>
+  );
 };
 
-const DayCard = ({ day, isCurrentDay }) => {
-  const hasMatch = day.events.some((event) => MATCH_EVENT_TYPES.includes(event.type));
-  const hasCupDraw = day.events.some((event) => event.type === CALENDAR_EVENT_TYPES.CUP_DRAW);
+EventIndicator.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired,
+  dayAbsoluteDayIndex: PropTypes.number.isRequired,
+  simulationState: PropTypes.object,
+  playerTeamId: PropTypes.string,
+};
 
-  const classes = [
-    "seasonCalendar__day",
-    isCurrentDay ? "seasonCalendar__day--current" : "",
-    hasMatch ? "seasonCalendar__day--match" : "",
-    hasCupDraw ? "seasonCalendar__day--cupDraw" : "",
-  ]
+EventIndicator.defaultProps = {
+  simulationState: null,
+  playerTeamId: "",
+};
+
+const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId }) => {
+  const classes = ["seasonCalendar__day", isCurrentDay ? "seasonCalendar__day--current" : ""]
     .join(" ")
     .trim();
 
@@ -50,16 +73,17 @@ const DayCard = ({ day, isCurrentDay }) => {
       {day.events.length === 0 ? (
         <p className="seasonCalendar__empty">No events</p>
       ) : (
-        <ul className="seasonCalendar__events">
+        <div className="seasonCalendar__events">
           {day.events.map((event) => (
-            <li className="seasonCalendar__event" key={event.id}>
-              <span className={`seasonCalendar__badge seasonCalendar__badge--${event.type}`}>
-                {EVENT_BADGE_LABELS[event.type] ?? "Event"}
-              </span>
-              <span className="seasonCalendar__eventText">{formatEventLine(event)}</span>
-            </li>
+            <EventIndicator
+              key={event.id}
+              event={event}
+              dayAbsoluteDayIndex={day.absoluteDayIndex}
+              simulationState={simulationState}
+              playerTeamId={playerTeamId}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </article>
   );
@@ -68,21 +92,24 @@ const DayCard = ({ day, isCurrentDay }) => {
 DayCard.propTypes = {
   day: PropTypes.shape({
     id: PropTypes.string.isRequired,
+    absoluteDayIndex: PropTypes.number.isRequired,
     dayShortName: PropTypes.string.isRequired,
     dayOfSeason: PropTypes.number.isRequired,
     events: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string.isRequired,
         type: PropTypes.string.isRequired,
-        competitionName: PropTypes.string.isRequired,
-        stageLabel: PropTypes.string,
-        opponent: PropTypes.string,
-        isHome: PropTypes.bool,
-        label: PropTypes.string.isRequired,
       })
     ).isRequired,
   }).isRequired,
   isCurrentDay: PropTypes.bool.isRequired,
+  simulationState: PropTypes.object,
+  playerTeamId: PropTypes.string,
+};
+
+DayCard.defaultProps = {
+  simulationState: null,
+  playerTeamId: "",
 };
 
 const SeasonCalendar = ({
@@ -93,6 +120,8 @@ const SeasonCalendar = ({
   onNextMonth,
   canGoPreviousMonth,
   canGoNextMonth,
+  simulationState,
+  playerTeamId,
 }) => {
   const visibleMonth = season?.months?.[visibleMonthIndex] ?? null;
   const visibleMonthDays = visibleMonth?.weeks?.flatMap((week) => week.days) ?? [];
@@ -131,7 +160,13 @@ const SeasonCalendar = ({
       <div className="seasonCalendar__gridWrap">
         <div className="seasonCalendar__monthGrid">
           {visibleMonthDays.map((day) => (
-            <DayCard day={day} isCurrentDay={day.absoluteDayIndex === currentDayIndex} key={day.id} />
+            <DayCard
+              day={day}
+              isCurrentDay={day.absoluteDayIndex === currentDayIndex}
+              simulationState={simulationState}
+              playerTeamId={playerTeamId}
+              key={day.id}
+            />
           ))}
         </div>
       </div>
@@ -162,6 +197,13 @@ SeasonCalendar.propTypes = {
   onNextMonth: PropTypes.func.isRequired,
   canGoPreviousMonth: PropTypes.bool.isRequired,
   canGoNextMonth: PropTypes.bool.isRequired,
+  simulationState: PropTypes.object,
+  playerTeamId: PropTypes.string,
+};
+
+SeasonCalendar.defaultProps = {
+  simulationState: null,
+  playerTeamId: "",
 };
 
 export default SeasonCalendar;

@@ -74,6 +74,155 @@ Automated still needed:
 
 Test status: passed
 
+BUG-022 - Team overall shown in squad modal header
+Manual steps:
+1. Open Career Home and click a team in the League Table.
+2. Confirm squad modal opens.
+3. Check modal title text.
+Expected:
+- Modal title includes team overall value in header (for example `... | OVR 73`).
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-021 - Day-1 draw controls (Generate Cup / Generate Leagues / Generate All) and gated continue
+Manual steps:
+1. Start a fresh career and advance to day 1 draw flow (`/cup-draw`).
+2. Verify a day-1 control panel is shown with three buttons:
+   - `Generate Cup`
+   - `Generate Leagues`
+   - `Generate All`.
+3. Confirm per-draw `Reveal Next Fixture` / `Reveal All` buttons are not shown in day-1 mode.
+4. Confirm `Continue` is disabled before reveals are completed.
+5. Click `Generate Cup` and verify cup draw cards become revealed while league fixture cards remain unrevealed.
+6. Click `Generate Leagues` and verify league fixture cards reveal.
+7. Verify `Continue` becomes enabled only when all draw cards are fully revealed.
+8. Repeat with `Generate All` and confirm one-click full reveal with enabled continue.
+Expected:
+- Day 1 uses grouped generation actions instead of league-by-league reveal controls.
+- Continue progression is blocked until draw results are shown.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-020 - Show goalscorers and assisters in match-day results
+Manual steps:
+1. Simulate to a day with one or more non-zero scorelines, then open `/career/day-results`.
+2. Inspect each match result entry with goals.
+3. Verify goal lines appear beneath the scoreline in minute order.
+4. Confirm each line includes scorer name and shows assister text when available.
+5. Verify entries with no assists do not display assist text.
+Expected:
+- Goal scorers are visible for each goal in the match-day results view.
+- Assisters are shown for goals that have an assister.
+- Existing scoreline and MR/MRD lines remain intact.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-019 - Champions Cup pre-match draw visibility, day-1 group draw, and no day-1 results panel
+Manual steps:
+1. Start a fresh career and advance from day 1.
+2. Confirm flow routes to `/cup-draw` on day 1 and includes:
+   - Champions Cup Group Draw card
+   - season fixture draw cards for domestic leagues.
+3. Confirm day 1 does not route to `/career/day-results`.
+4. Continue season progression to Champions Cup knockout draw windows.
+5. Confirm Champions Cup knockout draws appear on draw days before the match day and are labelled as draws.
+Expected:
+- Day 1 uses draw flow (not results panel) for group draw + season fixture reveal.
+- Champions Cup draws are visible before fixture days and presented like cup draws.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+FEAT-1023 - Goal events, assists, clean sheets, and competition-scoped player stat tables
+Manual steps:
+1. Start/continue a career and simulate through multiple league and cup fixture days.
+2. Open Career Home debug panel and inspect `simulation.debug.playerStatsSnapshot`.
+3. Confirm league table entries exist under `leagueTablesByCompetition` and cup entries under `cupTablesByCompetition`.
+4. Inspect resolved fixture payloads in simulation debug logs and confirm `goalEvents` exist for scored matches.
+5. Verify each goal event includes:
+   - scorer
+   - minute (1-90)
+   - assister or null.
+6. Spot-check minutes in a single match to confirm no duplicate goal minute values.
+7. Verify clean-sheet counts increase for goalkeepers in fixtures where their team concedes 0.
+Expected:
+- Goal events are generated and stored on simulated fixture results.
+- Scorers/assists/clean sheets update in persistent simulation state.
+- League and cup stat tables remain separated by competition scope.
+
+FEAT-1024 - Team squad modal from league table
+Manual steps:
+1. Open Career Home and locate the League Table panel.
+2. Click multiple team names (including player team and AI teams).
+3. Confirm modal opens with team-specific squad details.
+4. Verify each player card shows:
+   - player name
+   - role context
+   - overall
+   - full skill bars.
+5. Confirm the player list area scrolls vertically when content exceeds modal height.
+6. Close modal using close icon and verify return to league table context.
+Expected:
+- League-table teams are clickable and open a readable squad modal.
+- Existing player image/skill display components are reused.
+- Modal remains usable with scroll for full-squad inspection.
+
+Command checks run after this update:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository-wide baseline lint issues in engine/info modules.
+
+Automated still needed:
+- Unit tests for weighted scorer/assister role selection and unique-minute generation.
+- Unit tests for player stat accumulation and competition scoping.
+- Integration tests for league-table team click to modal flow.
+
+Test status: passed
+
+FEAT-1022 - Team form and home-advantage modifiers in match simulation
+Manual steps:
+1. Start a new career and open simulation debug after several days.
+2. Confirm simulation state contains `teamFormByTeamId` with arrays of `W/D/L` values.
+3. Confirm foreign teams start with non-empty 5-result form arrays.
+4. Progress through at least 5 played matchdays and confirm domestic teams now carry rolling 5-result form arrays.
+5. Inspect a resolved fixture debug entry and verify:
+   - home/away form win counts are present
+   - form win difference and mapped bonus are present
+   - home-advantage bonus is present
+   - adjusted probability distribution is valid.
+6. Continue to season end, click `Finish Season`, then `Start New Season`.
+7. Verify form state persists into the new season simulation state (not reset to empty).
+Expected:
+- Team form exists in persistent career simulation state for all teams.
+- Form updates after every completed fixture and stays rolling to last 5.
+- Home side receives +2% win bias and stronger-form side receives mapped bonus.
+- Form carries into next season.
+
+Command checks run after this feature update:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit tests for form utility functions (`normalise`, `append`, `bonus mapping`, `scoreline mapping`).
+- Unit tests for probability adjustment balancing (form + home modifiers with matrix rows).
+- Integration test covering cross-season form persistence through season summary transition.
+
+Test status: passed
+
 BUG-018 - Cups page includes Back to Calendar button
 Manual steps:
 1. Navigate to `/career/cups`.
@@ -384,5 +533,90 @@ Automated still needed (additional):
 - Integration test for day-results route branching after AI-only and player-match days.
 - Integration test for cup draw reveal flow (`/cup-draw`) and continuation transitions.
 - Integration test for day-1 fixture reveal output.
+
+Test status: passed
+
+BUG-023 - League stats page navigation and cup leaderboards on Cups page
+Manual steps:
+1. Open Career Home and verify `Career Controls > Navigation` includes:
+   - `Cups`
+   - `League Stats` directly beneath it.
+2. Click `League Stats` and confirm navigation to `/career/league-stats`.
+3. Verify each domestic league card renders three tables:
+   - Top Scorers
+   - Top Assists
+   - Clean Sheets.
+4. Navigate to `/career/cups`.
+5. In both League Cup and Champions Cup sections, verify `Player Leaderboards` are shown with:
+   - Top Scorers
+   - Top Assists
+   - Clean Sheets.
+6. Advance match days and re-check both pages to confirm leaderboard rows update from simulation data.
+Expected:
+- New league stats route is accessible from Career Controls.
+- League stats page shows all required leaderboard types.
+- Cups page now includes cup leaderboard tables for both competitions.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-024 - Updated tactic compatibility matrix values
+Manual steps:
+1. Open Team Management and note selected defensive/attacking tactic pair.
+2. Switch through combinations and verify displayed TC changes align with the new matrix values:
+   - Low Block: `20 / 60 / 40 / 80 / 50`
+   - Mid Block: `60 / 60 / 70 / 40 / 20`
+   - High Press: `80 / 20 / 30 / 70 / 50`
+   - Offside Trap: `20 / 60 / 60 / 20 / 90`
+   - Zonal: `70 / 50 / 50 / 40 / 40`
+3. Save tactics and continue to Career Home.
+4. Simulate one or more days and inspect debug output where match profile includes `tc` to confirm updated compatibility values are being applied in simulation flow.
+Expected:
+- Team Management TC value follows the updated matrix for each tactic pair.
+- Career simulation team match profile `tc` values derive from the same updated matrix.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-025 - Clean-sheet recording for 0-conceded matches
+Manual steps:
+1. Simulate to any day with at least one match ending with a team conceding 0.
+2. Open league/cup leaderboard tables and inspect `Clean Sheets`.
+3. Confirm the goalkeeper for the 0-conceded team receives +1 clean sheet.
+4. Repeat on multiple fixtures and both competition scopes (league and cup).
+Expected:
+- Every time a team concedes 0, that team’s goalkeeper clean-sheet total increments by 1.
+- Clean-sheet rows appear correctly in the relevant competition table.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Test status: passed
+
+BUG-026 - Top continue button on day-1 draw controls
+Manual steps:
+1. Start a fresh career and progress to day-1 draw page (`/cup-draw`).
+2. Verify top `Day 1 Draw Controls` row contains:
+   - `Generate Cup`
+   - `Generate Leagues`
+   - `Generate All`
+   - `Continue`.
+3. Before all draws are revealed, verify top `Continue` is disabled.
+4. Reveal all draws, then verify top `Continue` enables.
+5. Click top `Continue` and confirm progression matches existing bottom continue behavior.
+Expected:
+- A top continue control is present beside day-1 generation buttons.
+- Top continue shares the same reveal gating and flow behavior as bottom continue.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
 
 Test status: passed

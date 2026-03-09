@@ -30,9 +30,9 @@
 }
 
 .careerDayResults__competition {
-  margin: 0;
+  margin: 1.6rem 0 1rem;
   color: rgba($lightText, 0.82);
-  font-size: 0.8rem;
+  font-size: 1.4rem;
   text-align: center;
 }
 
@@ -68,6 +68,19 @@
   text-align: center;
   font-size: 0.76rem;
   color: rgba($lightText, 0.8);
+}
+
+.careerDayResults__goalEvents {
+  display: grid;
+  gap: 0.06rem;
+  margin-top: 0.12rem;
+}
+
+.careerDayResults__goalEventLine {
+  margin: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba($lightText, 0.85);
 }
 
 .careerDayResults__resultTeam {

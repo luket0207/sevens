@@ -72,6 +72,11 @@
   gap: 0.45rem;
 }
 
+.cupsPage__statsSection {
+  display: grid;
+  gap: 0.45rem;
+}
+
 .cupsPage__groupCard {
   border: 1px solid rgba($lightText, 0.18);
   border-radius: 8px;

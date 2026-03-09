@@ -1,0 +1,458 @@
+EPIC-011 - Calendar and Career Flow Tidy Up
+
+Overview
+The goal of this epic is to tidy up and improve the usability, clarity, and onboarding flow of the career calendar and surrounding pages.
+
+This epic focuses on:
+- making the Continue button smarter and more informative
+- replacing calendar tile text with icon-and-colour-based event display
+- improving event hover/tooltips
+- tidying fixture generation page formatting
+- improving small visual details
+- removing outdated explanatory text
+- correcting skill label contrast
+- turning the first day of the career into a forced setup/tutorial day
+
+This epic is about polish, clarity, and stronger flow control.
+It is not about adding new competitions or new match systems.
+
+================================================================
+Core Goals
+================================================================
+
+The main goals of this epic are:
+
+1. Make the Continue button more intelligent
+- it should tell the user what action clicking it will perform next
+
+2. Replace calendar tile text entries with icon + colour display
+- using Font Awesome icons
+- with event-specific tile and icon styling
+
+3. Improve calendar hover behaviour
+- match events should show opposition in a tooltip where appropriate
+
+4. Tidy fixture generation page formatting
+- cleaner fixture rows
+- centered text
+- not using HTML lists
+
+5. Apply a set of small UI tidy-ups
+- thicker current-day border
+- extra Continue buttons on long pages
+- remove outdated simulation helper text
+- fix player skill label contrast
+
+6. Force first-day team setup as a tutorial-style gate
+- the first day should still generate initial fixtures and Champions Cup groups
+- but the player must also set up their team and tactics before being allowed to advance to day 2
+- the team should begin empty/invalid at career start
+
+================================================================
+Calendar Event Icon and Colour Rules
+================================================================
+
+Replace text-based calendar day event entries with icon-based display using Font Awesome.
+
+Use the following exact mappings:
+
+League Match
+- tile background: yellow
+- icon: list-ol
+- icon container/background: black
+- icon colour: yellow
+
+League Cup Match
+- tile background: green
+- icon: trophy
+- icon container/background: black
+- icon colour: green
+
+Champions Cup Match
+- tile background: purple
+- icon: trophy
+- icon container/background: black
+- icon colour: purple
+
+League Cup Draw
+- tile background: light green
+- icon: box-open
+- icon container/background: black
+- icon colour: green
+
+Champions Cup Draw
+- tile background: light purple
+- icon: box-open
+- icon container/background: black
+- icon colour: purple
+
+League Cup Final
+- tile background: green
+- icon: trophy
+- icon container/background: black
+- icon colour: gold
+
+Champions Cup Final
+- tile background: purple
+- icon: trophy
+- icon container/background: black
+- icon colour: gold
+
+Playoffs
+- tile background: yellow
+- icon: ArrowUpWideShort
+- icon container/background: black
+- icon colour: yellow
+
+Implementation note
+- keep the event-to-icon mapping centralised and reusable
+- do not scatter these display rules through multiple render branches
+
+================================================================
+Tooltip Rules
+================================================================
+
+If the user hovers over an icon that represents a match:
+- show the opposition for that match in a tooltip
+
+Cup match exception:
+- if it is a cup match and the player's team is not in that cup, show no tooltip
+
+Cup final exception:
+- for cup finals, if the teams are known, show them in the tooltip even if the player's team is not involved
+
+The tooltip should be lightweight, readable, and consistent with the rest of the UI.
+
+================================================================
+Continue Button Behaviour
+================================================================
+
+The Continue button should become more intelligent.
+
+Instead of generic wording, it should tell the user what will happen next.
+
+Examples:
+- Continue to League Fixture Generation
+- Continue to Champions Cup Draw
+- Continue to Match Day Results
+- Continue to Match
+- Continue to Next Day
+- Continue to Team Setup
+
+The exact wording can vary, but the button must clearly reflect the next forced step in the flow.
+
+This should work for:
+- normal day progression
+- cup draws
+- fixture generation screens
+- player match routing
+- results screens
+- first-day team setup gate
+
+================================================================
+First Day Tutorial / Forced Setup Rules
+================================================================
+
+The first day of the career should become a tutorial-style mandatory setup day.
+
+Current behaviour to preserve:
+- initial fixture generation still happens on day 1
+- initial Champions Cup group generation still happens on day 1
+
+New required behaviour:
+- when the career starts, the player's team should begin empty and invalid
+- the player must not be able to reach day 2 until:
+  - they go to the Team Management page
+  - place their outfield players into the required positions
+  - select their tactics
+  - make the team valid
+  - save those changes
+
+This means:
+- the first day becomes a forced setup day
+- team management is mandatory before day 2
+- Continue should route the player into the required setup flow if team setup is still incomplete
+
+Important rule
+- this is not just a warning or recommendation
+- progression to the second day must be blocked until team/tactics setup has been completed and saved
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1101 - Make Continue Button Context-Aware
+----------------------------------------------------------------
+
+Description
+Update the Continue button so it tells the user what action it will perform next.
+
+Requirements
+- Replace the generic Continue button wording with context-aware wording.
+- The button label should reflect the next required action in the current flow.
+- It should work across the main career loop and related flow pages.
+- Cases should include at minimum:
+  - normal next day progression
+  - match day routing
+  - cup draw routing
+  - fixture generation routing
+  - results screen continuation
+  - forced team setup routing
+- Keep the logic centralised rather than hardcoding labels separately across many pages.
+
+Acceptance Criteria
+- The Continue button label changes based on what happens next.
+- The label helps the user understand the next forced step.
+- The implementation is reusable and consistent across the career flow.
+
+----------------------------------------------------------------
+FEAT-1102 - Replace Calendar Tile Text with Icon-and-Colour Event Display
+----------------------------------------------------------------
+
+Description
+Replace text entries inside calendar day tiles with a visual icon-and-colour event system using Font Awesome.
+
+Requirements
+- Remove the text-based event labels from day tiles.
+- Render event indicators using Font Awesome icons and event-specific colours.
+- Implement the exact event mappings defined in this epic for:
+  - League Match
+  - League Cup Match
+  - Champions Cup Match
+  - League Cup Draw
+  - Champions Cup Draw
+  - League Cup Final
+  - Champions Cup Final
+  - Playoffs
+- Use the specified tile background, icon background, and icon colour styles.
+- Keep the event icon system centralised and reusable.
+
+Acceptance Criteria
+- Calendar event tiles use icon-and-colour display instead of text.
+- All listed event types use the correct icon and styling.
+- The calendar remains clear and readable after the change.
+
+----------------------------------------------------------------
+FEAT-1103 - Add Match Tooltip Behaviour to Calendar Event Icons
+----------------------------------------------------------------
+
+Description
+Show opposition information in tooltips when hovering over match icons.
+
+Requirements
+- When hovering over an icon representing a match, show a tooltip with the opposition.
+- Apply this to match-type calendar events where the fixture/opponent is known.
+- If the event is a cup match and the player's team is not in that cup, show no tooltip.
+- Exception:
+  - for cup finals, if the teams are known, show them in the tooltip even if the player's team is not involved
+- Keep tooltip behaviour lightweight and consistent.
+
+Acceptance Criteria
+- Hovering a valid match icon shows the opposition in a tooltip.
+- Cup match tooltips are hidden when the player's team is not involved.
+- Cup final tooltips appear when the finalists are known.
+- Tooltip behaviour is stable and easy to use.
+
+----------------------------------------------------------------
+FEAT-1104 - Tidy Fixture Generation Page Layout and Row Formatting
+----------------------------------------------------------------
+
+Description
+Clean up the fixture generation page formatting.
+
+Requirements
+- Display fixtures using the format:
+  - Team A v Team B
+- Center the fixture text.
+- Do not render fixture rows as HTML lists.
+- Render fixture rows using paragraph elements instead.
+- Keep the overall layout clean and readable by league.
+
+Acceptance Criteria
+- Fixtures are shown as "Team A v Team B".
+- Fixture text is centered.
+- Fixture rows are rendered as paragraph rows rather than list items.
+- The page feels cleaner and easier to scan.
+
+----------------------------------------------------------------
+FEAT-1105 - Increase Current Day Indicator Border Thickness
+----------------------------------------------------------------
+
+Description
+Make the current day marker slightly stronger visually.
+
+Requirements
+- Increase the current day indicator border by 1px compared with its current thickness.
+- Keep the change subtle but clearly visible.
+
+Acceptance Criteria
+- The current day border is visibly 1px thicker than before.
+- The current day remains clearly highlighted.
+
+----------------------------------------------------------------
+FEAT-1106 - Add Top and Bottom Continue Buttons to Cup Draw and Fixture Pages
+----------------------------------------------------------------
+
+Description
+Improve navigation on longer flow pages by ensuring Continue actions are available at both the top and bottom.
+
+Requirements
+- On cup draw pages and fixture generation pages, ensure there is a Continue button at the top and bottom of the page.
+- If one already exists in one of those positions, add the missing one.
+- Keep button wording aligned with the intelligent Continue system from this epic.
+
+Acceptance Criteria
+- Cup draw pages have Continue controls at top and bottom.
+- Fixture generation pages have Continue controls at top and bottom.
+- Users do not need to scroll all the way back through long content just to continue.
+
+----------------------------------------------------------------
+FEAT-1107 - Remove Outdated Simulation Helper Text
+----------------------------------------------------------------
+
+Description
+Remove the outdated explanatory simulation text from the UI.
+
+Requirements
+- Completely remove the following text from the interface:
+
+  "Simulation
+
+  Non-player fixtures are simulated on match days. If your team has a scheduled match, Continue Day routes to the temporary Match page for manual result selection."
+
+- Ensure no partial remnant of this message remains in the rendered UI.
+
+Acceptance Criteria
+- The specified simulation helper text is fully removed from the UI.
+
+----------------------------------------------------------------
+FEAT-1108 - Fix playerSkillsetBars__label Contrast on Light Backgrounds
+----------------------------------------------------------------
+
+Description
+Improve readability of player skill labels shown on light backgrounds.
+
+Requirements
+- Update playerSkillsetBars__label styling so the text uses a dark colour.
+- Ensure the labels remain readable on light backgrounds.
+- Keep the change consistent wherever this component/class is used.
+
+Acceptance Criteria
+- playerSkillsetBars__label text is dark enough to read clearly on light backgrounds.
+- No low-contrast label issue remains.
+
+----------------------------------------------------------------
+FEAT-1109 - Start Career with Empty and Invalid Team Setup State
+----------------------------------------------------------------
+
+Description
+Change the initial post-career-start team state so the player begins day 1 with an empty and invalid team arrangement.
+
+Requirements
+- When a new career begins, the player's team management setup should start empty/invalid rather than already usable.
+- This invalid state must reflect:
+  - incomplete player placement
+  - tactics not yet properly set/saved
+- Keep the player's roster available, but the arranged team should not be valid until the user completes Team Management.
+
+Acceptance Criteria
+- A new career starts with the player's arranged team in an invalid state.
+- The team is not considered ready for progression until setup is completed properly.
+
+----------------------------------------------------------------
+FEAT-1110 - Force Team Management Completion on Day 1
+----------------------------------------------------------------
+
+Description
+Turn the first day of the career into a mandatory team setup/tutorial gate.
+
+Requirements
+- On day 1 of the career, the player must not be able to progress to day 2 until they:
+  - visit the Team Management page
+  - place the required players into valid positions
+  - select their tactics
+  - save the changes
+- Continue/day progression should be blocked until this has happened.
+- If the player attempts to continue without valid setup, route them into the required team setup flow instead.
+- Preserve the existing day-1 generation work:
+  - initial fixture generation
+  - initial Champions Cup group generation
+
+Acceptance Criteria
+- The player cannot reach day 2 without completing team setup.
+- Team Management is mandatory on day 1.
+- Fixture generation and Champions Cup group generation still happen on day 1.
+- Progression unlocks once the team is valid and saved.
+
+----------------------------------------------------------------
+FEAT-1111 - Integrate Intelligent Continue Flow with Day-1 Mandatory Setup
+----------------------------------------------------------------
+
+Description
+Ensure the new intelligent Continue system correctly reflects the forced tutorial/setup flow on the first day.
+
+Requirements
+- When day 1 setup is incomplete, the Continue button should clearly communicate that it will take the player to team setup.
+- Once setup is complete, Continue should revert to the correct next action for the calendar flow.
+- Keep this logic integrated with all other Continue-button context states.
+
+Acceptance Criteria
+- On day 1 with incomplete setup, Continue clearly indicates team setup is next.
+- After valid setup is saved, Continue reflects the next real calendar action.
+- The first-day forced flow feels intentional and understandable.
+
+----------------------------------------------------------------
+FEAT-1112 - Add Calendar and Flow Debug Support for New Day-1 Gate Logic
+----------------------------------------------------------------
+
+Description
+Provide lightweight debug visibility for the new first-day forced setup behaviour and smarter progression flow.
+
+Requirements
+- Add development-friendly visibility for:
+  - whether the player's team is currently valid/invalid
+  - whether day-1 setup gate is active
+  - what action the Continue button is currently resolved to
+- Keep this support lightweight and scoped to debugging/development use.
+
+Acceptance Criteria
+- Developers can inspect the state behind the day-1 gate and Continue resolution.
+- The new forced setup flow is easier to validate during implementation.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The Continue button uses intelligent, context-aware wording.
+- Calendar day tiles use the new Font Awesome icon-and-colour event system.
+- Match event icons show opposition tooltips where appropriate.
+- Cup tooltip exceptions behave correctly.
+- Fixture generation pages display fixtures as centered "Team A v Team B" paragraph rows.
+- The current day indicator border is 1px thicker.
+- Cup draw and fixture generation pages have Continue buttons at both top and bottom.
+- The outdated simulation helper text is completely removed.
+- playerSkillsetBars__label uses a dark readable colour on light backgrounds.
+- A new career starts with the player's team in an empty/invalid arrangement state.
+- The player is forced to complete Team Management and tactic setup on day 1 before reaching day 2.
+- Day 1 still performs initial fixture generation and Champions Cup group generation.
+- The first-day tutorial/setup gate is fully integrated into the main career flow.
+
+================================================================
+Implementation Status Snapshot (2026-03-09)
+================================================================
+
+- FEAT-1101: done
+- FEAT-1102: done
+- FEAT-1103: done
+- FEAT-1104: done
+- FEAT-1105: done
+- FEAT-1106: done
+- FEAT-1107: done
+- FEAT-1108: done
+- FEAT-1109: done
+- FEAT-1110: done
+- FEAT-1111: done
+- FEAT-1112: done
