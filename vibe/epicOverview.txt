@@ -33,15 +33,3 @@ This epic added league-table simulation, match result generation, cup progressio
 
 EPIC-011 - Calendar and Career Flow Tidy Up (Status: done)
 This epic focused on UX polish for calendar and progression flow: context-aware Continue labels, day-one setup gate behavior, icon-and-colour calendar events, improved tooltip/event display rules, and fixture/draw formatting refinements. Bug fixes addressed playoff visibility filtering and tooltip-trigger styling/sizing consistency.
-
-EPIC-012 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
-
-EPIC-013 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
-
-EPIC-014 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
-
-EPIC-015 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.

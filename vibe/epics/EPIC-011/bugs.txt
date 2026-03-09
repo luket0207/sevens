@@ -229,3 +229,4 @@ Files changed
 - `src/game/careerCalendar/components/seasonCalendar.scss`
 
 Status: fixed
+
