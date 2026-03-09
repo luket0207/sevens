@@ -1,32 +1,47 @@
 EPIC OVERVIEW
-Last updated: 2026-03-08
+Last updated: 2026-03-09
 
 EPIC-001 - Core Career Shell (Status: done)
-This epic established the first playable structure of the game flow by replacing the landing path with a new Home screen and wiring the main Career routes. It also created the Career Start shell with team setup state for name, stadium, kit, and players. Validation was put in place so Start Career stays disabled until all required setup values exist, even when kit/player sections were still placeholders.
+This epic established the first playable career shell by replacing the original landing flow with a new Home page and wiring base career routes. It implemented the Career Start page structure with required setup state (team name, stadium, kit, players) and gating so career start remains disabled until required values are present.
 
 EPIC-002 - Team Kit System and Temporary Generator Layer (Status: done)
-This epic delivered the full kit setup foundation, including reusable shirt pattern/config logic, home/away kit editing, contrast enforcement, goalkeeper kit selection, and shirt rendering from saved data. It also introduced and iterated on a temporary player-generation debug path to exercise generation mechanics. Bug work in this epic ended with the temporary generator being removed so the player generation system could be rebuilt cleanly in the next epic.
+This epic delivered the initial team kit pipeline, including reusable shirt pattern modeling, kit selectors, goalkeeper kit support, and visual shirt rendering from saved data. It also introduced a temporary player-generation debug path to exercise generation mechanics, then removed that temporary path after bug-fix iterations to prepare for the full generator rebuild.
 
 EPIC-003 - Player Generation Rebuild (Status: done)
-This epic replaced the prior generator with a new reusable player-generation module centered on correctness and control. It defined clear GK/outfield skill models, exact-average overall behavior, influence rule selection, transfer logic, and deterministic constraints. The result is a generation API intended for reuse by later career/team systems.
+This epic rebuilt player generation into a reusable module with explicit goalkeeper/outfield models, constrained skill outputs, and exact average-based overall behavior. It added influence-rule logic and deterministic generation utilities designed for reuse in later systems, with debug controls used for verification.
 
 EPIC-004 - Career Team Selector (Status: done)
-This epic implemented the staged team-selection flow on Career Start, where the user chooses 1 goalkeeper and 6 outfield players from sequential groups of 3. It added pooled generation rules, forced influence distribution, progression/validation logic, and a persistent chosen-player view with player details. Follow-up bug fixes polished card stat layout and interaction behavior.
+This epic implemented the staged team-selection flow on Career Start (1 goalkeeper + 6 outfield picks from grouped choices). It added pool generation, forced influence spread rules, progression/validation behavior, and selected-player display cards. Follow-up bug fixes refined display, interaction, and rounding consistency.
 
 EPIC-005 - Career Generation Pipeline and World Build (Status: done)
-This epic introduced full career world generation after Start Career, including a dedicated loading route, phased progress, and persistence into game context. It generates league structures, AI teams, kits, and players using prior systems, then transitions to Career Home with debug inspection views. Bug fixes addressed generation stalls/progress reliability and route/flow stability.
+This epic introduced full career world generation after setup, including generation loading/progress phases and persistence to career state. It generates the football world structure (competitions, teams, players, kits) and transitions into Career Home with debugging support. Bug fixes focused on generation reliability and flow stability.
 
 EPIC-006 - Reusable Player Image Component (Status: done)
-This epic added a reusable visual player renderer driven by appearance arrays plus team kit data. It includes appearance parsing/mapping, stylized head and hairstyle variants, and shirt rendering integration for body visuals. The component was integrated into team selection displays and supported with debug gallery coverage.
+This epic added a reusable player image renderer driven by generated appearance data and kit inputs. It covered appearance parsing, layered rendering for visual traits, and integration points for existing player displays, plus debug/gallery support.
 
 EPIC-007 - Career Calendar and Main Loop Foundation (Status: done)
-This epic transformed Career Home into the main season loop with a month-based calendar, right-side controls, and debug support. It built season scaffolding, fixture scheduling structure, cup event slots, day-by-day progression, and a new flash modal for day transitions. The work focused on calendar/time structure and scheduling, not match simulation outcomes.
+This epic converted Career Home into a calendar-driven season loop with day progression, month navigation, event scheduling, and foundational cup/league calendar structure. It added core control flow and debug visibility for day advancement and schedule state.
 
 EPIC-008 - Team Management Page (Status: done)
-This epic replaced the Team Management placeholder with a full arrangement screen featuring outfield player placement, fixed goalkeeper, tactics controls, and save/cancel flows. It implemented arrangement state, team completeness rules, and tactical rating calculations (DTR/ATR) from grouped skill formulas. Saved team-management state is persisted back into career data and integrated into the career navigation flow.
+This epic replaced the Team Management placeholder with a complete squad-arrangement and tactics page, including drag/drop outfield placement, fixed goalkeeper, tactic selection, and DTR/ATR/TC calculations. It persisted team-management state back into career data and received extensive UX/logic bug fixes (layout, list behavior, skill bars, compatibility table updates).
 
-EPIC-009 - Unspecified / Not Started (Status: not started)
-No features, implementation notes, tests, or bug entries are currently defined in this epic folder. It is present as a placeholder for future scope.
+EPIC-009 - Manager Generation and Team Assignment (Status: done)
+This epic added procedural manager generation for AI teams and persisted manager tactical preference data in career world state. It integrated manager assignment into generation flow, added progress/debug visibility, and later fixed manager identity by generating manager names.
 
-EPIC-010 - League and Cup World Simulation (Status: done)
-This epic moved Career Home from schedule placeholders to active world progression by adding league tables, fixture simulation, cup state progression, and season-end league outcomes. It introduced a temporary player match resolution page, a day-end results screen, day-1 season fixture reveal flow, and a cup draw resolution flow with game-by-game or full reveal options. The simulation pipeline now persists league/cup results, draw pairings, and debug traces directly in career calendar state for continued play and verification.
+EPIC-010 - League/Cup Simulation and Career Progression Flow (Status: done)
+This epic added league-table simulation, match result generation, cup progression, season outcomes, and player/AI day-flow handling across Career Home, Match, Day Results, and Cup Draw pages. It also introduced league/cup stats views, season-summary transition flow, and many simulation/UI bug fixes. Recent fixes include updated MRD result matrices, corrected player-team match-profile rating input source, and stricter cup-draw continue gating until reveals are complete.
+
+EPIC-011 - Calendar and Career Flow Tidy Up (Status: done)
+This epic focused on UX polish for calendar and progression flow: context-aware Continue labels, day-one setup gate behavior, icon-and-colour calendar events, improved tooltip/event display rules, and fixture/draw formatting refinements. Bug fixes addressed playoff visibility filtering and tooltip-trigger styling/sizing consistency.
+
+EPIC-012 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+
+EPIC-013 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+
+EPIC-014 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+
+EPIC-015 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
