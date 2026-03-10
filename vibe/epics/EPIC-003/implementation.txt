@@ -216,3 +216,23 @@ Files changed:
 Tradeoffs / follow-up tasks:
 - Debug tooling is intentionally temporary and should be replaced by the full squad generation UX in a later epic.
 - Add deterministic unit tests to validate long-run influence distribution and sum-preserving invariants across large batches.
+
+BUG-001 and BUG-002 - Potential final-value calculation and Team Management details display
+Status: done
+What was implemented:
+- Updated player potential generation to keep random delta selection but store final potential as `current overall + delta`.
+- Added Team Management details display of potential in the shared Player Skill Inspector.
+- Added a small inspector summary style for potential text.
+Engine components used:
+- none directly beyond existing generator and shared Team Management UI composition.
+Engine components not used:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` required no new integration for this bugfix pass.
+Files changed:
+- `src/game/playerGeneration/potentialGenerationUtils.js`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `vibe/epics/EPIC-003/bugs.txt`
+- `vibe/epics/EPIC-003/implementation.txt`
+- `vibe/epics/EPIC-003/testing.txt`
+Tradeoffs / follow-up tasks:
+- Potential summary currently appears in inspector details only (not in compact strip cards) to avoid increasing strip card density.

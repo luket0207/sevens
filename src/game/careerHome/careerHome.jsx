@@ -421,6 +421,7 @@ const CareerHome = () => {
             defaultCompetitionId={careerWorld?.playerTeam?.competitionId ?? "league-5"}
             playerTeamId={careerWorld?.playerTeam?.id ?? ""}
             teamLookupById={teamLookupById}
+            teamFormByTeamId={simulationState?.teamFormByTeamId ?? {}}
           />
         </section>
 

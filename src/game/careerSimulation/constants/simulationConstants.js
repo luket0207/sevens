@@ -50,9 +50,9 @@ export const MRD_OUTCOME_TYPES = Object.freeze({
 
 export const MRD_RESULT_MATRIX = Object.freeze([
   Object.freeze({
-    id: "0-5",
+    id: "0-4",
     minExclusive: -1,
-    maxInclusive: 5,
+    maxInclusive: 4,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 5,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 35,
@@ -62,9 +62,9 @@ export const MRD_RESULT_MATRIX = Object.freeze([
     }),
   }),
   Object.freeze({
-    id: "5-12",
-    minExclusive: 5,
-    maxInclusive: 12,
+    id: "5-8",
+    minExclusive: 4,
+    maxInclusive: 8,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 5,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 35,
@@ -74,9 +74,9 @@ export const MRD_RESULT_MATRIX = Object.freeze([
     }),
   }),
   Object.freeze({
-    id: "12-25",
-    minExclusive: 12,
-    maxInclusive: 25,
+    id: "9-16",
+    minExclusive: 8,
+    maxInclusive: 16,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 3,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 25,
@@ -86,9 +86,9 @@ export const MRD_RESULT_MATRIX = Object.freeze([
     }),
   }),
   Object.freeze({
-    id: "25-35",
-    minExclusive: 25,
-    maxInclusive: 35,
+    id: "17-26",
+    minExclusive: 16,
+    maxInclusive: 26,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 2,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 20,
@@ -98,9 +98,9 @@ export const MRD_RESULT_MATRIX = Object.freeze([
     }),
   }),
   Object.freeze({
-    id: "35-50",
-    minExclusive: 35,
-    maxInclusive: 50,
+    id: "27-40",
+    minExclusive: 26,
+    maxInclusive: 40,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 1,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 17,
@@ -110,44 +110,44 @@ export const MRD_RESULT_MATRIX = Object.freeze([
     }),
   }),
   Object.freeze({
-    id: "50-100",
-    minExclusive: 50,
-    maxInclusive: 100,
+    id: "41-55",
+    minExclusive: 40,
+    maxInclusive: 55,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 1,
-      [MRD_OUTCOME_TYPES.LOWER_WIN]: 16,
+      [MRD_OUTCOME_TYPES.LOWER_WIN]: 14,
       [MRD_OUTCOME_TYPES.DRAW]: 10,
       [MRD_OUTCOME_TYPES.HIGHER_WIN]: 60,
-      [MRD_OUTCOME_TYPES.HIGHER_BIG_WIN]: 16,
+      [MRD_OUTCOME_TYPES.HIGHER_BIG_WIN]: 15,
     }),
   }),
   Object.freeze({
-    id: "100-150",
-    minExclusive: 100,
-    maxInclusive: 150,
+    id: "56-72",
+    minExclusive: 55,
+    maxInclusive: 72,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 0.2,
       [MRD_OUTCOME_TYPES.LOWER_WIN]: 5.3,
-      [MRD_OUTCOME_TYPES.DRAW]: 9.5,
-      [MRD_OUTCOME_TYPES.HIGHER_WIN]: 70,
+      [MRD_OUTCOME_TYPES.DRAW]: 7.5,
+      [MRD_OUTCOME_TYPES.HIGHER_WIN]: 69,
+      [MRD_OUTCOME_TYPES.HIGHER_BIG_WIN]: 18,
+    }),
+  }),
+  Object.freeze({
+    id: "73-99",
+    minExclusive: 72,
+    maxInclusive: 99,
+    probabilities: Object.freeze({
+      [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 0.1,
+      [MRD_OUTCOME_TYPES.LOWER_WIN]: 1.8,
+      [MRD_OUTCOME_TYPES.DRAW]: 3.6,
+      [MRD_OUTCOME_TYPES.HIGHER_WIN]: 74.5,
       [MRD_OUTCOME_TYPES.HIGHER_BIG_WIN]: 20,
     }),
   }),
   Object.freeze({
-    id: "150-300",
-    minExclusive: 150,
-    maxInclusive: 300,
-    probabilities: Object.freeze({
-      [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 0.1,
-      [MRD_OUTCOME_TYPES.LOWER_WIN]: 1.8,
-      [MRD_OUTCOME_TYPES.DRAW]: 5.1,
-      [MRD_OUTCOME_TYPES.HIGHER_WIN]: 75,
-      [MRD_OUTCOME_TYPES.HIGHER_BIG_WIN]: 25,
-    }),
-  }),
-  Object.freeze({
-    id: "300+",
-    minExclusive: 300,
+    id: "100+",
+    minExclusive: 99,
     maxInclusive: Number.POSITIVE_INFINITY,
     probabilities: Object.freeze({
       [MRD_OUTCOME_TYPES.LOWER_BIG_WIN]: 0,

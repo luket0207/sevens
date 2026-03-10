@@ -1,0 +1,403 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.teamSetupLayout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.teamSetupLayout__stripHead {
+  display: grid;
+  gap: 0.2rem;
+
+  h3 {
+    font-size: 1rem;
+  }
+
+  p {
+    color: rgba($lightText, 0.85);
+    font-size: 0.88rem;
+  }
+}
+
+.teamSetupLayout__strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 0.25rem;
+}
+
+.teamSetupLayout__stripCard {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.45rem;
+  min-width: 145px;
+  max-width: 145px;
+  position: relative;
+  display: grid;
+  gap: 0.32rem;
+  justify-items: center;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  flex: 0 0 145px;
+}
+
+.teamSetupLayout__stripCard--draggable {
+  cursor: grab;
+}
+
+.teamSetupLayout__stripCard--draggable:active {
+  cursor: grabbing;
+}
+
+.teamSetupLayout__stripCard--interactive {
+  cursor: pointer;
+}
+
+.teamSetupLayout__stripCard--interactive:hover,
+.teamSetupLayout__stripCard--interactive:focus-visible {
+  border-color: rgba($tertiaryBackground, 0.8);
+  box-shadow: 0 0 0 2px rgba($tertiaryBackground, 0.24);
+}
+
+.teamSetupLayout__stripCard--selected {
+  border-color: rgba($tertiaryBackground, 0.95);
+  box-shadow: 0 0 0 2px rgba($tertiaryBackground, 0.3);
+}
+
+.teamSetupLayout__stripText {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  justify-items: center;
+}
+
+.teamSetupLayout__playerName {
+  font-size: 0.76rem;
+  line-height: 1.2;
+  text-align: center;
+  color: rgba($lightText, 0.95);
+  min-height: 1.7rem;
+}
+
+.teamSetupLayout__overallBadge {
+  border-radius: 999px;
+  padding: 0.05rem 0.42rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: $lightText;
+  border: 1px solid rgba($siteBackground, 0.35);
+}
+
+.teamSetupLayout__overallBadge--1to5 { background: $ratingBand1To5; }
+.teamSetupLayout__overallBadge--6to10 { background: $ratingBand6To10; }
+.teamSetupLayout__overallBadge--11to15 { background: $ratingBand11To15; color: $lightText; }
+.teamSetupLayout__overallBadge--16to20 { background: $ratingBand16To20; color: $lightText; }
+.teamSetupLayout__overallBadge--21to25 { background: $ratingBand21To25; color: $lightText; }
+.teamSetupLayout__overallBadge--26to30 { background: $ratingBand26To30; color: $darkText; }
+.teamSetupLayout__overallBadge--31to35 { background: $ratingBand31To35; color: $darkText; }
+.teamSetupLayout__overallBadge--36to40 { background: $ratingBand36To40; color: $lightText; }
+.teamSetupLayout__overallBadge--41to45 { background: $ratingBand41To45; color: $darkText; }
+.teamSetupLayout__overallBadge--46to50 { background: $ratingBand46To50; color: $lightText; }
+
+.teamSetupLayout__placementPill {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.25rem;
+  border-radius: 999px;
+  padding: 0.03rem 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.2;
+  background: rgba($tertiaryBackground, 0.95);
+  color: $lightText;
+  border: 1px solid rgba($siteBackground, 0.35);
+}
+
+.teamSetupLayout__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 28vw, 420px);
+  align-items: stretch;
+  gap: 0.8rem;
+}
+
+.teamSetupLayout__pitch {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.82);
+  padding: 0.65rem;
+}
+
+.teamSetupLayout__pitchField {
+  position: relative;
+  width: 100%;
+  min-height: clamp(580px, 62vh, 760px);
+  border: 2px solid rgba($lightText, 0.24);
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, rgba($primaryBackground, 0.78), rgba($secondaryBackground, 0.8)),
+    repeating-linear-gradient(
+      90deg,
+      rgba($lightText, 0.08) 0px,
+      rgba($lightText, 0.08) 1px,
+      rgba($lightText, 0) 1px,
+      rgba($lightText, 0) 56px
+    );
+  overflow: hidden;
+}
+
+.teamSetupLayout__halfwayLine {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+  background: rgba($lightText, 0.25);
+  pointer-events: none;
+}
+
+.teamSetupLayout__centreCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170px;
+  height: 170px;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba($lightText, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.teamSetupLayout__goalkeeperNode {
+  position: absolute;
+  left: 11%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(145px, 16vw, 210px);
+  border-radius: 12px;
+  padding: 0.45rem;
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+}
+
+.teamSetupLayout__goalkeeperCardWrap {
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.teamSetupLayout__goalkeeperCard,
+.teamSetupLayout__pitchStripCard {
+  min-width: 120px;
+  max-width: 138px;
+}
+
+.teamSetupLayout__slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: clamp(155px, 17vw, 230px);
+  padding: 0.26rem 0.3rem;
+  display: grid;
+  gap: 0.2rem;
+  min-height: 110px;
+  transition: box-shadow 120ms ease;
+}
+
+.teamSetupLayout__slot--empty {
+  border: 0;
+  background: transparent;
+}
+
+.teamSetupLayout__slot--dragOver {
+  box-shadow: 0 0 0 2px rgba($tertiaryBackground, 0.35);
+}
+
+.teamSetupLayout__slot--dragOver .teamSetupLayout__slotTag,
+.teamSetupLayout__slot--dragOver .teamSetupLayout__dropHint {
+  color: rgba($lightText, 1);
+}
+
+.teamSetupLayout__slotHead {
+  display: grid;
+  gap: 0.08rem;
+  justify-items: center;
+}
+
+.teamSetupLayout__slotTag {
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: $lightText;
+  background: rgba($siteBackground, 0.5);
+  border: 1px solid rgba($lightText, 0.2);
+}
+
+.teamSetupLayout__slotTag--GK { background: $positionPillGk; color: $lightText; }
+.teamSetupLayout__slotTag--DF { background: $positionPillAt; color: $lightText; }
+.teamSetupLayout__slotTag--MD { background: $positionPillMd; color: $lightText; }
+.teamSetupLayout__slotTag--AT { background: $positionPillDf; color: $darkText; }
+
+.teamSetupLayout__pitchPlayer {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+}
+
+.teamSetupLayout__slotEmptyContent {
+  display: grid;
+  gap: 0.28rem;
+  justify-items: center;
+}
+
+.teamSetupLayout__emptyShirt {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto;
+  clip-path: polygon(
+    12% 18%,
+    30% 7%,
+    42% 18%,
+    58% 18%,
+    70% 7%,
+    88% 18%,
+    100% 38%,
+    84% 52%,
+    78% 100%,
+    22% 100%,
+    16% 52%,
+    0% 38%
+  );
+  background: rgba($lightText, 0.22);
+  border: 1px solid rgba($lightText, 0.26);
+  display: grid;
+  place-items: center;
+
+  span {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: rgba($lightText, 0.75);
+  }
+}
+
+.teamSetupLayout__dropHint {
+  font-size: 0.72rem;
+  color: rgba($lightText, 0.82);
+  text-align: center;
+}
+
+.teamSetupLayout__inspector {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 14px;
+  background: rgba($secondaryBackground, 0.86);
+  padding: 0.7rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.45rem;
+  min-height: 100%;
+
+  h3 {
+    font-size: 0.95rem;
+  }
+}
+
+.teamSetupLayout__inspectorCard {
+  border: 1px solid rgba($lightText, 0.18);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.28);
+  padding: 0.55rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.45rem;
+  min-height: 100%;
+}
+
+.teamSetupLayout__inspectorHead {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.teamSetupLayout__inspectorSummary {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba($lightText, 0.9);
+}
+
+.teamSetupLayout__inspectorProfile {
+  min-width: 120px;
+  max-width: 132px;
+}
+
+.teamSetupLayout__inspectorSkillset {
+  align-content: start;
+}
+
+.teamSetupLayout__inspectorSkillset .playerSkillsetBars__label {
+  color: rgba($lightText, 0.9);
+}
+
+.teamSetupLayout__inspectorSkillset .playerSkillsetBars__traits {
+  border-top-color: rgba($lightText, 0.2);
+}
+
+.teamSetupLayout__inspectorSkillset .playerSkillsetBars__traitsTitle,
+.teamSetupLayout__inspectorSkillset .playerSkillsetBars__traitItem,
+.teamSetupLayout__inspectorSkillset .playerSkillsetBars__traitsEmpty {
+  color: rgba($lightText, 0.9);
+}
+
+.teamSetupLayout__inspectorSkillset .bars__meta {
+  display: none;
+}
+
+.teamSetupLayout__empty {
+  color: rgba($lightText, 0.82);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1200px) {
+  .teamSetupLayout__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .teamSetupLayout__goalkeeperNode {
+    left: 13%;
+  }
+
+  .teamSetupLayout__slot {
+    width: clamp(145px, 18vw, 210px);
+  }
+
+}
+
+@media (max-width: 820px) {
+  .teamSetupLayout__pitchField {
+    min-height: 680px;
+  }
+
+  .teamSetupLayout__goalkeeperNode {
+    left: 16%;
+    width: clamp(130px, 22vw, 180px);
+  }
+
+  .teamSetupLayout__slot {
+    width: clamp(130px, 24vw, 188px);
+  }
+}
+
+@media (max-width: 640px) {
+  .teamSetupLayout__pitch {
+    overflow-x: auto;
+  }
+
+  .teamSetupLayout__pitchField {
+    min-width: 760px;
+  }
+}

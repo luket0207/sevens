@@ -1,0 +1,76 @@
+EPIC-013 Implementation Log
+Date: 2026-03-09
+
+FEAT-1301 to FEAT-1311 - Player Traits (Generation + Storage + Display)
+Status: done
+
+What was implemented:
+- Added a centralized player-trait model and full trait table configuration matching the supplied EPIC-013 values.
+- Added trait weighting contexts for:
+  - Goalkeeper
+  - Influence Defender
+  - Influence Defensive Midfielder
+  - Influence Attacking Midfielder
+  - Influence Attacker
+  - Influence Goalscorer
+  - No Influence
+- Added trait-count roll logic with exact distribution:
+  - 0 traits: 60%
+  - 1 trait: 32%
+  - 2 traits: 8%
+- Added centralized context resolution from player generation data:
+  - Goalkeepers always resolve to Goalkeeper context
+  - Outfield players resolve from applied influence rule
+  - Fallback resolves to No Influence
+- Implemented weighted trait selection:
+  - uses resolved context rarity column
+  - excludes zero-weight traits
+  - prevents duplicate traits per player
+  - assigns up to required trait count
+- Integrated trait generation into shared player-generation flow, so traits are attached to all generated players (user + AI, GK + outfield).
+- Added `traits` field to generated player objects as stable metadata:
+  - `traits: []` or `traits: [{ id, name }, ...]`
+- Added lightweight trait debug metadata on generated players:
+  - rolled trait count
+  - resolved context
+  - rarity column used
+  - selected trait ids
+- Extended `PlayerSkillsetBars` with a dedicated traits section:
+  - displays assigned trait names
+  - shows clean `No traits` empty state
+  - works everywhere the component is used
+- Updated all existing `PlayerSkillsetBars` usage points to pass `player.traits`.
+- Kept traits fully out of:
+  - overall generation logic
+  - DTR/ATR
+  - tactic compatibility
+  - tactic calculations.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `rng` (existing random utility) for trait-count rolls and weighted trait selection.
+- `bars` remains used by shared skillset renderer; traits were added alongside existing skill bars.
+
+Engine components not used (and why):
+- `gameContext`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` required no direct code changes for trait generation/storage/display in this pass.
+
+Files changed:
+- `src/game/playerGeneration/playerTraitConfig.js`
+- `src/game/playerGeneration/playerTraitGenerationUtils.js`
+- `src/game/playerGeneration/playerGenerationUtils.js`
+- `src/game/playerGeneration/index.js`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `src/game/careerCalendar/components/leagueTeamSquadModalContent.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/careerStart/components/playerGenerationDebug.jsx`
+- `vibe/epics/EPIC-013/implementation.txt`
+- `vibe/epics/EPIC-013/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Trait debug metadata is currently persisted on generated players for implementation validation; if a slimmer runtime payload is desired later, this can be stripped or gated for debug-only flows.

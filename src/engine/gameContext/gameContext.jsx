@@ -49,6 +49,28 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
     selectedOutfieldPlayers: [],
     isComplete: false,
   },
+  teamManagement: {
+    version: 1,
+    savedAt: "",
+    goalkeeperId: null,
+    slotAssignments: {
+      "defender-1": null,
+      "defender-2": null,
+      "midfielder-1": null,
+      "midfielder-2": null,
+      "attacker-1": null,
+      "attacker-2": null,
+    },
+    tactics: {
+      defensiveWidth: "Normal",
+      defensiveTactic: "Mid Block",
+      attackingWidth: "Normal",
+      attackingTactic: "Posession",
+    },
+    dtr: 0,
+    atr: 0,
+    tacticCompatibility: 0,
+  },
 });
 
 const DEFAULT_CAREER_GENERATION_PROGRESS = Object.freeze({

@@ -1,0 +1,646 @@
+EPIC-012 - Career Start UX Wizard and Shared Team Setup Layout
+
+Overview
+The goal of this epic is to go back over the /career/start page and improve the UX significantly.
+
+The main changes are:
+- convert the current career start flow into a wizard-style tabbed setup
+- split the setup into clearer stages
+- move the first required team selection out of day 1 of the career and into the start flow itself
+- allow the user to move freely between setup tabs
+- allow the user to start the career from any tab once validation passes
+- create a new shared team setup layout/component that can be reused both:
+  - on /career/start
+  - on the Team Management page
+
+This epic is about:
+- better setup flow UX
+- improved structure for career start
+- reducing friction after career creation begins
+- unifying the player-list/pitch layout across setup and team management
+
+This epic is not about:
+- changing the core validation rules for starting a career
+- changing the underlying player generation rules
+- changing the tactic system logic itself
+- changing the saved meaning of team selection
+- adding new match logic
+
+================================================================
+Core Wizard Goals
+================================================================
+
+The career start page should no longer feel like one long single page.
+
+Instead, it should become a wizard-style setup with tabs.
+
+Required tab order:
+1. Name and Stadium Name
+2. Kits
+3. Players
+4. Team Selection
+
+The user should be able to:
+- move freely between tabs
+- revisit earlier tabs at any time
+- complete setup work in any order after entering the page
+- start the career from any tab if the overall setup is valid
+
+Validation rules:
+- the same current validation rules for starting a career should still apply
+- the Start Career button should only be valid when the full required setup is complete
+
+Important change:
+- the first required team selection should no longer happen on day 1 of the career
+- it should happen in the career start flow as tab 4 instead
+- this means the first-day forced team selection/tutorial gate inside the career must be removed because the setup has already been done before the career begins
+
+================================================================
+New Shared Team Setup Layout Component
+================================================================
+
+There is currently a similar UI pattern in both:
+- the Players step on /career/start
+- the Team Management page
+
+Both currently have:
+- a player list on the left
+- a pitch on the right
+
+This epic should replace that duplicated approach with a shared reusable layout/component.
+
+The new shared layout should behave like this:
+- the player list is no longer a vertical list on the left
+- the player list becomes a horizontally stacked strip at the top of the pitch area
+- each player in the top strip shows only:
+  - player image
+  - player name
+  - overall rating
+- player skill sets should no longer be shown in that top player list
+
+Pitch layout changes:
+- the pitch should now span the full width of the page beneath the player strip
+- the pitch orientation should be rotated conceptually 90 degrees to the right compared with the current view
+- this means:
+  - goalkeeper on the left
+  - defenders to the right of that
+  - midfielders to the right of that
+  - attackers on the far right
+
+Player details on the pitch:
+- once players are placed on the pitch, their full skill sets should be displayed underneath them on the pitch
+- each player’s ratings should be arranged in two columns of four
+- the overall rating should occupy the top-left slot in this 2x4 layout
+- each rating display should show:
+  - rating title, left aligned
+  - rating bar underneath
+
+This shared component/layout should be reusable in both:
+- the career start Team Selection tab
+- the Team Management page
+
+================================================================
+Career Start Tab Structure
+================================================================
+
+Required tabs:
+
+----------------------------------------------------------------
+Tab 1 - Name and Stadium Name
+----------------------------------------------------------------
+Contains:
+- team name
+- stadium name
+
+----------------------------------------------------------------
+Tab 2 - Kits
+----------------------------------------------------------------
+Contains:
+- home kit setup
+- away kit setup
+- goalkeeper kit setup
+- any current related kit preview/setup controls
+
+----------------------------------------------------------------
+Tab 3 - Players
+----------------------------------------------------------------
+Contains:
+- player generation/setup flow already required by the project
+- any existing player-generation controls relevant to career setup
+
+----------------------------------------------------------------
+Tab 4 - Team Selection
+----------------------------------------------------------------
+Contains:
+- the first required team selection/setup that currently happens inside the career
+- this is now completed before the career begins
+- once this is valid, it contributes toward Start Career validation just like the other steps
+
+================================================================
+Start Career Behaviour
+================================================================
+
+The Start Career button should remain governed by the same overall validation requirements as now.
+
+Rules:
+- it must still only become valid when all required setup is complete
+- the user should be able to click Start Career from any tab
+- the button should be available in a consistent location or consistently accessible across tabs
+
+The setup should feel flexible:
+- users can jump between tabs
+- finish a later step before an earlier one if they want
+- revisit and edit before starting
+- start as soon as everything is valid
+
+================================================================
+Career Flow Impact
+================================================================
+
+Because the first required team selection now happens during /career/start:
+- remove that requirement from the first day of the career
+- the career should no longer force that same setup again after creation
+- day 1 should still preserve any other intended day-1 generation/setup behaviour that remains relevant
+- only the duplicated team-selection requirement should be removed from the in-career flow
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1201 - Convert Career Start Page into Wizard-Style Tab Flow
+----------------------------------------------------------------
+
+Description
+Replace the current single-page /career/start structure with a wizard-style tabbed setup flow.
+
+Requirements
+- Rework /career/start into a tabbed setup page.
+- Add the required tabs in this order:
+  - Name and Stadium Name
+  - Kits
+  - Players
+  - Team Selection
+- The layout should clearly communicate the current step while still allowing free movement between tabs.
+- Keep the page responsive and easy to navigate.
+
+Acceptance Criteria
+- /career/start uses a wizard-style tabbed layout.
+- The 4 required tabs exist in the correct order.
+- The page feels structured as a setup flow rather than one long page.
+
+----------------------------------------------------------------
+FEAT-1202 - Allow Free Navigation Between Career Start Tabs
+----------------------------------------------------------------
+
+Description
+Allow the user to move freely between all setup tabs and revisit them at any time.
+
+Requirements
+- The user must be able to move between tabs without being forced into strict one-way progression.
+- Users must be able to revisit completed tabs and change values.
+- Tab navigation should preserve the current setup state.
+- Keep the interaction simple and predictable.
+
+Acceptance Criteria
+- Users can move freely between the 4 setup tabs.
+- Revisiting a tab preserves and shows its current state.
+- Changes made in one tab remain available when switching to another.
+
+----------------------------------------------------------------
+FEAT-1203 - Split Existing Setup Content into the New 4 Tabs
+----------------------------------------------------------------
+
+Description
+Move the existing career start setup content into the correct wizard tabs.
+
+Requirements
+- Place team name and stadium name into tab 1.
+- Place kit setup into tab 2.
+- Place player setup into tab 3.
+- Place initial team selection into tab 4.
+- Ensure the existing setup systems are wired into the correct tab rather than duplicated.
+
+Acceptance Criteria
+- Each setup concern appears in the correct tab.
+- Existing setup state is preserved and correctly connected.
+- The setup flow is clearly split into the new 4-part structure.
+
+----------------------------------------------------------------
+FEAT-1204 - Allow Start Career from Any Tab Using Existing Validation Rules
+----------------------------------------------------------------
+
+Description
+Let the user complete their setup and start the career from any tab once the setup is valid.
+
+Requirements
+- Keep the existing overall start-career validation logic.
+- Do not weaken the current validity rules.
+- The Start Career action should be accessible from any tab.
+- The button should only become valid when all required setup sections are complete.
+- The user should not need to manually navigate to a specific final tab just to start the career.
+
+Acceptance Criteria
+- Start Career can be triggered from any tab.
+- The button uses the same existing full-setup validation.
+- The button is disabled until all required setup is complete.
+
+----------------------------------------------------------------
+FEAT-1205 - Move Initial Team Selection into Career Start Tab 4
+----------------------------------------------------------------
+
+Description
+Move the first required team selection out of the career loop and into the /career/start setup flow.
+
+Requirements
+- The first required team selection should now happen in tab 4 of /career/start.
+- Reuse the existing team selection logic where sensible.
+- Ensure team selection contributes to the overall start-career validation.
+- Keep the selected team state compatible with the rest of the career systems.
+
+Acceptance Criteria
+- Initial team selection now happens on /career/start tab 4.
+- It no longer depends on entering the career first.
+- It contributes correctly to the start-career validation rules.
+
+----------------------------------------------------------------
+FEAT-1206 - Remove In-Career Day-1 Team Selection Requirement
+----------------------------------------------------------------
+
+Description
+Remove the now-duplicated first-day team selection gate from the career flow.
+
+Requirements
+- Remove the requirement to perform that same initial team selection again on day 1 inside the career.
+- Keep any remaining day-1 career setup behaviour that is still relevant.
+- Ensure the career recognises that team selection has already been completed during /career/start.
+
+Acceptance Criteria
+- The career no longer forces the initial team selection again on day 1.
+- The setup completed in /career/start satisfies that requirement before the career begins.
+- The career flow remains valid and coherent after the removal.
+
+----------------------------------------------------------------
+FEAT-1207 - Create Shared Top-Strip Player List + Full-Width Pitch Layout Component
+----------------------------------------------------------------
+
+Description
+Create a new shared reusable layout/component for player arrangement that can be used in both /career/start and Team Management.
+
+Requirements
+- Replace the current left-list/right-pitch arrangement pattern with a shared component.
+- The shared layout must include:
+  - a horizontally stacked player strip at the top
+  - a full-width pitch beneath it
+- This component should be reusable in:
+  - the Team Selection tab on /career/start
+  - the Team Management page
+- Keep the component modular and not tied only to one page.
+
+Acceptance Criteria
+- A shared reusable player arrangement layout/component exists.
+- It supports both the career start flow and Team Management.
+- It replaces the old duplicated left-list/right-pitch pattern.
+
+----------------------------------------------------------------
+FEAT-1208 - Simplify Player Cards in the Top Player Strip
+----------------------------------------------------------------
+
+Description
+Reduce the information shown in the unplaced player list/strip.
+
+Requirements
+- In the top horizontal player strip, each player should show only:
+  - player image
+  - player name
+  - overall rating
+- Remove the full skill set from this top strip/list.
+- Keep the cards readable and compact enough to work in a horizontal arrangement.
+
+Acceptance Criteria
+- Players in the top strip show only image, name, and overall.
+- Skill sets are no longer shown in the strip.
+- The strip remains readable and usable.
+
+----------------------------------------------------------------
+FEAT-1209 - Rotate Pitch Orientation and Reposition Roles Side-On
+----------------------------------------------------------------
+
+Description
+Change the visual pitch orientation so the team is shown side-on rather than from behind.
+
+Requirements
+- Rework the pitch layout so it feels rotated 90 degrees to the right compared with the current arrangement.
+- Role placement should now read left to right:
+  - goalkeeper on the far left
+  - defenders next
+  - midfielders next
+  - attackers on the far right
+- Keep the layout clear and readable.
+- Ensure this orientation works in the shared component for both relevant pages.
+
+Acceptance Criteria
+- The pitch uses the new side-on orientation.
+- The goalkeeper is placed on the left.
+- Attackers are placed on the right.
+- The role progression across the pitch is visually clear.
+
+----------------------------------------------------------------
+FEAT-1210 - Display Full Player Skill Sets Under Players on the Pitch
+----------------------------------------------------------------
+
+Description
+Move the full skill display from the player strip onto the pitch under each placed player.
+
+Requirements
+- Once a player is displayed on the pitch, show that player’s full skill set underneath them.
+- The rating display should be arranged in 2 columns of 4.
+- The overall rating should be the top-left value in that grid.
+- Each displayed rating should show:
+  - rating title left aligned
+  - rating bar underneath
+- Keep the layout readable within the pitch presentation.
+
+Acceptance Criteria
+- Placed players show their full skill sets under them on the pitch.
+- Ratings are displayed in a 2x4 grid.
+- Overall appears in the top-left slot.
+- Each rating shows a left-aligned title with the bar underneath.
+
+----------------------------------------------------------------
+FEAT-1211 - Reuse the New Shared Layout on Career Start Team Selection Tab
+----------------------------------------------------------------
+
+Description
+Apply the new shared player arrangement component to the Team Selection tab in /career/start.
+
+Requirements
+- Replace the old team-selection arrangement UI in tab 4 with the new shared top-strip/pitch layout.
+- Preserve the existing team selection logic and validation behaviour.
+- Ensure the new layout supports the team-selection interaction needed during career setup.
+
+Acceptance Criteria
+- The Team Selection tab uses the new shared layout.
+- Existing team selection behaviour still works.
+- The tab feels visually aligned with the updated UX goals.
+
+----------------------------------------------------------------
+FEAT-1212 - Reuse the New Shared Layout on Team Management Page
+----------------------------------------------------------------
+
+Description
+Apply the new shared player arrangement component to the Team Management page.
+
+Requirements
+- Replace the old player-list/pitch arrangement UI on the Team Management page with the new shared layout.
+- Preserve the Team Management behaviour, including:
+  - placement/removal
+  - tactic calculations
+  - save/cancel flow
+- Ensure the updated layout still supports the existing Team Management rules.
+
+Acceptance Criteria
+- The Team Management page uses the new shared layout.
+- Existing Team Management behaviour still works with the new presentation.
+- The visual structure matches the updated shared design.
+
+----------------------------------------------------------------
+FEAT-1213 - Preserve Existing Validation and Saved-State Behaviour Across the UX Rewrite
+----------------------------------------------------------------
+
+Description
+Ensure the wizard and shared layout changes do not break the existing validation and save behaviour.
+
+Requirements
+- Preserve current validation rules for starting a career.
+- Preserve current save behaviour for team arrangement and setup state.
+- Ensure tab navigation and the new shared layout do not lose or corrupt state.
+- Keep the resulting state compatible with the rest of the career flow.
+
+Acceptance Criteria
+- Validation behaviour remains correct after the UX rewrite.
+- Saved setup state is preserved correctly.
+- The new UX changes do not break downstream career flow assumptions.
+
+----------------------------------------------------------------
+FEAT-1214 - Add Debug/Test Support for Wizard Flow and Shared Layout Migration
+----------------------------------------------------------------
+
+Description
+Provide lightweight development support for validating the new wizard flow and shared layout.
+
+Requirements
+- Add development-friendly visibility for:
+  - current wizard tab
+  - overall setup validity
+  - whether team selection is complete
+  - whether the shared arrangement layout is reading/writing state correctly
+- Keep this support lightweight and useful during migration.
+
+Acceptance Criteria
+- Developers can inspect the important state behind the new wizard flow.
+- The migration from old layouts to the shared layout is easier to validate.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- /career/start has been converted into a wizard-style tabbed setup flow.
+- The 4 tabs exist in this order:
+  - Name and Stadium Name
+  - Kits
+  - Players
+  - Team Selection
+- Users can move freely between tabs and revisit them.
+- Start Career can be triggered from any tab once the existing validation rules pass.
+- The first required team selection has been moved into tab 4 of /career/start.
+- The duplicated first-day in-career team selection requirement has been removed.
+- A shared reusable top-strip player list + full-width pitch layout component exists.
+- The top player strip shows only image, name, and overall.
+- The pitch uses the new side-on orientation with GK on the left and attackers on the right.
+- Full player skill sets are displayed under players on the pitch in a 2x4 rating layout.
+- The new shared layout is used in both:
+  - /career/start team selection
+  - Team Management
+- Existing validation and saved-state behaviour still work correctly after the UX rewrite.
+
+----------------------------------------------------------------
+FEAT-1215 - Rebuild Team Management Pitch Component with Formation Layout
+----------------------------------------------------------------
+
+Description
+Redesign and rebuild the pitch component used for team arrangement so it provides a clearer, more intuitive formation editor.
+
+The current component does not provide the best usability when arranging players, viewing their skill sets, or understanding positional placement.
+
+This feature introduces a new layout and interaction model that improves usability while keeping the existing team logic intact.
+
+The new component must satisfy the following core goals:
+- the pitch spans the full width of the page
+- all player skill ratings are always visible somewhere in the component
+- players can be easily placed into the six outfield positions
+- the goalkeeper remains fixed and cannot be moved
+- it is always clear which player occupies each position
+- rearranging players is quick and intuitive
+
+This component will replace the current pitch layout used in:
+- the Team Management page
+- the Team Selection tab within the career start wizard
+
+----------------------------------------------------------------
+Layout Structure
+----------------------------------------------------------------
+
+The new layout should be structured into three main sections:
+
+1. Player Selector Strip
+2. Full Width Pitch Formation Area
+3. Player Skill Inspector Panel
+
+---------------------------------------------------------------
+Player Selector Strip
+---------------------------------------------------------------
+
+The top of the component should contain a horizontal strip displaying all available players.
+
+Each player card should contain only:
+- player image
+- player name
+- overall rating
+
+This strip is used for selecting or dragging players onto the pitch.
+
+Full skill sets should NOT be displayed in this strip.
+
+The strip should support:
+- dragging players onto the pitch
+- clicking players to inspect them
+
+---------------------------------------------------------------
+Pitch Formation Area
+---------------------------------------------------------------
+
+The pitch should span the full width of the page.
+
+The formation should be displayed from a side-on perspective rather than from behind.
+
+Position order from left to right:
+
+GK → DF → DF → MD → MD → AT → AT
+
+The goalkeeper slot should:
+- always contain the goalkeeper
+- be locked and not draggable
+- clearly display the goalkeeper's identity
+
+Each outfield slot should:
+- clearly display the player occupying the slot
+- allow players to be dragged into it
+- allow swapping if another player is dropped onto an occupied slot
+
+Each slot should be clearly labelled with the position type:
+- DF
+- MD
+- AT
+
+Empty slots should display a placeholder label such as:
+- "Empty Defender"
+- "Empty Midfielder"
+- "Empty Attacker"
+
+---------------------------------------------------------------
+Player Skill Inspector Panel
+---------------------------------------------------------------
+
+A player skill inspector panel should display the full skill set for the currently selected or hovered player.
+
+This ensures that all player skill ratings are always visible somewhere in the component.
+
+The panel should display:
+
+- player name
+- player image
+- overall rating
+- full skill set
+
+Skill ratings should include:
+
+- Tackling
+- Marking
+- Passing
+- Movement
+- Control
+- Dribbling
+- Shooting
+
+The rating display should use the existing rating bar system.
+
+Each rating should display:
+- rating name
+- rating bar underneath
+
+----------------------------------------------------------------
+Interaction Behaviour
+----------------------------------------------------------------
+
+Drag and Drop
+- Players can be dragged from the player strip onto pitch slots.
+- Dropping a player into an empty slot assigns them to that position.
+- Dropping onto an occupied slot swaps the players.
+
+Rearranging Players
+- Players already on the pitch can be dragged to another slot.
+- Swapping behaviour should be supported between pitch slots.
+
+Removing Players
+- Dragging a player off the pitch removes them from that position.
+
+Player Selection
+- Clicking or hovering over a player should update the skill inspector panel.
+
+Visual Feedback
+- Pitch slots should highlight when a player is dragged over them.
+- Occupied slots should clearly show the player assigned to that position.
+
+----------------------------------------------------------------
+Goalkeeper Rules
+----------------------------------------------------------------
+
+The goalkeeper slot must follow special rules:
+
+- the goalkeeper is always present
+- the goalkeeper cannot be moved
+- the goalkeeper cannot be swapped with outfield players
+
+----------------------------------------------------------------
+Reusability Requirements
+----------------------------------------------------------------
+
+The new pitch component should be reusable in both:
+
+- Team Management page
+- Career Start Team Selection tab
+
+Shared logic should be centralised so the layout and interactions remain consistent across both pages.
+
+----------------------------------------------------------------
+Acceptance Criteria
+----------------------------------------------------------------
+
+- The pitch component spans the full width of the page.
+- A horizontal player selector strip appears above the pitch.
+- Player cards in the strip show only image, name, and overall rating.
+- The goalkeeper appears in a locked position on the left side of the pitch.
+- Six outfield positions can be filled with players.
+- Players can be dragged onto the pitch from the selector strip.
+- Players can be rearranged between pitch positions.
+- Dropping onto an occupied slot swaps the players.
+- The position of each player is clearly visible.
+- A skill inspector panel displays the full skill set for the selected player.
+- All player skill ratings remain accessible within the component at all times.
+- The component works in both Team Management and Career Start team selection.
+
+Status
+- FEAT-1215: done

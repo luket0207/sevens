@@ -4,10 +4,9 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import { MODAL_BUTTONS, useModal } from "../../engine/ui/modal/modalContext";
 import PageLayout from "../shared/pageLayout/pageLayout";
+import TeamSetupLayout from "../shared/teamSetupLayout/teamSetupLayout";
 import { PLAYER_GENERATION_TYPES } from "../playerGeneration";
 import TeamManagementDebugPanel from "./components/teamManagementDebugPanel";
-import TeamManagementPitch from "./components/teamManagementPitch";
-import TeamManagementPlayerList from "./components/teamManagementPlayerList";
 import TeamManagementTacticBox from "./components/teamManagementTacticBox";
 import {
   TEAM_MANAGEMENT_DEFAULT_TACTICS,
@@ -258,20 +257,21 @@ const TeamManagement = () => {
         />
 
         <section className="teamManagement__main">
-          <TeamManagementPlayerList
-            onDragStartFromList={handleDragStartFromList}
+          <TeamSetupLayout
+            emptyStripMessage="No players available in player team data."
+            goalkeeper={initialDraft.goalkeeper}
+            isStripPlayerDraggable={(player) => player?.playerType !== PLAYER_GENERATION_TYPES.GOALKEEPER}
+            onPitchPlayerDragEnd={(event, player, slot) => handleDragEndFromSlot(event, player.id, slot.id)}
+            onPitchPlayerDragStart={(event, player, slot) => handleDragStartFromSlot(event, player.id, slot.id)}
+            onSlotDragOver={allowDrop}
+            onSlotDrop={(event, slot) => handleDropToSlot(event, slot.id)}
+            onStripPlayerDragStart={(event, player) => handleDragStartFromList(event, player.id)}
             playerPlacementById={playerPlacementById}
             players={sortedPlayerListPlayers}
-            teamKit={teamKit}
-          />
-          <TeamManagementPitch
-            goalkeeper={initialDraft.goalkeeper}
-            onAllowDrop={allowDrop}
-            onDragEndFromSlot={handleDragEndFromSlot}
-            onDragStartFromSlot={handleDragStartFromSlot}
-            onDropToSlot={handleDropToSlot}
             playersById={initialDraft.outfieldById}
             slotAssignments={slotAssignments}
+            slotLayout={TEAM_MANAGEMENT_SLOT_LAYOUT}
+            stripHint="Goalkeeper remains fixed. Drag outfield players from the top strip into pitch slots."
             teamKit={teamKit}
           />
         </section>

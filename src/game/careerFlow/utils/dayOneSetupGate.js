@@ -7,6 +7,6 @@ export const resolveDayOneSetupGateState = ({ currentDay, playerTeam }) => {
   return {
     isDayOne,
     isSetupComplete,
-    isGateActive: isDayOne && !isSetupComplete,
+    isGateActive: false,
   };
 };

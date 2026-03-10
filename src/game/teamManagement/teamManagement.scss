@@ -80,7 +80,7 @@
 
 .teamManagement__main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   align-items: flex-start;
   gap: 1rem;
 }
@@ -177,6 +177,16 @@
   color: rgba($lightText, 0.92);
 }
 
+.teamManagement .playerSkillsetBars__traits {
+  border-top-color: rgba($lightText, 0.2);
+}
+
+.teamManagement .playerSkillsetBars__traitsTitle,
+.teamManagement .playerSkillsetBars__traitItem,
+.teamManagement .playerSkillsetBars__traitsEmpty {
+  color: rgba($lightText, 0.9);
+}
+
 .teamManagement__playerPlacement {
   position: absolute;
   top: 0.32rem;
@@ -203,16 +213,16 @@
   color: $lightText;
 }
 
-.teamManagement__ratingBadge--1to10 { background: $ratingBand1To10; }
-.teamManagement__ratingBadge--11to20 { background: $ratingBand11To20; }
-.teamManagement__ratingBadge--21to30 { background: $ratingBand21To30; }
-.teamManagement__ratingBadge--31to40 { background: $ratingBand31To40; }
-.teamManagement__ratingBadge--41to50 { background: $ratingBand41To50; color: $darkText; }
-.teamManagement__ratingBadge--51to60 { background: $ratingBand51To60; color: $darkText; }
-.teamManagement__ratingBadge--61to70 { background: $ratingBand61To70; color: $darkText; }
-.teamManagement__ratingBadge--71to80 { background: $ratingBand71To80; color: $darkText; }
-.teamManagement__ratingBadge--81to90 { background: $ratingBand81To90; color: $darkText; }
-.teamManagement__ratingBadge--91to100 { background: $ratingBand91To100; color: $lightText; }
+.teamManagement__ratingBadge--1to5 { background: $ratingBand1To5; }
+.teamManagement__ratingBadge--6to10 { background: $ratingBand6To10; }
+.teamManagement__ratingBadge--11to15 { background: $ratingBand11To15; color: $lightText; }
+.teamManagement__ratingBadge--16to20 { background: $ratingBand16To20; color: $lightText; }
+.teamManagement__ratingBadge--21to25 { background: $ratingBand21To25; color: $lightText; }
+.teamManagement__ratingBadge--26to30 { background: $ratingBand26To30; color: $darkText; }
+.teamManagement__ratingBadge--31to35 { background: $ratingBand31To35; color: $darkText; }
+.teamManagement__ratingBadge--36to40 { background: $ratingBand36To40; color: $lightText; }
+.teamManagement__ratingBadge--41to45 { background: $ratingBand41To45; color: $darkText; }
+.teamManagement__ratingBadge--46to50 { background: $ratingBand46To50; color: $lightText; }
 
 .teamManagement__pitch {
   position: relative;

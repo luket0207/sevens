@@ -1069,3 +1069,93 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - Draw days with zero fixtures remain immediately continuable by design because reveal-completion state is already true.
+
+BUG-030 - League table 5-match form indicators
+Status: done
+
+What was implemented:
+- Added a `Form` column to the league table UI.
+- Each row now renders exactly five form circles.
+- Form ordering is oldest-to-newest from left-to-right.
+- Empty history slots are rendered as hollow circles.
+- Win/draw/loss circles use green/yellow/red styling via global color tokens.
+- Wired simulation form state into the table by passing `simulation.teamFormByTeamId` from Career Home to `LeagueTablePanel`.
+- Added fallback form resolution from team lookup when simulation map has no form for a team.
+
+Engine components considered:
+- `gameContext`, `button`, `modal`, `modalContext`, `bars`, `rng`, `saveGame`, `timer`, `tooltip`, `toast`, `slidePanel`, `makeDecision`.
+
+Engine components used:
+- `gameContext` (indirectly through existing Career Home state wiring) to consume persisted simulation form data.
+- `modal`/`modalContext` remains used by league table team-row modal interactions (unchanged by this fix).
+
+Engine components not used:
+- `button`, `bars`, `rng`, `saveGame`, `timer`, `tooltip`, `toast`, `slidePanel`, `makeDecision` were not required for this table-rendering/styling update.
+
+Files changed:
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.scss`
+- `src/assets/scss/ui/colours.scss`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Form-circle rendering is intentionally compact for table density; if needed later, add tooltip labels per dot for richer inline explanation.
+
+BUG-031 - Match Result Type Matrix range/value update
+Status: done
+
+What was implemented:
+- Updated `MRD_RESULT_MATRIX` ranges and IDs to the latest requested set:
+  - `0-4`, `5-8`, `9-16`, `17-26`, `27-40`, `41-55`, `56-72`, `73-99`, `100+`.
+- Updated each row probability payload to the supplied values.
+- Kept existing weighted outcome resolution logic unchanged so the new matrix is consumed without downstream code changes.
+
+Engine components considered:
+- `gameContext`, `rng`, `saveGame`.
+
+Engine components used:
+- `rng` remains the weighted-roll engine used by match simulation (no API changes required).
+
+Engine components not used:
+- `gameContext` and `saveGame` required no changes because this bugfix is constants-only.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- As with prior matrix updates, row values are treated as relative weights (not strict 100-sum percentages); existing normalization handles this automatically.
+
+BUG-032 - Match Result Type Matrix corrected row values
+Status: done
+
+What was implemented:
+- Applied corrected probability values for three MRD rows:
+  - `41-55`: `1 / 14 / 10 / 60 / 15`
+  - `56-72`: `0.2 / 5.3 / 7.5 / 69 / 18`
+  - `73-99`: `0.1 / 1.8 / 3.6 / 74.5 / 20`
+- Kept MRD band boundaries and remaining row values from BUG-031 unchanged.
+- Kept weighted-outcome simulation flow unchanged so the corrected constants are consumed directly.
+
+Engine components considered:
+- `gameContext`, `rng`, `saveGame`.
+
+Engine components used:
+- `rng` remains the engine used by weighted outcome selection in simulation (no API changes).
+
+Engine components not used:
+- `gameContext` and `saveGame` required no changes because this is a constants-only correction.
+
+Files changed:
+- `src/game/careerSimulation/constants/simulationConstants.js`
+- `vibe/epics/EPIC-010/bugs.txt`
+- `vibe/epics/EPIC-010/implementation.txt`
+- `vibe/epics/EPIC-010/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- None beyond existing matrix-boundary/unit test coverage already noted in testing backlog.

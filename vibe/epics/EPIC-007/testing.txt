@@ -282,3 +282,26 @@ Automated completed:
 Automated needed:
 - Unit test asserting `CHAMPIONS_CUP_MATCH_SLOTS` final slot uses `DAY_INDEX.SUNDAY`.
 Status: passed
+
+----------------------------------------------------------------
+BUG-005 Regression Test - Playoff Tooltip Placeholder Suppression and Text Formatting
+Manual steps:
+1. Open `/career/home`.
+2. Navigate to week 16 and locate the playoff event icon for the player-team league playoff row.
+3. Hover playoff event icon before season outcomes are resolved.
+4. Confirm no tooltip is shown while placeholder participants are unresolved.
+5. Progress simulation until season outcomes are resolved (playoff participants known).
+6. Return to calendar and hover playoff event icon again.
+Expected:
+- No tooltip is shown for placeholder playoff participants (`2nd vs 3rd (TBD)` style data).
+- Once resolved, tooltip shows clean pairing text in `Home v Away` style.
+- Tooltip text never appears as malformed prefixed strings like `vs 2nd vs 3rd`.
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing unrelated baseline issues in shared engine/info modules.
+Automated needed:
+- Unit test coverage for playoff tooltip resolution:
+  - placeholder suppression
+  - resolved team-name rendering from `seasonOutcomes`
+  - duplicate prefix normalization.
+Status: passed

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { getRatingDisplayMeta } from "../../playerGeneration";
+import { getOverallRatingDisplayMeta } from "../../playerGeneration";
 import PlayerImage from "../../playerImage/components/playerImage";
 import PlayerSkillsetBars from "../../shared/playerSkillsetBars/playerSkillsetBars";
 import {
@@ -34,8 +34,8 @@ const LeagueTeamSquadModalContent = ({ team }) => {
       <div className="leagueTeamSquadModal__list">
         {players.map((player) => {
           const roleGroup = resolvePlayerRoleGroup(player, "midfielder");
-          const overallMeta = getRatingDisplayMeta(player?.overall) ?? {
-            bandKey: "1to10",
+          const overallMeta = getOverallRatingDisplayMeta(player?.overall) ?? {
+            bandKey: "1to5",
             value: Math.round(Number(player?.overall) || 0),
           };
           return (
@@ -63,7 +63,7 @@ const LeagueTeamSquadModalContent = ({ team }) => {
                     ? ` | Potential ${Math.round(Number(player.potential) || 0)}`
                     : ""}
                 </p>
-                <PlayerSkillsetBars skills={player?.skills} />
+                <PlayerSkillsetBars skills={player?.skills} traits={player?.traits} />
               </div>
             </article>
           );

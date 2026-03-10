@@ -1,0 +1,450 @@
+EPIC-012 Implementation Log
+Date: 2026-03-09
+
+FEAT-1201 to FEAT-1214 - Career Start Wizard + Shared Team Setup Layout Migration
+Status: done
+
+What was implemented:
+- Reworked `/career/start` into a 4-tab wizard flow with required tab order:
+  1. Name and Stadium Name
+  2. Kits
+  3. Players
+  4. Team Selection
+- Added free tab navigation with persistent state across tabs.
+- Kept `Start Career` available from any tab via a persistent action area.
+- Moved the initial required team arrangement/tactics setup into the new Team Selection tab in `/career/start`.
+- Added pre-career Team Selection state in `career.setup.teamManagement`, including:
+  - slot assignments
+  - tactics
+  - DTR/ATR/TC snapshot
+  - completion timestamp.
+- Updated career setup validation so Start Career remains disabled until:
+  - name/stadium valid
+  - kits valid
+  - player selection valid
+  - team selection arrangement complete.
+- Added a new shared reusable layout component for player arrangement:
+  - top horizontal player strip (image, name, overall only)
+  - full-width side-on pitch layout (GK -> DF -> MD -> AT left-to-right)
+  - full skill display under placed pitch players in a 2x4 grid with bars.
+- Reused that shared component in both:
+  - `/career/start` Team Selection tab
+  - `/team-management` page
+- Updated Team Management page to use the shared layout while preserving:
+  - drag/drop placement
+  - remove-on-off-slot drag end
+  - tactic calculation
+  - save/cancel flow.
+- Removed duplicated in-career day-1 setup gate behavior by disabling day-1 gate activation.
+- Updated career world generation to consume pre-career `setup.teamManagement` when complete, so generated player-team state starts with the setup already done.
+- Added wizard debug visibility for:
+  - active tab
+  - overall setup validity
+  - team-selector completion
+  - team-selection completion
+  - current slot/tactic setup payload.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `gameContext` for persisting wizard/tab setup data and pre-career team-selection state.
+- `button` for wizard tab controls and start-career actions.
+- `bars` in shared pitch rating display cells for the 2x4 rating grid.
+- `modal`/`modalContext` remained in use for Team Management save/cancel flows.
+
+Engine components not used (and why):
+- `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this UX-structure migration; existing feature flow did not need new interactions from these systems.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/careerStart/components/careerStartTeamSelectionTab.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `src/game/careerFlow/utils/dayOneSetupGate.js`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Team Management legacy list/pitch components remain in the codebase but are no longer used by active routes; they can be removed in a cleanup pass.
+- Wizard tab completion indicators are state-driven and lightweight; if richer onboarding is needed later, add inline per-tab checklist guidance.
+
+BUGFIX-EPIC-012-2026-03-09 - Shared pitch dropzones + realistic slot spacing
+Status: done
+
+What was implemented:
+- Reworked `TeamSetupLayout` pitch from a role-column grid into explicit coordinate-based slot nodes.
+- Restored visible/clear dropzones per slot (dashed empty state + "Drop Player" hint).
+- Kept drag/drop handlers on each slot (`onDragOver` + `onDrop`) so assignment works in shared layout contexts.
+- Added explicit `allowDrop` wiring in Career Start Team Selection tab.
+- Updated `TEAM_MANAGEMENT_SLOT_LAYOUT` coordinates to a more football-shaped side-on arrangement.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` remained in use for on-pitch 2x4 rating cells.
+
+Engine components not used (and why):
+- No additional engine components were needed for this UI bugfix pass; changes were within shared game feature UI and existing drag/drop handlers.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/careerStart/components/careerStartTeamSelectionTab.jsx`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- On narrow screens, the pitch now scrolls horizontally to preserve formation spacing and keep slot dropzones readable.
+
+FEAT-1215 - Rebuild Team Management Pitch Component with Formation Layout
+Status: done
+
+What was implemented:
+- Rebuilt the shared team arrangement UI into the required three-section structure:
+  - horizontal player selector strip
+  - full-width side-on pitch formation area
+  - persistent player skill inspector panel.
+- Added player inspection interactions:
+  - hover/click on strip cards updates inspector
+  - hover/click on pitch cards updates inspector
+  - inspector always shows one valid player profile so full ratings remain visible in-component.
+- Preserved compact strip cards (image, name, overall only) for fast selection/drag.
+- Kept goalkeeper locked on the left with explicit non-draggable handling.
+- Added clearer outfield slot affordances:
+  - role badge and slot label
+  - empty placeholder labels (`Empty Defender`, `Empty Midfielder`, `Empty Attacker`)
+  - drag-over highlight state for visual drop feedback.
+- Kept existing assignment logic contract from Team Management/Career Start:
+  - drop into empty slot assigns
+  - drop onto occupied slot swaps
+  - drag off pitch removes assignment via existing parent drag-end behavior.
+- Applied automatically in both `/team-management` and `/career/start` Team Selection via shared component reuse.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` for inspector skill rating visualization.
+
+Engine components not used (and why):
+- No additional engine components were required; this feature is a shared game UI refactor with existing drag/state pathways unchanged.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `vibe/epics/EPIC-012/features.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Mobile keeps horizontal overflow for pitch precision under 640px width to avoid overlap of fixed formation anchors.
+- Keyboard drag interaction remains unchanged from existing behavior and could be enhanced in a future accessibility pass.
+
+BUGFIX-EPIC-012-2026-03-09-B - Inspector right-column layout + slot panel style removal
+Status: done
+
+What was implemented:
+- Reworked shared team setup structure so pitch and skill inspector are rendered in a shared body grid, with inspector on the right at desktop sizes.
+- Kept player strip above the pitch area and updated strip alignment to full-width `space-between` distribution.
+- Removed persistent border/background styling from `teamSetupLayout__slot` while preserving slot dimensions and drop-target behavior.
+- Kept strip card styling unchanged as requested.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` remains used by the inspector panel and unchanged in this pass.
+
+Engine components not used (and why):
+- No additional engine systems were needed; this was a shared layout/style bugfix in existing feature components.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- On smaller breakpoints, body layout intentionally stacks to maintain readability and avoid squeeze on the inspector content.
+
+BUGFIX-EPIC-012-2026-03-09-C - Inspector full-height match + reusable color-coded skill bars
+Status: done
+
+What was implemented:
+- Updated shared team setup body layout so the right-column inspector stretches to match pitch height in desktop mode.
+- Swapped inspector skill rendering from bespoke bar cells to shared `PlayerSkillsetBars`.
+- Applied inspector-specific style adjustments so reusable skill labels remain readable against the dark inspector background.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `bars` indirectly via the shared `PlayerSkillsetBars` component.
+
+Engine components not used (and why):
+- No additional engine systems were required; this was a shared layout/component reuse bugfix.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- In stacked/mobile layout, inspector follows normal document flow; exact equal-height pairing with pitch is intentionally desktop-focused.
+
+BUGFIX-EPIC-012-2026-03-09-D - Even pitch-field spread for formation anchors
+Status: done
+
+What was implemented:
+- Rebalanced shared formation anchor coordinates to distribute outfield lines across more of the pitch width.
+- Updated canonical slot layout coordinates (used by Team Management and Career Start Team Selection).
+- Updated shared fallback coordinates to match canonical spacing.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this bugfix was a layout-coordinate adjustment in shared game UI.
+
+Engine components not used (and why):
+- No additional engine systems were needed for coordinate tuning.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If further balancing is needed for specific breakpoints, slot widths and mobile anchor presets can be tuned independently in a follow-up visual pass.
+
+BUGFIX-EPIC-012-2026-03-09-E - Vertical separation + slot label cleanup + role-color tags
+Status: done
+
+What was implemented:
+- Increased vertical spacing between outfield paired anchors to reduce overlap risk on the pitch field.
+- Removed `teamSetupLayout__slotLabel` elements from pitch slot rendering.
+- Removed goalkeeper pitch-card placement pill so it no longer displays a lone badge.
+- Added role-specific color-coded position tags and increased their text size.
+- Used existing shared position pill color tokens to match requested mapping:
+  - GK orange
+  - DF red
+  - MD blue
+  - AT yellow.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this was a shared UI layout/styling and coordinate-tuning bugfix.
+
+Engine components not used (and why):
+- No additional engine systems were required for this presentation/spacing adjustment.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If overlap still appears at very specific viewport sizes, we can add breakpoint-specific `topPercent` presets in a follow-up pass.
+
+BUGFIX-EPIC-012-2026-03-09-F - Extra vertical separation for attacker pair
+Status: done
+
+What was implemented:
+- Applied a small vertical spacing increase for attacker anchors in the shared formation layout.
+- Updated both canonical slot coordinates and shared fallback coordinates to keep behavior consistent across Team Management and Career Start Team Selection.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this was a slot-coordinate tuning bugfix.
+
+Engine components not used (and why):
+- No engine-level systems were required for this visual spacing adjustment.
+
+Files changed:
+- `src/game/teamManagement/constants/teamManagementConstants.js`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- If additional micro-adjustments are needed, attacker spacing can be fine-tuned independently per breakpoint.
+
+BUGFIX-EPIC-012-2026-03-09-G - Overall rating bands (1-50) + inspector meta cleanup
+Status: done
+
+What was implemented:
+- Added a dedicated overall-rating display mapping for 1-50 values using 5-point bands (`1to5` through `46to50`) while keeping skill ratings on the existing 1-100 10-point mapping.
+- Updated overall badge consumers in Team Management, shared Team Setup layout, and league squad modal to use `getOverallRatingDisplayMeta`.
+- Added global color tokens for 1-50 overall bands and updated related overall badge class maps in feature SCSS.
+- Removed the `teamSetupLayout__inspectorMeta` element from the shared inspector header and deleted unused related SCSS selectors.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this bugfix was scoped to shared game UI helpers/components and styling.
+
+Engine components not used (and why):
+- No new engine-level behavior, state orchestration, or utility integration was needed for rating-band mapping and inspector markup cleanup.
+
+Files changed:
+- `src/game/playerGeneration/ratingDisplayUtils.js`
+- `src/game/playerGeneration/index.js`
+- `src/assets/scss/ui/colours.scss`
+- `src/game/teamManagement/components/teamManagementPlayerTile.jsx`
+- `src/game/teamManagement/teamManagement.scss`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/careerCalendar/components/leagueTeamSquadModalContent.jsx`
+- `src/game/careerCalendar/components/leagueTeamSquadModalContent.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Overall currently accepts numeric `0-50`; UI banding starts at `1-5`, so `0` values are displayed with the lowest overall band color by design.
+
+BUGFIX-EPIC-012-2026-03-09-H - Player-overall color spectrum update (1-50 only)
+Status: done
+
+What was implemented:
+- Updated player-overall color tokens (`ratingBand1To5` through `ratingBand46To50`) to the new requested spectrum.
+- Kept skill-rating 1-100 color tokens unchanged.
+- Updated overall badge text-color overrides in Team Setup and Team Management styles to keep contrast/readability with the new repeated dark-red low bands.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this bugfix was token/styling-only and did not require engine integration changes.
+
+Engine components not used (and why):
+- No new state flow, UI engine component behavior, or utility logic was required for this color-token adjustment.
+
+Files changed:
+- `src/assets/scss/ui/colours.scss`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/teamManagement/teamManagement.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- League squad modal overall badges use semi-transparent backgrounds over light surfaces and retain dark text; if visual tuning is needed, we can adjust per-band text color there in a dedicated UI polish pass.
+
+BUGFIX-EPIC-012-2026-03-09-I - Goalkeeper node visual panel removal
+Status: done
+
+What was implemented:
+- Removed `border` and `background` styling from `teamSetupLayout__goalkeeperNode` in the shared team setup layout.
+- Kept positioning/sizing/layout behavior intact so goalkeeper card rendering and interactions remain unchanged.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- None additionally; this was a shared SCSS presentation fix only.
+
+Engine components not used (and why):
+- No engine state, utility, or UI framework changes were required for this styling adjustment.
+
+Files changed:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Goalkeeper node still keeps `border-radius` and spacing layout values; only the requested border/background panel visuals were removed.
+
+BUGFIX-EPIC-012-2026-03-09-J - Career Start wizard Back/Next controls at top and bottom
+Status: done
+
+What was implemented:
+- Added sequential wizard navigation controls (`Back` / `Next`) to the Career Start page.
+- Rendered the controls in two positions around tab content: above and below the active section.
+- Added adjacent-tab navigation logic based on active tab index.
+- Added boundary disabling behavior so:
+  - `Back` is disabled on tab 1.
+  - `Next` is disabled on tab 4.
+- Added shared styling for step-navigation blocks and responsive wrapping behavior on narrower viewports.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `button` for the new top/bottom `Back` and `Next` wizard controls.
+
+Engine components not used (and why):
+- `gameContext` storage behavior was unchanged for this bugfix.
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not required because this change was scoped to wizard navigation UI/flow only.
+
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Sequential controls intentionally do not enforce per-step completion; existing free tab navigation behavior is preserved.
+
+BUGFIX-EPIC-012-2026-03-09-K - Wizard cleanup checklist + equal-width tabs
+Status: done
+
+What was implemented:
+- Removed the Career Start wizard debug/details panel from the page.
+- Replaced legacy disabled-hint copy with a setup checklist that shows step completion status for:
+  - Name and Stadium Name
+  - Kits
+  - Players
+  - Team Selection
+- Added explicit complete/pending indicators using tick/cross icons and status text.
+- Updated tab navigation styling so wizard tabs are equal-width and spread across the full available row.
+- Added responsive equal-width behavior for tab layout:
+  - 4 columns desktop
+  - 2 columns medium widths
+  - 1 column on narrow screens.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `button` remained in use for wizard navigation and Start Career actions.
+- `gameContext` completion data continued to drive setup-status rendering (no data-shape change required).
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed for this UI cleanup/styling bugfix.
+
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-012/bugs.txt`
+- `vibe/epics/EPIC-012/implementation.txt`
+- `vibe/epics/EPIC-012/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Checklist currently uses text-based tick/cross characters to avoid adding a new icon dependency; can be swapped to Font Awesome later if icon package standardization is introduced.

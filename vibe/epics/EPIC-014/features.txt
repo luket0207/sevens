@@ -1,0 +1,460 @@
+EPIC-014 - Player Growth and Training System
+
+Overview
+This epic introduces the player growth and training system.
+
+Training is the first system that allows players to improve their ratings over time.
+
+Training works through:
+- training sessions
+- coaches
+- success probabilities
+- player potential limits
+- sub-rating progression
+
+Training sessions are scheduled on the calendar and executed automatically when their day arrives.
+
+Training cannot be scheduled on match days.
+
+Training success can improve player skill ratings using a sub-rating progression system.
+
+This epic introduces:
+- the training bar UI
+- training session inventory
+- drag/drop scheduling onto the calendar
+- coach hiring and weekly availability
+- automatic coach training session generation
+- training session execution and player growth
+- training results summaries
+
+This epic does not introduce:
+- advanced coach personalities
+- coach progression
+- player morale effects
+- training injuries
+
+Those systems may be introduced later.
+
+----------------------------------------------------------------
+Training System Core Rules
+----------------------------------------------------------------
+
+A training session can be scheduled on a calendar day.
+
+Restrictions:
+- training cannot be scheduled on match days
+- training cannot be scheduled on the current day
+- training cannot be scheduled on past days
+
+Training sessions are placed by dragging them from the Training Bar onto valid calendar days.
+
+Training sessions cannot be moved once scheduled.
+They may only be:
+- placed
+- cancelled
+
+A scheduled training session may be cancelled up until the day before it occurs.
+
+----------------------------------------------------------------
+Training Bar
+----------------------------------------------------------------
+
+A new Training Bar must appear directly under the calendar.
+
+Requirements:
+- same width as the calendar
+- fixed height
+- height remains constant even when empty
+
+The Training Bar shows:
+- all training sessions currently available to the user
+- coach availability information
+
+Training sessions behave like inventory items:
+- sessions have quantities
+- identical sessions stack
+- quantity decreases when a session is scheduled
+- if quantity reaches zero the session disappears
+
+For debugging purposes:
+- the player should start with 1 of every session
+
+For the real game:
+- the player starts with zero sessions
+
+----------------------------------------------------------------
+Coach System
+----------------------------------------------------------------
+
+Coaches can be hired from the Staff page.
+
+For now provide:
+- 10 coaches with different qualities
+
+Coach properties:
+
+Name
+GK Rating (0-100)
+DF Rating (0-100)
+MD Rating (0-100)
+AT Rating (0-100)
+Tactics Rating (0-100)
+Scouting Rating (0-100)
+Player Judgement Rating (0-100)
+Sessions per Week (1-3)
+Wage (100-10,000)
+
+Coach session availability resets weekly.
+
+When a coach is used in training:
+- one session is deducted from their weekly session pool
+
+If no coaches are available:
+- the training session is cancelled
+
+----------------------------------------------------------------
+FEAT-1401 - Introduce Training Bar UI
+----------------------------------------------------------------
+
+Description
+Create the Training Bar below the calendar.
+
+Requirements
+- full calendar width
+- fixed height
+- visible even if empty
+- shows training sessions inventory
+- shows coach availability summary
+
+Acceptance Criteria
+- Training Bar appears under the calendar
+- layout remains stable with zero sessions
+- sessions are displayed as stackable items
+
+----------------------------------------------------------------
+FEAT-1402 - Implement Drag-and-Drop Training Scheduling
+----------------------------------------------------------------
+
+Description
+Allow training sessions to be scheduled by dragging them onto calendar days.
+
+Requirements
+- sessions dragged from training bar
+- sessions dropped onto calendar days
+- prevent placement on:
+  - current day
+  - past days
+  - match days
+
+Acceptance Criteria
+- sessions can be dragged and dropped onto valid days
+- invalid days reject the drop
+
+----------------------------------------------------------------
+FEAT-1403 - Training Scheduling Modal with Coach Selection
+----------------------------------------------------------------
+
+Description
+After a session is dropped on a day, show a modal for coach assignment.
+
+Requirements
+Modal must allow:
+- selecting coaches for the training
+- displaying coach availability
+- cancelling the training session
+
+Rules:
+- each selected coach consumes 1 weekly session
+- if no coach is available training is cancelled
+
+Acceptance Criteria
+- coach selection modal appears on session drop
+- coach sessions decrease when used
+- user may cancel the training
+
+----------------------------------------------------------------
+FEAT-1404 - Allow Cancelling Scheduled Training Sessions
+----------------------------------------------------------------
+
+Description
+Allow training sessions to be removed from the calendar.
+
+Rules:
+- training may be cancelled until the day before execution
+- cancelled sessions return to the training bar inventory
+- sessions cannot be moved, only removed and re-added
+
+Acceptance Criteria
+- sessions can be cancelled before the training day
+- cancelled sessions return to inventory
+
+----------------------------------------------------------------
+FEAT-1405 - Implement Coach Hiring System
+----------------------------------------------------------------
+
+Description
+Allow coaches to be hired from the Staff page.
+
+Requirements
+- create 10 initial coaches with varying quality
+- allow user to hire coaches
+- hired coaches appear in the team staff
+
+Acceptance Criteria
+- coaches can be hired
+- coach stats are visible
+- coach wage displayed
+
+----------------------------------------------------------------
+FEAT-1406 - Weekly Coach Planning System
+----------------------------------------------------------------
+
+Description
+Every Monday a coach may generate a training session for the player.
+
+Chance calculation:
+
+(GK + DF + MD + AT) / 4
+
+Example:
+0 + 20 + 60 + 20 = 100
+100 / 4 = 25%
+
+Therefore:
+25% chance a session is generated.
+
+Acceptance Criteria
+- Monday modal appears
+- coach generated sessions added to training bar
+
+----------------------------------------------------------------
+FEAT-1407 - Training Session Rarity Selection
+----------------------------------------------------------------
+
+Description
+Determine rarity of generated session.
+
+Use the following table:
+
+Sum of Ratings/4	Common	Uncommon	Rare
+0-10	100	0	0
+11-20	90	10	0
+21-30	85	10	5
+31-40	80	15	5
+41-50	75	15	10
+51-60	70	20	10
+61-70	65	20	15
+71-80	60	25	15
+81-90	55	25	20
+91-100	50	30	20
+
+Acceptance Criteria
+- session rarity determined from coach rating
+
+----------------------------------------------------------------
+FEAT-1408 - Training Session Type Selection
+----------------------------------------------------------------
+
+Description
+Determine training type using weighted coach ratings.
+
+Weights:
+GK Rating
+DF Rating
+MD Rating
+AT Rating
+
+Example:
+0 / 20 / 60 / 20
+
+Results:
+0% GK
+20% DF
+60% MD
+20% AT
+
+Acceptance Criteria
+- training type selected using weighted ratings
+
+----------------------------------------------------------------
+FEAT-1409 - Add Training Session Inventory System
+----------------------------------------------------------------
+
+Description
+Store sessions inside the Training Bar.
+
+Rules:
+- sessions stack
+- quantity tracked
+- quantity decreases when scheduled
+- removed when quantity reaches zero
+
+Acceptance Criteria
+- inventory stacking works
+- quantities update correctly
+
+----------------------------------------------------------------
+FEAT-1410 - Implement Training Session Execution
+----------------------------------------------------------------
+
+Description
+When a training day arrives the session is executed.
+
+Steps:
+1. determine eligible players from the current squad
+2. check coach success chance
+3. check potential restriction
+4. apply sub-rating improvements
+
+Acceptance Criteria
+- training runs automatically when the day occurs
+
+----------------------------------------------------------------
+FEAT-1411 - Implement Position Eligibility Logic
+----------------------------------------------------------------
+
+Description
+Determine which players participate in the session.
+
+Rules:
+- session contains "Positions" column
+- players in those positions participate
+
+Example:
+Positions: DF, MD
+
+Eligible players:
+2 defenders
+2 midfielders
+
+Acceptance Criteria
+- only correct players participate
+
+----------------------------------------------------------------
+FEAT-1412 - Implement Coach Success Chance
+----------------------------------------------------------------
+
+Description
+Training success chance equals the coach rating for the session type.
+
+Example:
+DF training uses DF rating.
+
+Example:
+Coach DF rating = 52
+
+Each eligible player:
+52% success chance.
+
+Acceptance Criteria
+- success rolled independently for each player
+
+----------------------------------------------------------------
+FEAT-1413 - Implement Potential Growth Limiter
+----------------------------------------------------------------
+
+Description
+Training success depends on player potential.
+
+Use:
+
+Potential - Current Rating
+
+Rules:
+
+<=0 → 0% success
+<=5 → 50% success
+<=10 → 80% success
+>10 → 100% success
+
+User notifications required:
+- player not improving
+- player nearing learning limit
+- player slowing learning
+
+Acceptance Criteria
+- potential system limits training success
+
+----------------------------------------------------------------
+FEAT-1414 - Implement Sub-Rating Growth System
+----------------------------------------------------------------
+
+Description
+Skill improvements accumulate as sub-rating points.
+
+Rule:
+To increase rating from N to N+1 requires N points.
+
+Example:
+rating = 21
+
+needs:
+21 points to reach 22.
+
+Sub-points accumulate across sessions.
+
+Acceptance Criteria
+- ratings increase only when threshold reached
+- excess points carry over
+
+----------------------------------------------------------------
+FEAT-1415 - Apply Session Skill Improvements
+----------------------------------------------------------------
+
+Description
+Training sessions contain skill improvement values.
+
+These values grant sub-rating points.
+
+Only applied if:
+- training success
+- potential check passed
+
+Acceptance Criteria
+- skill sub-points added correctly
+
+----------------------------------------------------------------
+FEAT-1416 - Training Result Summary Modal
+----------------------------------------------------------------
+
+Description
+After a training session finishes show summary.
+
+Include:
+- players involved
+- players improved
+- skill gains
+- players blocked by potential
+
+Acceptance Criteria
+- summary modal appears after training day
+
+----------------------------------------------------------------
+FEAT-1417 - Remove Old Training Button
+----------------------------------------------------------------
+
+Description
+Remove the previous training button from the UI.
+
+Acceptance Criteria
+- old training button removed
+- training now controlled via training bar
+
+----------------------------------------------------------------
+EPIC COMPLETION CRITERIA
+----------------------------------------------------------------
+
+This epic is complete when:
+
+- training bar exists below calendar
+- sessions can be dragged onto calendar
+- sessions cannot be placed on match days
+- sessions cannot be placed on past or current days
+- coach hiring works
+- coaches have session limits
+- Monday coach planning works
+- sessions generate correctly
+- training executes on scheduled days
+- growth occurs using sub-rating system
+- potential caps player growth
+- training summary appears after sessions

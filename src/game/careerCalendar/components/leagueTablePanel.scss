@@ -41,7 +41,7 @@
 .leagueTablePanel__table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 560px;
+  min-width: 650px;
 
   th,
   td {
@@ -63,6 +63,40 @@
 
 .leagueTablePanel__teamCell {
   padding: 0.2rem 0.4rem;
+}
+
+.leagueTablePanel__formCell {
+  min-width: 4.7rem;
+}
+
+.leagueTablePanel__form {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.24rem;
+}
+
+.leagueTablePanel__formDot {
+  width: 0.56rem;
+  height: 0.56rem;
+  border-radius: 999px;
+  border: 1px solid rgba($lightText, 0.62);
+  background: transparent;
+}
+
+.leagueTablePanel__formDot--win {
+  background: $formResultWin;
+  border-color: rgba($formResultWin, 0.95);
+}
+
+.leagueTablePanel__formDot--draw {
+  background: $formResultDraw;
+  border-color: rgba($formResultDraw, 0.95);
+}
+
+.leagueTablePanel__formDot--loss {
+  background: $formResultLoss;
+  border-color: rgba($formResultLoss, 0.95);
 }
 
 .leagueTablePanel__teamButton {

@@ -1,7 +1,9 @@
-const RATING_MIN = 1;
-const RATING_MAX = 100;
+const SKILL_RATING_MIN = 1;
+const SKILL_RATING_MAX = 100;
+const OVERALL_RATING_MIN = 0;
+const OVERALL_RATING_MAX = 50;
 
-const RATING_BANDS = Object.freeze([
+const SKILL_RATING_BANDS = Object.freeze([
   Object.freeze({ key: "1to10", label: "1-10", min: 1, max: 10, colourToken: "ratingBand1To10" }),
   Object.freeze({
     key: "11to20",
@@ -68,26 +70,93 @@ const RATING_BANDS = Object.freeze([
   }),
 ]);
 
-const toSafeRatingValue = (value) => {
+const OVERALL_RATING_BANDS = Object.freeze([
+  Object.freeze({ key: "1to5", label: "1-5", min: 1, max: 5, colourToken: "ratingBand1To5" }),
+  Object.freeze({
+    key: "6to10",
+    label: "6-10",
+    min: 6,
+    max: 10,
+    colourToken: "ratingBand6To10",
+  }),
+  Object.freeze({
+    key: "11to15",
+    label: "11-15",
+    min: 11,
+    max: 15,
+    colourToken: "ratingBand11To15",
+  }),
+  Object.freeze({
+    key: "16to20",
+    label: "16-20",
+    min: 16,
+    max: 20,
+    colourToken: "ratingBand16To20",
+  }),
+  Object.freeze({
+    key: "21to25",
+    label: "21-25",
+    min: 21,
+    max: 25,
+    colourToken: "ratingBand21To25",
+  }),
+  Object.freeze({
+    key: "26to30",
+    label: "26-30",
+    min: 26,
+    max: 30,
+    colourToken: "ratingBand26To30",
+  }),
+  Object.freeze({
+    key: "31to35",
+    label: "31-35",
+    min: 31,
+    max: 35,
+    colourToken: "ratingBand31To35",
+  }),
+  Object.freeze({
+    key: "36to40",
+    label: "36-40",
+    min: 36,
+    max: 40,
+    colourToken: "ratingBand36To40",
+  }),
+  Object.freeze({
+    key: "41to45",
+    label: "41-45",
+    min: 41,
+    max: 45,
+    colourToken: "ratingBand41To45",
+  }),
+  Object.freeze({
+    key: "46to50",
+    label: "46-50",
+    min: 46,
+    max: 50,
+    colourToken: "ratingBand46To50",
+  }),
+]);
+
+const toSafeRatingValue = (value, min, max) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) {
     return null;
   }
 
-  return Math.max(RATING_MIN, Math.min(RATING_MAX, Math.round(parsed)));
+  return Math.max(min, Math.min(max, Math.round(parsed)));
 };
 
-const findRatingBand = (ratingValue) => {
-  return RATING_BANDS.find((band) => ratingValue >= band.min && ratingValue <= band.max) ?? RATING_BANDS[0];
+const findRatingBand = (bands, ratingValue) => {
+  return bands.find((band) => ratingValue >= band.min && ratingValue <= band.max) ?? bands[0];
 };
 
 export const getRatingDisplayMeta = (value) => {
-  const safeValue = toSafeRatingValue(value);
+  const safeValue = toSafeRatingValue(value, SKILL_RATING_MIN, SKILL_RATING_MAX);
   if (safeValue == null) {
     return null;
   }
 
-  const band = findRatingBand(safeValue);
+  const band = findRatingBand(SKILL_RATING_BANDS, safeValue);
 
   return {
     value: safeValue,
@@ -98,3 +167,19 @@ export const getRatingDisplayMeta = (value) => {
   };
 };
 
+export const getOverallRatingDisplayMeta = (value) => {
+  const safeValue = toSafeRatingValue(value, OVERALL_RATING_MIN, OVERALL_RATING_MAX);
+  if (safeValue == null) {
+    return null;
+  }
+
+  const band = findRatingBand(OVERALL_RATING_BANDS, safeValue);
+
+  return {
+    value: safeValue,
+    bandKey: band.key,
+    bandLabel: band.label,
+    bandRange: [band.min, band.max],
+    colourToken: band.colourToken,
+  };
+};

@@ -18,16 +18,17 @@ export const calculatePotentialMax = (currentOverall) => {
 };
 
 export const generatePlayerPotential = ({ currentOverall }) => {
+  const safeOverall = normalizeOverall(currentOverall);
   const potentialMax = calculatePotentialMax(currentOverall);
 
   if (potentialMax <= 0) {
-    return 0;
+    return safeOverall;
   }
 
   if (potentialMax === 1) {
-    return 1;
+    return safeOverall + 1;
   }
 
-  return randomInt(1, potentialMax);
+  const potentialDelta = randomInt(1, potentialMax);
+  return safeOverall + potentialDelta;
 };
-

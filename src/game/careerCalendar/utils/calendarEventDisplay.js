@@ -53,7 +53,14 @@ const normaliseText = (value) => String(value ?? "").trim().toLowerCase();
 
 const isPlaceholderOpponent = (value) => {
   const safeValue = normaliseText(value);
-  return !safeValue || safeValue === "tbd" || safeValue === "various";
+  return (
+    !safeValue ||
+    safeValue === "tbd" ||
+    safeValue.includes("tbd") ||
+    safeValue === "various" ||
+    safeValue.includes("2nd vs 3rd") ||
+    safeValue.includes("2nd v 3rd")
+  );
 };
 
 const isCupCompetition = (competitionId) => ["league-cup", "champions-cup"].includes(competitionId);
@@ -122,6 +129,46 @@ const resolveOpponentLabel = ({ fixture, playerTeamId }) => {
   return "";
 };
 
+const normaliseOpponentTooltipText = ({ opponentText, isHome }) => {
+  const safeOpponent = String(opponentText ?? "").trim();
+  if (!safeOpponent || isPlaceholderOpponent(safeOpponent)) {
+    return "";
+  }
+
+  const safeLowerOpponent = safeOpponent.toLowerCase();
+  if (safeLowerOpponent.startsWith("vs ") || safeLowerOpponent.startsWith("at ")) {
+    return safeOpponent;
+  }
+
+  if (safeLowerOpponent.includes(" vs ") || safeLowerOpponent.includes(" v ")) {
+    return safeOpponent.replace(/\s+vs\s+/i, " v ");
+  }
+
+  return isHome ? `vs ${safeOpponent}` : `at ${safeOpponent}`;
+};
+
+const resolvePlayoffTooltip = ({ event, simulationState }) => {
+  const competitionId = String(event?.competitionId ?? "").trim();
+  const playoffSuffix = "-playoff";
+  const leagueId = competitionId.endsWith(playoffSuffix)
+    ? competitionId.slice(0, competitionId.length - playoffSuffix.length)
+    : "";
+
+  const knownPlayoff = leagueId
+    ? simulationState?.seasonOutcomes?.leagues?.[leagueId]?.playoff ?? null
+    : null;
+  const homeTeamName = String(knownPlayoff?.homeTeamName ?? "").trim();
+  const awayTeamName = String(knownPlayoff?.awayTeamName ?? "").trim();
+  if (homeTeamName && awayTeamName) {
+    return `${homeTeamName} v ${awayTeamName}`;
+  }
+
+  return normaliseOpponentTooltipText({
+    opponentText: event?.opponent,
+    isHome: event?.isHome,
+  });
+};
+
 export const isCalendarMatchEvent = (event) => MATCH_EVENT_TYPES.includes(event?.type);
 
 export const resolveCalendarEventVisual = (event) => {
@@ -167,11 +214,18 @@ export const resolveCalendarEventTooltip = ({
     return "";
   }
 
-  if (event?.type === CALENDAR_EVENT_TYPES.LEAGUE_MATCH || event?.type === CALENDAR_EVENT_TYPES.PLAYOFF_MATCH) {
-    if (isPlaceholderOpponent(event?.opponent)) {
-      return "";
-    }
-    return event?.isHome ? `vs ${event.opponent}` : `at ${event.opponent}`;
+  if (event?.type === CALENDAR_EVENT_TYPES.PLAYOFF_MATCH) {
+    return resolvePlayoffTooltip({
+      event,
+      simulationState,
+    });
+  }
+
+  if (event?.type === CALENDAR_EVENT_TYPES.LEAGUE_MATCH) {
+    return normaliseOpponentTooltipText({
+      opponentText: event?.opponent,
+      isHome: event?.isHome,
+    });
   }
 
   const competitionId = normaliseText(event?.competitionId);
@@ -212,8 +266,8 @@ export const resolveCalendarEventTooltip = ({
     return resolvedOpponentLabel;
   }
 
-  if (isPlaceholderOpponent(event?.opponent)) {
-    return "";
-  }
-  return event?.isHome ? `vs ${event.opponent}` : `at ${event.opponent}`;
+  return normaliseOpponentTooltipText({
+    opponentText: event?.opponent,
+    isHome: event?.isHome,
+  });
 };

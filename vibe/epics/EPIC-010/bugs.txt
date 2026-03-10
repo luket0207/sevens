@@ -823,3 +823,134 @@ Attempted fixes:
 Final fix:
 - Updated:
   - `src/game/cupDraw/cupDraw.jsx`
+
+
+BUG-030 - Display 5-match team form circles in league table
+Status: fixed
+
+Repro steps:
+1. Open Career Home and inspect the League Table panel.
+2. Check any team row at season start and after several simulated match days.
+
+Expected behavior:
+- League table includes a `Form` display for each team.
+- Exactly 5 circles are always shown.
+- Left circle is oldest result of the last 5; right circle is newest.
+- Empty history slots are hollow circles.
+- Results are color-coded:
+  - win = green
+  - draw = yellow
+  - loss = red.
+
+Actual behavior:
+- League table rows did not display a form indicator at all.
+
+Suspected cause:
+- League table renderer had no form column/markup.
+- Form history state existed in simulation but was not wired into the table UI.
+
+Attempted fixes:
+- Added `teamFormByTeamId` prop wiring from Career Home simulation state to League Table panel.
+- Added form resolution with simulation-state first and team fallback.
+- Added fixed-length (5) form display mapping with left-side padding for missing history.
+- Added per-result circle styles using global SCSS tokens.
+
+Final fix:
+- League table now renders a `Form` column with five circles per row:
+  - hollow for empty slots
+  - green/yellow/red for W/D/L
+  - oldest-to-newest from left-to-right.
+
+
+
+BUG-031
+
+Can we update the Match Result Type Matrix values again please.
+
+Difference of	Lower Rating Team Big Win	Lower Rating Team Win	Draw	Higher Rating Team Win	Higher Rating Big Team Win
+0 - 4	5	35	20	35	5
+5 - 8	5	35	17	38	5
+9 - 16	3	25	12	50	10
+17 - 26	2	20	10	56	12
+27 - 40	1	17	10	58	14
+41 - 55	1	16	10	60	16
+56 - 72	0.2	5.3	9.5	70	20
+73 - 99	0.1	1.8	5.1	75	25
+100+	0	0.8	2.8	56.4	40
+
+Status: fixed
+
+Repro steps:
+1. Open `src/game/careerSimulation/constants/simulationConstants.js`.
+2. Inspect `MRD_RESULT_MATRIX` band definitions and row probabilities.
+3. Compare configured values against latest requested table.
+
+Expected behavior:
+- Matrix uses updated ranges and values:
+  - `0-4`: `5 / 35 / 20 / 35 / 5`
+  - `5-8`: `5 / 35 / 17 / 38 / 5`
+  - `9-16`: `3 / 25 / 12 / 50 / 10`
+  - `17-26`: `2 / 20 / 10 / 56 / 12`
+  - `27-40`: `1 / 17 / 10 / 58 / 14`
+  - `41-55`: `1 / 16 / 10 / 60 / 16`
+  - `56-72`: `0.2 / 5.3 / 9.5 / 70 / 20`
+  - `73-99`: `0.1 / 1.8 / 5.1 / 75 / 25`
+  - `100+`: `0 / 0.8 / 2.8 / 56.4 / 40`
+
+Actual behavior:
+- Matrix still used prior range IDs and thresholds from BUG-027.
+
+Suspected cause:
+- `MRD_RESULT_MATRIX` had not been updated to the newly requested boundary split.
+
+Attempted fixes:
+- Replaced matrix IDs and thresholds with latest band ranges.
+- Kept weighted outcome keys and simulation resolution flow unchanged.
+- Updated all row probabilities to match the provided values.
+
+Final fix:
+- Updated:
+  - `src/game/careerSimulation/constants/simulationConstants.js`
+
+
+BUG-032
+
+Sorry, I spotted some more issues in the table, here is the corrected version
+
+Difference of	Lower Rating Team Big Win	Lower Rating Team Win	Draw	Higher Rating Team Win	Higher Rating Big Team Win
+0 - 4	5	35	20	35	5
+5 - 8	5	35	17	38	5
+9 - 16	3	25	12	50	10
+17 - 26	2	20	10	56	12
+27 - 40	1	17	10	58	14
+41 - 55	1	14	10	60	15
+56 - 72	0.2	5.3	7.5	69	18
+73 - 99	0.1	1.8	3.6	74.5	20
+100+	0	0.8	2.8	56.4	40
+
+Status: fixed
+
+Repro steps:
+1. Open `src/game/careerSimulation/constants/simulationConstants.js`.
+2. Inspect `MRD_RESULT_MATRIX` rows for `41-55`, `56-72`, and `73-99`.
+3. Compare row values against the corrected table in this bug.
+
+Expected behavior:
+- Updated rows match:
+  - `41-55`: `1 / 14 / 10 / 60 / 15`
+  - `56-72`: `0.2 / 5.3 / 7.5 / 69 / 18`
+  - `73-99`: `0.1 / 1.8 / 3.6 / 74.5 / 20`
+
+Actual behavior:
+- Matrix still used prior BUG-031 row values for these three ranges.
+
+Suspected cause:
+- Follow-up correction values were not yet applied after the previous matrix pass.
+
+Attempted fixes:
+- Updated only the corrected rows while keeping band ranges and other rows unchanged.
+- Kept weighted outcome resolution logic unchanged.
+
+Final fix:
+- Updated:
+  - `src/game/careerSimulation/constants/simulationConstants.js`

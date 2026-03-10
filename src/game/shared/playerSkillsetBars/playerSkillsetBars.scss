@@ -5,6 +5,11 @@
   gap: 0.3rem;
 }
 
+.playerSkillsetBars__skills {
+  display: grid;
+  gap: 0.3rem;
+}
+
 .playerSkillsetBars__row {
   display: grid;
   grid-template-columns: minmax(78px, auto) minmax(0, 1fr);
@@ -39,4 +44,37 @@
 
 .playerSkillsetBars .bars__value {
   font-size: 0.62rem;
+}
+
+.playerSkillsetBars__traits {
+  display: grid;
+  gap: 0.2rem;
+  border-top: 1px solid rgba($darkText, 0.12);
+  margin-top: 0.2rem;
+  padding-top: 0.28rem;
+}
+
+.playerSkillsetBars__traitsTitle {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: rgba($darkText, 0.92);
+  line-height: 1.2;
+}
+
+.playerSkillsetBars__traitList {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.playerSkillsetBars__traitItem,
+.playerSkillsetBars__traitsEmpty {
+  font-size: 0.64rem;
+  line-height: 1.2;
+  color: rgba($darkText, 0.88);
+}
+
+.playerSkillsetBars__traitsEmpty {
+  margin: 0;
 }

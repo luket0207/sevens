@@ -7,7 +7,11 @@ import {
 import { buildCareerGenerationDebugSummary } from "./careerGenerationDebug";
 import { generateCareerTeam } from "./teamGenerator";
 import { createTeamIdentityGenerator } from "./teamIdentityGeneration";
-import { createEmptyTeamManagementSlotAssignments } from "../../teamManagement/utils/teamManagementState";
+import {
+  createEmptyTeamManagementSlotAssignments,
+  isSavedTeamManagementComplete,
+} from "../../teamManagement/utils/teamManagementState";
+import { TEAM_MANAGEMENT_DEFAULT_TACTICS } from "../../teamManagement/constants/teamManagementConstants";
 
 export const CAREER_GENERATION_PHASES = Object.freeze({
   PREPARING: "preparing",
@@ -40,6 +44,32 @@ const calculateTeamOverallFromPlayers = (players) => {
 const buildPlayerTeamState = (careerSetup) => {
   const players = Array.isArray(careerSetup?.players) ? careerSetup.players : [];
   const goalkeeperId = players.find((player) => player?.playerType === "GK")?.id ?? null;
+  const setupTeamManagement = careerSetup?.teamManagement ?? null;
+  const hasSetupTeamManagement = isSavedTeamManagementComplete(setupTeamManagement);
+  const defaultTeamManagement = {
+    version: 1,
+    savedAt: "",
+    goalkeeperId,
+    slotAssignments: createEmptyTeamManagementSlotAssignments(),
+    tactics: {
+      ...TEAM_MANAGEMENT_DEFAULT_TACTICS,
+    },
+    dtr: 0,
+    atr: 0,
+    tacticCompatibility: 0,
+  };
+  const teamManagement = hasSetupTeamManagement
+    ? {
+        ...defaultTeamManagement,
+        ...setupTeamManagement,
+        goalkeeperId: setupTeamManagement?.goalkeeperId ?? goalkeeperId,
+        slotAssignments: setupTeamManagement?.slotAssignments ?? defaultTeamManagement.slotAssignments,
+        tactics: {
+          ...TEAM_MANAGEMENT_DEFAULT_TACTICS,
+          ...(setupTeamManagement?.tactics ?? {}),
+        },
+      }
+    : defaultTeamManagement;
 
   return {
     id: "player-team",
@@ -56,16 +86,7 @@ const buildPlayerTeamState = (careerSetup) => {
     players,
     teamOverall: calculateTeamOverallFromPlayers(players),
     form: [],
-    teamManagement: {
-      version: 1,
-      savedAt: "",
-      goalkeeperId,
-      slotAssignments: createEmptyTeamManagementSlotAssignments(),
-      tactics: {},
-      dtr: 0,
-      atr: 0,
-      tacticCompatibility: 0,
-    },
+    teamManagement,
   };
 };
 

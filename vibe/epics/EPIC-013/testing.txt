@@ -1,0 +1,96 @@
+EPIC-013 Testing Log
+Date: 2026-03-09
+
+FEAT-1301 / FEAT-1302 - Trait model/config and full table correctness
+Manual steps:
+1. Open `src/game/playerGeneration/playerTraitConfig.js`.
+2. Verify trait entries `TR-01` through `TR-25` exist.
+3. Verify each entry includes all rarity columns (goalkeeper + five influence columns + no influence).
+4. Spot-check table values against EPIC-013 source text.
+Expected:
+- Full trait table exists and matches supplied IDs/names/rarity values exactly.
+
+FEAT-1303 / FEAT-1304 / FEAT-1305 - Trait count roll, context resolution, weighted selection
+Manual steps:
+1. Open `/career/start` and use existing player generation debug area.
+2. Generate multiple goalkeepers and outfield players (including forced influence options).
+3. Inspect each generated player for:
+   - `traitGenerationDebug.rolledTraitCount`
+   - `traitGenerationDebug.resolvedContextLabel`
+   - `traitGenerationDebug.rarityColumn`
+   - selected trait ids / trait names.
+4. Confirm generated traits never duplicate on a single player.
+5. Confirm contexts map correctly:
+   - GK -> Goalkeeper
+   - Influence Defender -> Influence Defender
+   - Influence Defensive Mid -> Influence Defensive Midfielder
+   - Influence Attacking Mid -> Influence Attacking Midfielder
+   - Influence Attacker -> Influence Attacker
+   - Influence Goalscorer -> Influence Goalscorer
+   - No Influence -> No Influence
+Expected:
+- Trait count is always 0, 1, or 2.
+- Context/rarity column matches generation type/influence.
+- Zero-weight traits are not selected for that context.
+- No duplicate traits appear per player.
+
+FEAT-1306 / FEAT-1307 / FEAT-1308 - Trait persistence on user + AI players
+Manual steps:
+1. Generate career setup players from `/career/start` team selector flow.
+2. Confirm selected user players include `traits` field in stored player objects.
+3. Complete career generation and inspect AI teams/players in generated world data.
+4. Confirm AI players also include `traits`.
+Expected:
+- Every generated player has a `traits` field.
+- User and AI players both receive trait generation outcomes.
+
+FEAT-1309 - Traits section in player skillset component
+Manual steps:
+1. Open `/team-management`.
+2. Inspect a player card list entry that renders skillset bars.
+3. Confirm `Traits` section appears under/alongside skill bars.
+4. Verify:
+   - players with traits list their trait names
+   - players with no traits show clean `No traits` text.
+5. Open other pages that use `PlayerSkillsetBars`:
+   - Team Setup inspector (`/career/start` team selection tab)
+   - league team squad modal
+6. Confirm traits section appears there as well.
+Expected:
+- Traits render in dedicated section anywhere `PlayerSkillsetBars` is used.
+- Empty trait state is handled cleanly.
+
+FEAT-1310 - Traits remain data/display only
+Manual steps:
+1. Generate players with varied trait outputs.
+2. Compare overall, DTR/ATR, and tactic compatibility behavior before/after trait integration.
+Expected:
+- Traits do not affect:
+  - overall values
+  - DTR
+  - ATR
+  - tactic compatibility
+  - tactic calculations.
+
+FEAT-1311 - Trait debug support visibility
+Manual steps:
+1. Use player generation debug tooling in `/career/start`.
+2. Confirm trait debug fields are visible for generated players:
+   - rolled trait count
+   - resolved context
+   - rarity column
+   - selected traits.
+Expected:
+- Trait assignment behavior is inspectable for balancing/validation.
+
+Command checks run after EPIC-013 implementation:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit tests for trait count roll distribution thresholds.
+- Unit tests for context resolution mapping (GK + all influence rules + no influence).
+- Unit tests for weighted selection behavior (zero-weight exclusion and duplicate prevention).
+- Component tests for `PlayerSkillsetBars` trait rendering and empty state.
+
+Test status: passed (manual), failed (lint baseline unchanged)

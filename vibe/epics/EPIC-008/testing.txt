@@ -471,3 +471,26 @@ Automated completed:
 Automated needed:
 - Unit test coverage for all matrix combinations to prevent regression on future value-table updates.
 Status: passed
+
+----------------------------------------------------------------
+BUG-014 Regression Test - Updated Tactic Compatibility Matrix Values (Second Revision)
+Manual steps:
+1. Open `/team-management`.
+2. Set defensive tactic to `Low Block`; cycle attacking tactics and record compatibility.
+3. Set defensive tactic to `Mid Block`; cycle attacking tactics and record compatibility.
+4. Set defensive tactic to `High Press`; cycle attacking tactics and record compatibility.
+5. Set defensive tactic to `Offside Trap`; cycle attacking tactics and record compatibility.
+6. Set defensive tactic to `Zonal`; cycle attacking tactics and record compatibility.
+Expected:
+- Values match latest matrix:
+  - Low Block: Posession 10, Long Ball 30, Wing Play 10, Counter 30, Direct 20
+  - Mid Block: Posession 20, Long Ball 20, Wing Play 30, Counter 10, Direct 20
+  - High Press: Posession 30, Long Ball 10, Wing Play 20, Counter 30, Direct 10
+  - Offside Trap: Posession 10, Long Ball 30, Wing Play 30, Counter 10, Direct 20
+  - Zonal: Posession 30, Long Ball 10, Wing Play 10, Counter 20, Direct 30
+Automated completed:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing unrelated baseline lint issues in engine/info files.
+Automated needed:
+- Unit test coverage for all matrix combinations to prevent regression on future matrix updates.
+Status: passed

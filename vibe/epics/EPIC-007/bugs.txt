@@ -129,3 +129,38 @@ Final fix:
   - `champions-cup-final` now uses `DAY_INDEX.SUNDAY`.
 
 Status: fixed
+
+
+BUG-005 - Playoff tooltip should hide placeholders and avoid duplicate `vs` prefix
+Status: fixed
+
+Repro steps:
+1. Open `/career/home`.
+2. Navigate to the week-16 playoff event card in the calendar.
+3. Hover the playoff event icon before playoff teams are resolved.
+4. Hover again after season outcomes are resolved (teams known).
+
+Expected behavior:
+- No tooltip appears while playoff teams are still unknown/placeholder.
+- Once known, tooltip shows team pairing cleanly (for example `Team A v Team B`).
+- Tooltip text should never show malformed strings like `vs 2nd vs 3rd`.
+
+Actual behavior (before fix):
+- Placeholder playoff opponent text could generate tooltip text such as `vs 2nd vs 3rd (TBD)`.
+- Tooltip could appear before real playoff teams were known.
+
+Suspected cause:
+- Generic match tooltip logic prepended `vs`/`at` to playoff placeholder strings.
+- Placeholder detection did not treat `2nd vs 3rd (TBD)` as unresolved.
+
+Attempted fixes:
+- Added stronger placeholder-opponent detection (`tbd`/`2nd vs 3rd` patterns).
+- Split playoff tooltip logic from standard league-match tooltip logic.
+- Added playoff tooltip resolver that prefers resolved teams from `simulationState.seasonOutcomes`.
+- Added opponent-text normalization to avoid duplicate `vs` prefixes and normalize matchup labels.
+
+Final fix:
+- Updated `src/game/careerCalendar/utils/calendarEventDisplay.js`:
+  - playoff tooltip is hidden until teams are known
+  - resolved playoff tooltip uses `Home v Away` format
+  - malformed `vs 2nd vs 3rd` output is prevented.

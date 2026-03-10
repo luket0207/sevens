@@ -681,3 +681,77 @@ Command checks run after this bug fix:
 - `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
 
 Test status: passed
+
+BUG-030 - League table form circles (5 fixed, oldest to newest)
+Manual steps:
+1. Open `/career/home`.
+2. In League Table, verify a new `Form` column is visible for each team row.
+3. Confirm each team row always shows 5 circles.
+4. At season start (no played matches), confirm all 5 circles are hollow.
+5. Simulate days with league fixtures.
+6. Re-check form circles and confirm:
+   - leftmost visible result is the oldest of last 5,
+   - rightmost visible result is the newest,
+   - wins are green, draws are yellow, losses are red.
+7. Confirm player-team row highlighting and team-name modal click behavior still work.
+
+Expected:
+- League table includes form indicators for all teams.
+- Display always contains exactly five circles.
+- Form ordering is oldest-to-newest left-to-right.
+- Missing history slots remain hollow.
+- W/D/L colors match green/yellow/red mapping.
+- Existing table interactions remain intact.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Component test for `LeagueTablePanel` form mapping (padding to 5 and left-to-right order).
+- Visual regression test for form-circle color states and empty-state rendering.
+
+Test status: passed
+
+BUG-031 - Match Result Type Matrix ranges/weights update
+Manual steps:
+1. Open `src/game/careerSimulation/constants/simulationConstants.js`.
+2. Verify `MRD_RESULT_MATRIX` contains these band IDs in order:
+   - `0-4`, `5-8`, `9-16`, `17-26`, `27-40`, `41-55`, `56-72`, `73-99`, `100+`.
+3. Verify each row probabilities match requested values.
+4. Simulate several match days and check day-results/debug to confirm simulation runs without runtime errors using the updated bands.
+Expected:
+- Matrix bands/weights exactly match latest request.
+- Simulation resolves outcomes normally with updated ranges.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit tests for `resolveMrdBand` boundaries at `4`, `8`, `16`, `26`, `40`, `55`, `72`, `99`, `100`.
+- Distribution sanity test per band over large simulation samples.
+
+Test status: in progress (manual steps documented, not executed in this pass), failed (lint baseline unchanged)
+
+BUG-032 - Match Result Type Matrix corrected row values
+Manual steps:
+1. Open `src/game/careerSimulation/constants/simulationConstants.js`.
+2. Confirm `MRD_RESULT_MATRIX` row values are:
+   - `41-55`: `1 / 14 / 10 / 60 / 15`
+   - `56-72`: `0.2 / 5.3 / 7.5 / 69 / 18`
+   - `73-99`: `0.1 / 1.8 / 3.6 / 74.5 / 20`
+3. Simulate several match days and verify no runtime errors in day results/simulation flow.
+Expected:
+- Corrected values are present for the three revised ranges.
+- Match simulation runs normally using the corrected rows.
+
+Command checks run after this bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit tests for matrix row values and boundary resolution for all MRD bands.
+- Distribution sanity test for corrected mid/high MRD rows over large simulation samples.
+
+Test status: in progress (manual steps documented, not executed in this pass), failed (lint baseline unchanged)

@@ -1,0 +1,405 @@
+EPIC-013 - Player Traits
+
+Overview
+The goal of this epic is to introduce player traits into the game.
+
+Player traits do not alter:
+- player overall rating
+- tactic calculations
+- DTR
+- ATR
+- tactic compatibility
+
+Their purpose is to support other systems later, such as:
+- player growth
+- match chance behaviour
+- other player-specific gameplay effects
+
+For this epic, we do not need to implement what traits do.
+We only need to:
+- generate and assign them correctly
+- store them on players
+- display them in the player skillset component
+
+Traits must be assigned when a player is generated.
+This applies to:
+- the user’s players
+- AI team players
+- goalkeepers
+- outfield players
+
+Trait assignment should be weighted by the generation influence rule used for that player.
+Goalkeepers use their own goalkeeper rarity column.
+
+================================================================
+Core Trait Rules
+================================================================
+
+Traits are assigned during player generation.
+
+Each player can receive:
+- 0 traits
+- 1 trait
+- 2 traits
+
+Use this exact distribution:
+
+- 0 traits = 60%
+- 1 trait = 32%
+- 2 traits = 8%
+
+If a player is assigned traits:
+- use the player’s generation influence context
+- use the trait rarity weights for that context
+- randomly select up to the required number of traits
+- a player cannot receive the same trait twice
+
+Important scope rule:
+- for now, traits are data only
+- do not implement gameplay effects for the traits yet
+
+================================================================
+Trait Weighting Context
+================================================================
+
+Trait weighting depends on how the player was generated.
+
+Use one of these contexts:
+
+- Goalkeeper
+- Influence Defender
+- Influence Defensive Midfielder
+- Influence Attacking Midfielder
+- Influence Attacker
+- Influence Goalscorer
+- No Influence
+
+Rules:
+- If the player is a goalkeeper, always use the Goalkeeper rarity column.
+- Otherwise, use the rarity column that matches the player’s applied influence rule.
+- For outfield players with no influence, use the No Influence rarity column.
+
+================================================================
+Trait Data Table
+================================================================
+
+Use the following exact trait table.
+
+Columns:
+- ID
+- Name
+- Goalkeeper Rarity
+- Influence Defender Rarity
+- Influence Defensive Midfielder Rarity
+- Influence Attacking Midfielder Rarity
+- Influence Attacker Rarity
+- Influence Goalscorer Rarity
+- No Influence Rarity
+
+Trait table:
+
+ID	Name	Goalkeeper Rarity	Influence Defender Rarity	Influence Defensive Midfielder Rarity	Influence Attacking Midfielder Rarity	Influence Attacker Rarity	Influence Goalscorer Rarity	No Influence Rarity
+TR-01	Big Match Player	10	10	10	10	10	10	10
+TR-02	Cup Hero	10	5	5	5	5	5	5
+TR-03	League Focused	10	5	5	5	5	5	5
+TR-04	International Meastro	10	5	5	5	5	5	5
+TR-05	Perfect Student	2	2	2	2	2	2	5
+TR-06	Loud Mouth	10	10	5	5	2	0	5
+TR-07	Diver	40	0	0	0	0	0	0
+TR-08	Big Boot	80	0	0	0	0	0	0
+TR-09	Big Hands	10	0	0	0	0	0	0
+TR-10	Box Commander	70	50	0	0	0	0	0
+TR-11	No Nonsense	0	50	20	0	0	0	2
+TR-12	Game Reader	0	50	10	0	0	0	2
+TR-13	Big Head	0	50	0	0	0	0	0
+TR-14	Mermaid	0	50	20	0	0	0	2
+TR-15	Giant Leap	0	50	0	0	0	0	0
+TR-16	Target Man	0	0	0	0	60	30	5
+TR-17	Vision	0	0	50	50	20	0	5
+TR-18	Whipper	0	0	50	50	0	0	5
+TR-19	Joga Bonito	0	0	30	60	30	30	5
+TR-20	Hoof	0	30	50	0	0	0	5
+TR-21	Salmon	0	0	20	30	50	30	5
+TR-22	Thunderfoot	0	0	40	50	50	30	5
+TR-23	Precision	0	0	0	30	40	50	5
+TR-24	Acrobat	0	0	0	0	20	40	5
+TR-25	Cheeky	0	0	0	10	20	50	5
+
+================================================================
+Trait Display Rules
+================================================================
+
+Traits should be displayed inside the player skillset component.
+
+This is intentional because:
+- we always want to see traits at the same time as skillsets
+- traits are part of the player identity display
+
+Requirements:
+- add a dedicated traits section inside the existing player skillset component
+- the trait section should clearly list the player’s assigned traits
+- players with no traits should still be handled cleanly
+- the display should work anywhere the player skillset component is already used
+
+For this epic, a simple list of trait names is enough.
+If useful, trait IDs may also be stored but do not need to be prominently displayed in the UI.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1301 - Define Player Trait Data Model
+----------------------------------------------------------------
+
+Description
+Create the core data structure for player traits.
+
+Requirements
+- Define a reusable trait model/config structure.
+- Each trait entry must include:
+  - id
+  - name
+  - goalkeeper rarity
+  - influence defender rarity
+  - influence defensive midfielder rarity
+  - influence attacking midfielder rarity
+  - influence attacker rarity
+  - influence goalscorer rarity
+  - no influence rarity
+- Keep the structure centralised and reusable.
+
+Acceptance Criteria
+- A reusable trait data structure exists.
+- It supports all required rarity columns and trait identifiers.
+- It can be consumed by player generation logic and UI display logic.
+
+----------------------------------------------------------------
+FEAT-1302 - Add Centralised Trait Configuration from the Provided Table
+----------------------------------------------------------------
+
+Description
+Store the full trait table in a shared config/data module.
+
+Requirements
+- Implement the exact trait table from this epic.
+- Preserve:
+  - all IDs
+  - all names
+  - all rarity values
+- Keep the configuration easy to query by generation context.
+
+Acceptance Criteria
+- The full provided trait table exists in code/config.
+- All rows and rarity values match the supplied table exactly.
+- The trait configuration is reusable by the generator.
+
+----------------------------------------------------------------
+FEAT-1303 - Add Trait Count Roll to Player Generation
+----------------------------------------------------------------
+
+Description
+Determine how many traits a generated player receives.
+
+Requirements
+- During player generation, roll for how many traits the player gets.
+- Use this exact distribution:
+  - 0 traits = 60%
+  - 1 trait = 32%
+  - 2 traits = 8%
+- This logic must apply to both goalkeepers and outfield players.
+
+Acceptance Criteria
+- Generated players receive 0, 1, or 2 traits only.
+- The exact probability distribution is implemented.
+- Trait count is determined during generation.
+
+----------------------------------------------------------------
+FEAT-1304 - Resolve Trait Weighting Context from Player Generation Type
+----------------------------------------------------------------
+
+Description
+Determine which rarity column should be used when selecting traits for a player.
+
+Requirements
+- If the player is a goalkeeper, use the Goalkeeper rarity column.
+- If the player is an outfield player, use the rarity column matching the applied influence rule:
+  - Influence Defender
+  - Influence Defensive Midfielder
+  - Influence Attacking Midfielder
+  - Influence Attacker
+  - Influence Goalscorer
+  - No Influence
+- Keep this context-resolution logic centralised and reusable.
+
+Acceptance Criteria
+- Goalkeepers always use the Goalkeeper rarity column.
+- Outfield players use the correct influence-based rarity column.
+- No Influence players use the No Influence column.
+- The weighting context is resolved correctly for every generated player.
+
+----------------------------------------------------------------
+FEAT-1305 - Implement Weighted Trait Selection
+----------------------------------------------------------------
+
+Description
+Select the actual traits for a player using the resolved rarity weights.
+
+Requirements
+- If the player’s trait count roll indicates traits are needed, select traits using the relevant rarity column as weighting.
+- Weight values should act as relative rarity/chance weighting.
+- A higher rarity value should make that trait more likely to be selected.
+- Traits with a weight of 0 in the relevant column must not be selected.
+- A player cannot receive the same trait more than once.
+- Stop selection once the required number of traits has been assigned.
+
+Acceptance Criteria
+- Trait selection is weighted by the correct rarity column.
+- Zero-weight traits are never selected for that generation context.
+- Duplicate traits are never assigned to the same player.
+- Players receive the correct number of selected traits.
+
+----------------------------------------------------------------
+FEAT-1306 - Attach Traits to Generated Player Objects
+----------------------------------------------------------------
+
+Description
+Store the generated traits on each player object.
+
+Requirements
+- Update the shared generated player object so it includes a traits field.
+- Traits should be stored as a stable, reusable part of the player data.
+- The field should support:
+  - no traits
+  - one trait
+  - two traits
+- Keep the shape easy for later systems to consume.
+
+Suggested shape
+- traits: []
+- or traits: [{ id, name }, ...]
+- choose the format that best matches the wider codebase, but keep it consistent
+
+Acceptance Criteria
+- Every generated player includes a traits field.
+- The traits field reflects the player’s generated trait outcome.
+- The data shape is suitable for later gameplay systems.
+
+----------------------------------------------------------------
+FEAT-1307 - Integrate Trait Generation for User Players
+----------------------------------------------------------------
+
+Description
+Ensure the user’s players receive generated traits during player creation.
+
+Requirements
+- Apply the trait generation flow to players created for the user’s team.
+- The same rules must apply as for any other generated player.
+- Trait generation must respect:
+  - goalkeeper generation
+  - outfield influence rule generation
+- Ensure the traits persist into the saved player data.
+
+Acceptance Criteria
+- User-team players receive generated traits.
+- The assigned traits follow the same weighted rules as all other players.
+- Traits persist in the user’s player data.
+
+----------------------------------------------------------------
+FEAT-1308 - Integrate Trait Generation for AI Team Players
+----------------------------------------------------------------
+
+Description
+Ensure AI-generated players also receive traits during team generation.
+
+Requirements
+- Apply the trait generation flow to AI team players generated during career setup.
+- The same generation rules must apply consistently.
+- Traits must persist in the saved AI player data.
+
+Acceptance Criteria
+- AI team players receive generated traits.
+- AI player traits follow the correct weighting rules.
+- Traits persist in career state for AI players.
+
+----------------------------------------------------------------
+FEAT-1309 - Add Traits Section to Player Skillset Component
+----------------------------------------------------------------
+
+Description
+Display player traits inside the existing player skillset component.
+
+Requirements
+- Add a dedicated traits section inside the player skillset component.
+- This section should appear alongside the skillset display.
+- Show the player’s assigned traits clearly by name.
+- Handle players with no traits gracefully.
+- Keep the display reusable everywhere the player skillset component is used.
+
+Acceptance Criteria
+- The player skillset component includes a traits section.
+- Assigned traits are displayed clearly.
+- Players with no traits are handled cleanly.
+- Traits are visible anywhere the skillset component is shown.
+
+----------------------------------------------------------------
+FEAT-1310 - Keep Traits Out of Overall and Tactic Calculations
+----------------------------------------------------------------
+
+Description
+Explicitly preserve the rule that traits do not affect current rating/tactic systems.
+
+Requirements
+- Do not let traits alter:
+  - player overall
+  - DTR
+  - ATR
+  - tactic compatibility
+  - any tactic calculations
+- Keep trait generation and trait display separate from those systems.
+- Ensure the implementation scope remains data/display only for now.
+
+Acceptance Criteria
+- Traits do not affect overall generation.
+- Traits do not affect tactic calculations.
+- Traits exist only as stored/displayed player metadata in this epic.
+
+----------------------------------------------------------------
+FEAT-1311 - Add Trait Generation Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debug support for validating trait generation.
+
+Requirements
+- Add development-friendly inspection for:
+  - rolled trait count
+  - resolved generation context
+  - selected traits
+  - trait rarity column being used
+- Keep the support lightweight and useful during implementation/balancing.
+
+Acceptance Criteria
+- Developers can inspect how traits were assigned to players.
+- Trait generation behaviour is easier to validate during testing.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The full trait table has been implemented exactly as provided.
+- A player can receive 0, 1, or 2 traits using the exact distribution:
+  - 60% no traits
+  - 32% one trait
+  - 8% two traits
+- Goalkeepers use the Goalkeeper rarity column.
+- Outfield players use the correct rarity column based on their generation influence rule.
+- Traits are selected using weighted rarity values.
+- Zero-weight traits are never assigned for the relevant generation context.
+- Duplicate traits are not assigned to the same player.
+- Traits are stored on both user players and AI players.
+- Traits are displayed in their own section inside the player skillset component.
+- Traits do not affect overall values, tactics, DTR, ATR, or tactic compatibility.
+- The system is ready for future gameplay effects to be built on top of the stored trait data.

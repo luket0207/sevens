@@ -48,6 +48,17 @@ const getSkillEntries = (player) => {
   return Object.entries(player.skills);
 };
 
+const formatTraitNames = (traits) => {
+  if (!Array.isArray(traits) || traits.length === 0) {
+    return "None";
+  }
+
+  return traits
+    .map((trait) => String(trait?.name ?? trait?.id ?? "").trim())
+    .filter(Boolean)
+    .join(", ");
+};
+
 const renderSkillRatingValue = (value) => {
   const ratingMeta = getRatingDisplayMeta(value);
   if (!ratingMeta) {
@@ -242,6 +253,22 @@ const PlayerGenerationDebug = ({ debugState, onUpdateDebugState }) => {
                 </p>
                 <p>
                   <strong>Potential:</strong> {player.potential}
+                </p>
+                <p>
+                  <strong>Traits:</strong> {formatTraitNames(player.traits)}
+                </p>
+                <p>
+                  <strong>Trait Roll Count:</strong>{" "}
+                  {Math.max(0, Math.min(2, Number(player?.traitGenerationDebug?.rolledTraitCount) || 0))}
+                </p>
+                <p>
+                  <strong>Trait Context:</strong>{" "}
+                  {player?.traitGenerationDebug?.resolvedContextLabel ??
+                    player?.traitGenerationDebug?.resolvedContext ??
+                    "-"}
+                </p>
+                <p>
+                  <strong>Trait Rarity Column:</strong> {player?.traitGenerationDebug?.rarityColumn ?? "-"}
                 </p>
                 <p>
                   <strong>Appearance:</strong>{" "}

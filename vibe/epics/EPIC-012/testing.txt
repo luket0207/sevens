@@ -1,0 +1,381 @@
+EPIC-012 Testing Log
+Date: 2026-03-09
+
+FEAT-1201 / FEAT-1202 / FEAT-1203 / FEAT-1204 - Career Start Wizard and Free Tab Navigation
+Manual steps:
+1. Open `/career/start`.
+2. Verify setup is shown as 4 tabs in this order:
+   - Name and Stadium Name
+   - Kits
+   - Players
+   - Team Selection
+3. Switch between tabs in non-linear order (for example 3 -> 1 -> 4 -> 2).
+4. Confirm entered values and setup selections persist when revisiting tabs.
+5. Confirm Start Career action remains visible/accessible regardless of active tab.
+Expected:
+- Wizard tab flow is active with required order.
+- Tabs are freely navigable.
+- State is preserved across tab switches.
+- Start Career action is globally available from any tab.
+
+FEAT-1205 / FEAT-1207 / FEAT-1208 / FEAT-1209 / FEAT-1210 / FEAT-1211 / FEAT-1212
+Manual steps:
+1. Complete Players tab so 7 players are selected.
+2. Open Team Selection tab on `/career/start`.
+3. Verify new shared layout:
+   - top horizontal strip
+   - full-width side-on pitch below
+   - GK left, DF then MD then AT to the right.
+4. Confirm top strip cards show only image, name, and overall (no skill list).
+5. Drag outfield players from top strip into pitch slots.
+6. Confirm placed players render skill bars beneath on pitch in a 2x4 layout with Overall top-left.
+7. Open `/team-management` and verify the same shared top-strip + side-on pitch layout is used there too.
+Expected:
+- Shared layout is reused in both Career Start Team Selection and Team Management.
+- Top strip is simplified and horizontal.
+- Pitch orientation is side-on with left-to-right role progression.
+- Skill display is on-pitch under placed players with 2x4 rating layout.
+
+FEAT-1206 / FEAT-1213 - Day-1 Gate Removal and Validation/State Compatibility
+Manual steps:
+1. Complete all setup tabs including Team Selection.
+2. Start a new career.
+3. Advance to day 1 and click Continue from Career Home.
+4. Confirm career flow does not force the old duplicated day-1 team-selection gate.
+5. Inspect generated `career.world.playerTeam.teamManagement` in debug output.
+Expected:
+- In-career day-1 team-selection gate no longer blocks progression.
+- Pre-career team-selection setup is carried into generated player-team state.
+- Start Career remains disabled until full setup is complete (including team selection).
+
+FEAT-1214 - Wizard/Shared Layout Debug Visibility
+Manual steps:
+1. Open `/career/start`.
+2. Expand wizard debug panel.
+3. Verify debug includes:
+   - current tab id
+   - setup-valid flag
+   - team selector complete flag
+   - team selection complete flag
+   - slot assignment/tactic state payload.
+Expected:
+- Debug panel provides enough state visibility to validate wizard and shared-layout migration behavior.
+
+Command checks run after this update:
+- `npm run build`: passed.
+- `npm run lint`: failed due to existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Integration tests for wizard tab navigation/state persistence and global Start Career accessibility.
+- Integration tests for Team Selection tab drag/drop arrangement and completion gating.
+- Integration tests proving day-1 flow no longer routes to duplicate setup gate.
+- Component tests for shared layout rendering in both `/career/start` and `/team-management`.
+
+Test status: passed
+
+BUGFIX Regression - Dropzone Reliability and Pitch Positioning (2026-03-09)
+Manual steps:
+1. Open `/career/start` and go to Team Selection.
+2. Drag each outfield player from the top strip into a different slot.
+3. Drag a placed player to another occupied slot and verify swap behavior.
+4. Drag a placed player off-slot and release to confirm removal behavior still works.
+5. Open `/team-management` and repeat drop/swap/remove checks.
+6. Confirm slot map reads side-on and football-like (GK fixed left, DF then MD then AT progressing right).
+
+Expected:
+- All outfield slots accept drops reliably.
+- Empty slots are clearly identifiable as drop targets.
+- Swap and removal interactions remain intact.
+- Position layout is no longer a simple role-column grid and looks like a formation on a pitch.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Interaction tests covering drag/drop acceptance on all six slots in both `/career/start` and `/team-management`.
+- Visual regression checks for slot positioning and responsive pitch scroll behavior.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+FEAT-1215 - Formation Layout + Skill Inspector (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Confirm layout sections render in order: player strip, full-width pitch, player skill inspector.
+3. Hover and click different strip players; confirm inspector updates player image/name/overall/ratings.
+4. Drag outfield players from strip into each of the six pitch slots.
+5. Drop onto occupied slots and confirm swap behavior.
+6. Drag a placed player off-slot and release; confirm player is removed from that slot.
+7. Hover/click placed players on pitch; confirm inspector follows selected player.
+8. Verify goalkeeper remains locked on left and cannot be dragged/swapped.
+9. Verify empty slot labels display role-specific placeholders.
+10. Repeat steps 1-9 on `/career/start` Team Selection tab and confirm consistent behavior.
+
+Expected:
+- Shared formation layout is present and consistent in both Team Management and Career Start Team Selection.
+- Player strip remains compact (image/name/overall only).
+- Pitch spans full width and supports clear assignment/swap/remove flows.
+- Drag-over slots visibly highlight.
+- Inspector always exposes complete player ratings (including overall) for the active inspected player.
+- Goalkeeper remains fixed and non-draggable.
+
+Command checks run after FEAT-1215:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Interaction tests for inspector updates on hover/click in strip and pitch contexts.
+- Integration tests for drag-over visual state and swap/remove behavior in both reuse targets.
+- Visual regression snapshots for formation spacing at desktop and mobile breakpoints.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Inspector Position + Slot Panel Styling (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Confirm player strip appears at top and spans full width with card spacing distributed across the row.
+3. Confirm pitch and Player Skill Inspector appear side-by-side with inspector on the right.
+4. Open `/career/start` Team Selection and confirm the same shared layout behavior.
+5. Inspect outfield slots visually while empty and filled.
+6. Confirm slots still accept drag/drop interactions and swaps/removals still work.
+
+Expected:
+- Inspector appears to the right of pitch on desktop layouts.
+- Player strip remains top-aligned and uses full-width `space-between` distribution.
+- Slot regions remain usable drop areas without persistent slot border/background panel styling.
+- Strip cards retain their existing visual styling.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Visual regression snapshots covering side-by-side body layout and strip spacing.
+- Integration drag/drop checks confirming slot hit-area behavior after slot panel style removal.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Inspector Height Match + Color-Coded Skillset (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Confirm inspector is rendered in the right column and vertically matches pitch height at desktop width.
+3. Hover/click players and confirm inspector updates selected player correctly.
+4. Confirm inspector skill bars are color-coded by rating band (shared style behavior).
+5. Open `/career/start` Team Selection and repeat checks.
+
+Expected:
+- Inspector column matches pitch height in side-by-side desktop layout.
+- Inspector uses reusable color-coded skill bars.
+- Selection/inspection behavior continues to work in both Team Management and Career Start Team Selection.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Visual regression checks for equal-height pitch/inspector desktop layout.
+- Component tests validating inspector skill rendering through `PlayerSkillsetBars`.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Pitch Width Distribution (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Place players into all six outfield slots.
+3. Confirm DF, MD, and AT lines are spread across the pitch width (no left-side bunching).
+4. Open `/career/start` Team Selection and repeat spacing check.
+5. Confirm drag/drop, swapping, and remove-off-pitch interactions still work after coordinate update.
+
+Expected:
+- Outfield anchors are more evenly distributed from left to right.
+- Formation no longer appears visually compressed to the left.
+- Team arrangement interactions remain unchanged.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Visual regression checks for slot distribution on desktop and responsive breakpoints.
+- Integration checks for drag/drop assignment/swap behavior after coordinate tuning.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Vertical Spacing + Role Tag Styling (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Fill all six outfield slots and verify players do not overlap vertically.
+3. Confirm no `slotLabel` text appears under position tags on pitch slots.
+4. Confirm goalkeeper pitch card has no placement pill.
+5. Confirm position tag colors map as requested:
+   - GK orange
+   - DF red
+   - MD blue
+   - AT yellow
+6. Confirm position tag text appears larger than before.
+7. Repeat checks on `/career/start` Team Selection.
+
+Expected:
+- Outfield cards are spaced with clear vertical separation.
+- Slot labels are removed from pitch slots.
+- Goalkeeper pitch card no longer shows placement pill.
+- Position tags are role-color-coded with larger text.
+- Drag/drop and swap/remove interactions still work.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Visual regression coverage for slot spacing and role-tag colors across desktop breakpoints.
+- Interaction regression checks to ensure drag/drop behavior is unchanged after layout tweaks.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Attacker Vertical Separation (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Place players into both attacker slots.
+3. Confirm there is slightly more vertical distance between the two attacker cards.
+4. Open `/career/start` Team Selection and repeat the same check.
+5. Confirm drag/drop/swap/remove interactions remain unchanged.
+
+Expected:
+- Attacker pair spacing is visibly increased versus previous layout.
+- No functional regressions in assignment interactions.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Visual regression snapshots specifically validating attacker pair spacing in both reuse surfaces.
+- Interaction regression checks after coordinate updates.
+
+Test status: in progress (manual steps documented, not executed in this pass), failed (lint baseline unchanged)
+
+BUGFIX Regression - Overall Rating Bands + Inspector Meta Removal (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Check player overall badges in strip cards and confirm classes/colors map to 1-50 bands (`1to5` ... `46to50`), not 1-100 bands.
+3. Open `/career/start` Team Selection and confirm overall badges follow the same 1-50 band map.
+4. Open league team squad modal from Career Calendar and verify overall badges use the same 1-50 band classes.
+5. Open browser devtools on `/team-management` or `/career/start` Team Selection and inspect the Player Skill Inspector header DOM.
+6. Confirm `teamSetupLayout__inspectorMeta` is not present.
+7. Confirm skillset bars still render and remain color-banded by skill rating.
+
+Expected:
+- Skill ratings remain color-banded by 1-100 (10-point) mapping.
+- Overall badges use 1-50 (5-point) mapping consistently across all relevant UI surfaces.
+- `teamSetupLayout__inspectorMeta` element is removed from inspector markup.
+- No regressions in drag/drop or inspector selection behavior.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules (prop-types and hook warnings/errors).
+
+Automated still needed:
+- Unit tests for `getOverallRatingDisplayMeta` band mapping edge cases.
+- Component tests verifying overall badge class keys in Team Setup, Team Management tile, and league squad modal.
+- Snapshot/DOM tests confirming inspector header no longer renders `teamSetupLayout__inspectorMeta`.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Wizard Debug Removal + Setup Checklist + Equal-Width Tabs (2026-03-09)
+Manual steps:
+1. Open `/career/start`.
+2. Confirm no wizard debug panel (`Wizard Debug`) is rendered in the action section.
+3. Confirm old disabled-hint sentence is removed.
+4. Confirm action section now shows a setup checklist with four rows:
+   - Name and Stadium Name
+   - Kits
+   - Players
+   - Team Selection
+5. Confirm each checklist row shows `✓` + `Complete` when done and `✕` + `Pending` when not done.
+6. Confirm all wizard tabs are equal width and span the full row at desktop width.
+7. Resize viewport and confirm tabs remain equal width per row (2 columns medium, 1 column narrow).
+
+Expected:
+- Wizard debug output is removed from Career Start.
+- Setup status is shown as a clear per-step checklist.
+- Tab buttons are equal width and distributed across the full available row.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules (prop-types and hook warnings/errors).
+
+Automated still needed:
+- Component tests for checklist status rendering against completion-state permutations.
+- Visual regression snapshots for equal-width tab layout at desktop/medium/mobile breakpoints.
+- DOM test asserting wizard debug panel is not rendered.
+
+Test status: in progress (manual steps documented, not executed in this pass), failed (lint baseline unchanged)
+
+BUGFIX Regression - Player-Overall Color Spectrum Only (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Inspect overall badges and confirm low bands `1to5`, `6to10`, `11to15`, `16to20` all use the same dark-red color.
+3. Confirm `21to25` is orange, `26to30` yellow, `31to35` green, `36to40` darker green, `41to45` teal, and `46to50` blue.
+4. Open `/career/start` Team Selection and confirm overall badges match the same updated colors.
+5. Inspect Player Skill Inspector skill bars and confirm skill colors still use the existing 1-100 spectrum (no change from previous behavior).
+
+Expected:
+- Player-overall 1-50 bands use the updated requested colors.
+- Skill rating colors remain unchanged.
+- Overall badge text remains readable with the new low-band colors.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules (prop-types and hook warnings/errors).
+
+Automated still needed:
+- Visual regression snapshots for overall-badge color bands in Team Management and Career Start Team Selection.
+- Component tests asserting skill and overall token systems remain decoupled (overall token updates do not affect skill bars).
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Goalkeeper Node Panel Styling Removal (2026-03-09)
+Manual steps:
+1. Open `/team-management`.
+2. Inspect the goalkeeper area wrapper in the pitch (`teamSetupLayout__goalkeeperNode`).
+3. Confirm there is no standalone node border/background panel visible behind the goalkeeper card.
+4. Open `/career/start` Team Selection and repeat the same visual check.
+5. Confirm goalkeeper card still renders correctly and normal interactions (inspection/placement context) remain intact.
+
+Expected:
+- `teamSetupLayout__goalkeeperNode` has no border/background panel styling.
+- Goalkeeper card visibility and layout remain stable in both shared-layout surfaces.
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules (prop-types and hook warnings/errors).
+
+Automated still needed:
+- Visual regression snapshots covering goalkeeper-node presentation in Team Management and Career Start Team Selection.
+
+Test status: passed (manual), failed (lint baseline unchanged)
+
+BUGFIX Regression - Career Start Wizard Back/Next Controls (2026-03-09)
+Manual steps:
+1. Open `/career/start`.
+2. Confirm a `Back`/`Next` control row appears above the current tab content.
+3. Confirm a second `Back`/`Next` control row appears below the current tab content.
+4. On step 1 (Name and Stadium Name), verify `Back` is disabled and `Next` moves to step 2.
+5. Continue using `Next` until step 4 and verify tab content changes in sequence.
+6. On step 4 (Team Selection), verify `Next` is disabled and `Back` moves to step 3.
+7. Confirm tab pill navigation still works and remains in sync with the step counter (`Step X of 4`).
+
+Expected:
+- Back/Next controls are present at both top and bottom of the wizard content.
+- Controls navigate sequentially across tabs without breaking existing tab-pill navigation.
+- Boundary states are correct (`Back` disabled on first tab, `Next` disabled on last tab).
+
+Command checks run after bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository baseline lint issues in unrelated engine/info modules (prop-types and hook warnings/errors).
+
+Automated still needed:
+- Component/integration tests for wizard sequential navigation and boundary disable states.
+- DOM tests asserting both top and bottom navigation control rows render across wizard tabs.
+
+Test status: passed (manual), failed (lint baseline unchanged)

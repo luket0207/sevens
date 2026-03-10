@@ -1,0 +1,457 @@
+EPIC-012 Bug Log
+Date: 2026-03-09
+
+BUG-001 - Cannot drop players onto the new pitch layout
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` and move to Team Selection.
+2. Drag an outfield player from the top strip.
+3. Try dropping onto an outfield pitch slot.
+
+Expected:
+- Empty slot should behave as a valid dropzone.
+- Player should be assigned to that slot.
+
+Actual:
+- Drag target behavior was unclear/inconsistent in the new shared pitch layout and appeared to have no usable dropzones.
+
+Suspected cause:
+- The shared layout moved away from explicit absolute slot dropzones and relied on a column/grid card layout.
+- In Career Start, drag-over prevention was not passed explicitly to the shared layout.
+
+Attempted fixes:
+- Restored explicit slot dropzone elements in the shared pitch layout.
+- Added clear empty-slot drop affordance (`Drop Player`) and dashed slot styling.
+- Passed an explicit `onSlotDragOver` handler in Career Start Team Selection.
+
+Final fix:
+- Reworked `TeamSetupLayout` pitch section to absolute-position slot nodes with `onDragOver` + `onDrop` handlers on each slot.
+- Added explicit `allowDrop` wiring in `careerStartTeamSelectionTab.jsx`.
+
+
+BUG-002 - Pitch positions look like a structured grid, not realistic football spacing
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Inspect position layout for outfield slots.
+
+Expected:
+- Positions should visually resemble football spacing rather than equalized grid columns.
+
+Actual:
+- Slots were presented in structured role columns, which looked like UI cards rather than a pitch formation.
+
+Suspected cause:
+- Shared layout rendered role columns instead of using slot coordinates (`topPercent`/`leftPercent`) in a field space.
+
+Attempted fixes:
+- Reintroduced coordinate-based placement in the shared pitch component.
+- Tuned slot coordinates for a side-on shape: defenders deeper, midfield staggered, attackers advanced.
+
+Final fix:
+- Updated shared pitch rendering to use absolute slot coordinates.
+- Updated `TEAM_MANAGEMENT_SLOT_LAYOUT` coordinate values to a more football-representative side-on formation.
+
+BUG-003 - Move Player Skill Inspector to the right of the pitch
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Check component section order and alignment.
+
+Expected:
+- Player strip remains at the top.
+- Pitch and Player Skill Inspector render side-by-side, with inspector on the right.
+- Top strip spans full width and distributes cards with space-between alignment.
+
+Actual:
+- Inspector was rendered below the pitch in a stacked layout.
+- Player strip did not use full-width space-between alignment.
+
+Suspected cause:
+- Shared layout DOM/SCSS used vertical flow (`strip -> pitch -> inspector`) without a body grid region.
+- Strip container used left-aligned flex behavior.
+
+Attempted fixes:
+- Added shared body wrapper to lay out pitch and inspector in two columns.
+- Updated top strip alignment rules to full-width `space-between`.
+
+Final fix:
+- Introduced `teamSetupLayout__body` grid wrapper and moved inspector into the right column.
+- Updated strip flex styling to span full width with `justify-content: space-between`.
+- Added responsive fallback to stack body sections on narrower viewports.
+
+
+BUG-004 - Remove slot panel styling but keep slot drop area
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Inspect outfield slot visuals (`teamSetupLayout__slot`).
+
+Expected:
+- Slot regions still exist as drop targets with adequate spacing.
+- Slot container itself has no border or background styling.
+- `teamSetupLayout__stripCard` styling remains unchanged.
+
+Actual:
+- Slot container displayed its own border/background panel styling.
+
+Suspected cause:
+- Base slot class included border/background and empty-slot variants added additional panel styling.
+
+Attempted fixes:
+- Removed border/background styling from base/empty slot states.
+- Kept width/padding/min-height so drop-target footprint remains reliable.
+- Kept drag-over feedback lightweight without restoring persistent slot panel styling.
+
+Final fix:
+- `teamSetupLayout__slot` no longer renders a persistent border/background panel.
+- Slot dropzones remain active and sized for drag/drop.
+- Strip-card visual treatment is unchanged.
+
+BUG-005 - Match inspector height to pitch and color-code inspector skillset
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Compare Player Skill Inspector height with the pitch container.
+3. Inspect skill bars in the inspector.
+
+Expected:
+- Player Skill Inspector matches the pitch column height.
+- Inspector skill bars use color-coded rating bands.
+
+Actual:
+- Inspector height did not match pitch height.
+- Inspector used neutral bars rather than the existing color-coded skillset style.
+
+Suspected cause:
+- Layout grid used `align-items: start`, so inspector did not stretch to row height.
+- Inspector rendered custom `Bars` cells instead of the shared color-coded skillset component.
+
+Attempted fixes:
+- Updated shared body layout to stretch column items and made inspector/inspector-card fill available height.
+- Replaced inspector’s custom rating grid with shared `PlayerSkillsetBars`.
+- Added inspector-specific style overrides for readable labels on dark background.
+
+Final fix:
+- Inspector now stretches to match pitch height in desktop two-column layout.
+- Inspector now uses reusable `PlayerSkillsetBars` so skills render with existing rating-band colors.
+
+
+BUG-006 - Spread formation anchors more evenly across the pitch field
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Inspect horizontal spacing of GK/DF/MD/AT positions in `teamSetupLayout__pitchField`.
+
+Expected:
+- Formation anchors are distributed more evenly across the pitch width.
+- Players no longer appear bunched toward the left side.
+
+Actual:
+- Outfield anchors were concentrated in left/mid-left percentages, creating visible left-side clustering.
+
+Suspected cause:
+- Slot `leftPercent` values for DF/MD/AT were too close together on the left side.
+- Shared fallback anchor map used the same clustered values.
+
+Attempted fixes:
+- Rebalanced canonical outfield slot `leftPercent` values to push lines further right.
+- Synchronized shared fallback anchor positions with the updated spread.
+
+Final fix:
+- Updated `TEAM_MANAGEMENT_SLOT_LAYOUT` to wider horizontal anchors (DF 35, MD 58, AT 81).
+- Updated shared fallback slot coordinates to the same distribution so fallback behavior remains consistent.
+
+BUG-007 - Increase vertical spacing, remove slot labels, and color-code/larger position icons
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Place players in all six outfield slots and inspect vertical spacing.
+3. Check pitch UI for slot labels and goalkeeper placement pill.
+4. Inspect position icon colors and text size.
+
+Expected:
+- Greater vertical spacing between paired positions to avoid overlap.
+- `teamSetupLayout__slotLabel` elements removed from pitch slots.
+- Goalkeeper pitch card no longer shows `teamSetupLayout__placementPill`.
+- Position icons are color-coded by role:
+  - GK orange
+  - DF red
+  - MD blue
+  - AT yellow
+- Position icon text is larger.
+
+Actual:
+- Vertical spacing could cause visual crowding/overlap.
+- Slot labels were still rendered.
+- Goalkeeper pitch card still had a placement pill.
+- Position icons were not role-color-coded and text appeared small.
+
+Suspected cause:
+- `topPercent` anchors for paired rows were too close.
+- Slot-label and goalkeeper placement-pill rendering paths were still active.
+- Slot tags used a single neutral style instead of role variants.
+
+Attempted fixes:
+- Increased vertical separation in outfield `topPercent` anchors.
+- Removed slot-label element rendering from pitch slots.
+- Removed goalkeeper pitch placement-pill prop.
+- Added role-specific slot-tag classes and larger tag typography.
+
+Final fix:
+- Updated outfield anchors to wider vertical spacing:
+  - DF: 24 / 76
+  - MD: 18 / 82
+  - AT: 34 / 66
+- Removed `teamSetupLayout__slotLabel` elements in pitch layout.
+- Removed goalkeeper pitch `placementLabel`.
+- Added `teamSetupLayout__slotTag--GK/DF/MD/AT` color styles with larger text size.
+
+
+BUG-008 - Increase vertical spacing between attackers
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Place players into both attacker slots and inspect vertical separation.
+
+Expected:
+- Attacker cards have slightly more vertical space between them.
+- Attacker row no longer feels tightly packed.
+
+Actual:
+- Attacker pair still felt too close vertically.
+
+Suspected cause:
+- Attacker anchor `topPercent` values were still too near each other.
+
+Attempted fixes:
+- Increased vertical separation for attacker anchor positions in canonical slot layout.
+- Mirrored the same attacker spacing in shared fallback coordinates.
+
+Final fix:
+- Updated attacker `topPercent` anchors from `34/66` to `30/70` in `TEAM_MANAGEMENT_SLOT_LAYOUT`.
+- Updated shared fallback attacker anchors to `30/70` for consistency.
+
+
+BUG-010 - Separate skill rating bands (1-100) from overall rating bands (1-50)
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection, `/team-management`, or league squad modal views.
+2. Inspect player overall badge colors across low/mid/high ratings.
+
+Expected:
+- Skill ratings keep 1-100 mapping in 10-point bands.
+- Player overall uses 1-50 mapping in 5-point bands with corresponding class keys (`1to5` ... `46to50`).
+- Requested color spectrum is used for both band systems.
+
+Actual:
+- Overall badge handling reused the 1-100 skill band system, so player-overall band semantics were incorrect.
+
+Suspected cause:
+- Shared display meta helper only supported one rating-band definition and was used for both skills and overall.
+- Overall badge class maps in feature SCSS were still keyed to `1to10` ... `91to100`.
+
+Attempted fixes:
+- Added dedicated overall rating band metadata (`1to5` ... `46to50`) and helper in player generation utilities.
+- Updated overall callsites to use the new helper while leaving skill helpers unchanged.
+- Added new global color tokens for 1-50 overall bands.
+- Updated overall badge class maps in shared/team-management/career-modal SCSS.
+
+Final fix:
+- Implemented `getOverallRatingDisplayMeta` for 1-50 overall logic.
+- Kept `getRatingDisplayMeta` for existing 1-100 skill logic.
+- Updated overall badge styling and mappings to new 5-point bands across all affected UI surfaces.
+
+BUG-011 - Remove `teamSetupLayout__inspectorMeta` element
+Status: fixed
+
+Repro steps:
+1. Open `/career/start` Team Selection or `/team-management`.
+2. Inspect Player Skill Inspector header DOM/layout.
+
+Expected:
+- Inspector header should not render `teamSetupLayout__inspectorMeta`.
+
+Actual:
+- Inspector still rendered an extra metadata wrapper (`teamSetupLayout__inspectorMeta`) with duplicated name/OVR info.
+
+Suspected cause:
+- Legacy inspector header structure kept a dedicated meta block after card composition changed.
+
+Attempted fixes:
+- Removed `teamSetupLayout__inspectorMeta` node from inspector JSX.
+- Removed unused related SCSS selectors.
+
+Final fix:
+- Inspector head now renders only the profile card component and no standalone meta wrapper element.
+
+
+BUG-012 - Update player-overall (1-50) rating colors only
+Status: fixed
+
+Repro steps:
+1. Open `/team-management` or `/career/start` Team Selection.
+2. Inspect overall badge colors on player cards.
+3. Inspect skill-bar colors in Player Skill Inspector.
+
+Expected:
+- Player overall colors use the updated 1-50 spectrum:
+  - `1to5`, `6to10`, `11to15`, `16to20`: `#7a1d1d`
+  - `21to25`: `#c95a2d`
+  - `26to30`: `#e6cc3a`
+  - `31to35`: `#70b84d`
+  - `36to40`: `#1f8a3b`
+  - `41to45`: `#2bb3b1`
+  - `46to50`: `#1f8ac9`
+- Skill rating colors (1-100 in 10-point bands) remain unchanged.
+
+Actual:
+- Player overall colors still used the prior gradient spectrum.
+
+Suspected cause:
+- Player-overall and skill rating systems share token naming conventions, and overall tokens had not yet been updated to the new requested values.
+
+Attempted fixes:
+- Updated only the player-overall 1-50 token values in global color tokens.
+- Kept skill-band 1-100 token values unchanged.
+- Adjusted overall-badge text color overrides in shared/team-management badges to preserve readability with the new darker low bands.
+
+Final fix:
+- Applied the requested player-overall color spectrum in `src/assets/scss/ui/colours.scss` for `ratingBand1To5` through `ratingBand46To50`.
+- Left skill rating color tokens untouched.
+
+BUG-013 - Remove goalkeeper node border/background styling
+Status: fixed
+
+Repro steps:
+1. Open `/team-management` or `/career/start` Team Selection.
+2. Inspect the goalkeeper area container (`teamSetupLayout__goalkeeperNode`) on the pitch.
+
+Expected:
+- Goalkeeper node should not render its own border or background panel styling.
+- Goalkeeper card content remains visible and usable.
+
+Actual:
+- Goalkeeper node still rendered a bordered panel with a background fill.
+
+Suspected cause:
+- Shared `teamSetupLayout__goalkeeperNode` styles still defined `border` and `background`.
+
+Attempted fixes:
+- Removed `border` and `background` declarations from `teamSetupLayout__goalkeeperNode`.
+
+Final fix:
+- Goalkeeper node no longer applies border/background panel styling; the contained goalkeeper card remains unchanged.
+
+
+BUG-014
+
+In the new wizard view on the career start page, there should be Next and Back buttons places appropriately at the bottom and top of the page to get between the tabs. 
+
+Status: fixed
+
+Repro steps:
+1. Open `/career/start`.
+2. In the wizard, try moving between tabs using only visible page controls (without clicking tab pills directly).
+3. Check the top and bottom of the wizard content area for sequential navigation controls.
+
+Expected:
+- Wizard provides explicit `Back` and `Next` controls at both the top and bottom of the wizard content region.
+- `Back` moves to the previous tab and `Next` moves to the next tab.
+- `Back` is disabled on the first tab and `Next` is disabled on the last tab.
+
+Actual:
+- Wizard only exposed tab pills and had no dedicated top/bottom `Back` and `Next` navigation controls.
+
+Suspected cause:
+- Career Start wizard navigation UI included tab buttons only and lacked a reusable sequential step-navigation component.
+
+Attempted fixes:
+- Added reusable wizard step-navigation rendering in Career Start.
+- Rendered the same step-navigation block in two positions: top and bottom of wizard content.
+- Wired controls to adjacent-tab navigation with first/last step disabling.
+- Added styling for the new navigation blocks with responsive behavior on smaller screens.
+
+Final fix:
+- `careerStart.jsx` now renders `Back` and `Next` buttons above and below active tab content.
+- Buttons navigate between adjacent tabs and are disabled at the appropriate boundaries.
+- `careerStart.scss` includes new `careerStart__stepNav` and `careerStart__stepMeta` styling for consistent top/bottom placement.
+
+BUG-015
+
+Can we remove the debugging from the career start wizard now and remove the 
+
+Start Career remains disabled until name/stadium, kits, players, and team selection are all complete.
+
+Text and replace it with a representation of the steps the player still needs to complete and their status. Use font awesome ticks and crosses if you need to. 
+
+Status: fixed
+
+Repro steps:
+1. Open `/career/start`.
+2. Scroll to the action section under the wizard.
+3. Verify whether a wizard debug panel is still rendered.
+4. Verify whether the old long disabled-hint sentence is still shown.
+5. Check for a step-by-step setup status representation with tick/cross state indicators.
+
+Expected:
+- Wizard debug panel is removed.
+- Old disabled-hint sentence is removed.
+- Action section shows setup step status list with clear complete/pending indicators.
+
+Actual:
+- Debug panel and generic disabled-hint text were still shown instead of a task-oriented setup status representation.
+
+Suspected cause:
+- Career Start action block still used legacy debug/details markup and old generic hint messaging.
+
+Attempted fixes:
+- Removed wizard debug/details markup from Career Start actions.
+- Replaced old hint text with a setup checklist driven by tab completion state.
+- Added explicit complete/pending rows using tick/cross iconography (`✓` / `✕`) and status labels.
+
+Final fix:
+- `careerStart.jsx` now renders a setup checklist in the action section with per-step status.
+- Wizard debug panel has been removed from the Career Start page.
+- The old long disabled-hint sentence is no longer rendered.
+
+BUG-016
+
+I want the tabs to all be the same width spread across the whole width of the page. 
+
+Status: fixed
+
+Repro steps:
+1. Open `/career/start`.
+2. Inspect wizard tab row layout at desktop width.
+3. Confirm each tab button width and total row usage.
+
+Expected:
+- Tabs render with equal widths.
+- Tab row spans full available width.
+
+Actual:
+- Tabs used content-based width in a flex layout, causing uneven button widths.
+
+Suspected cause:
+- Tab navigation used `display: flex` with inline-sized tab buttons.
+
+Attempted fixes:
+- Migrated tab navigation container from flex to grid.
+- Set tab nav to four equal columns on desktop.
+- Set tab buttons to fill column width.
+- Added responsive equal-width fallbacks:
+  - two columns on medium widths
+  - one column on narrow widths.
+
+Final fix:
+- `careerStart.scss` now uses a grid-based tab navigation with equal-width buttons spanning the row.

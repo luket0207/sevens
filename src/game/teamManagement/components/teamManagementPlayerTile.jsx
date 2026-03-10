@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { getRatingDisplayMeta } from "../../playerGeneration";
+import { getOverallRatingDisplayMeta } from "../../playerGeneration";
 import PlayerImage from "../../playerImage/components/playerImage";
 import PlayerSkillsetBars from "../../shared/playerSkillsetBars/playerSkillsetBars";
 
@@ -23,8 +23,8 @@ const TeamManagementPlayerTile = ({
   }
 
   const overallValue = Math.round(Number(player.overall) || 0);
-  const overallMeta = getRatingDisplayMeta(player.overall) ?? {
-    bandKey: "1to10",
+  const overallMeta = getOverallRatingDisplayMeta(player.overall) ?? {
+    bandKey: "1to5",
     value: overallValue,
   };
   const normalizedPositionGroup = PITCH_PILL_GROUPS.includes(positionGroup) ? positionGroup : "DF";
@@ -62,7 +62,13 @@ const TeamManagementPlayerTile = ({
           </span>{" "}
           | {player.influenceRule}
         </p>
-        {!compact ? <PlayerSkillsetBars className="teamManagement__playerSkills" skills={player?.skills} /> : null}
+        {!compact ? (
+          <PlayerSkillsetBars
+            className="teamManagement__playerSkills"
+            skills={player?.skills}
+            traits={player?.traits}
+          />
+        ) : null}
       </div>
     </article>
   );

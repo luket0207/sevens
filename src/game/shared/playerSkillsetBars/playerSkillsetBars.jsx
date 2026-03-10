@@ -52,9 +52,37 @@ const getNumericSkillEntries = (skills) => {
   }));
 };
 
-const PlayerSkillsetBars = ({ skills, className }) => {
+const getTraitEntries = (traits) => {
+  if (!Array.isArray(traits)) {
+    return [];
+  }
+
+  return traits
+    .map((trait) => {
+      if (typeof trait === "string") {
+        const trimmedName = trait.trim();
+        return trimmedName ? { id: trimmedName, name: trimmedName } : null;
+      }
+
+      const id = String(trait?.id ?? "").trim();
+      const name = String(trait?.name ?? "").trim();
+      if (!id && !name) {
+        return null;
+      }
+
+      return {
+        id: id || name,
+        name: name || id,
+      };
+    })
+    .filter(Boolean);
+};
+
+const PlayerSkillsetBars = ({ skills, traits, className }) => {
   const entries = getNumericSkillEntries(skills);
-  if (entries.length === 0) {
+  const traitEntries = getTraitEntries(traits);
+
+  if (entries.length === 0 && traitEntries.length === 0) {
     return null;
   }
 
@@ -62,23 +90,52 @@ const PlayerSkillsetBars = ({ skills, className }) => {
 
   return (
     <div className={rootClassName}>
-      {entries.map((entry) => (
-        <div className={`playerSkillsetBars__row playerSkillsetBars__row--${entry.bandKey}`} key={entry.name}>
-          <span className="playerSkillsetBars__label">{entry.name}</span>
-          <Bars min={0} max={100} current={entry.value} />
+      {entries.length > 0 ? (
+        <div className="playerSkillsetBars__skills">
+          {entries.map((entry) => (
+            <div className={`playerSkillsetBars__row playerSkillsetBars__row--${entry.bandKey}`} key={entry.name}>
+              <span className="playerSkillsetBars__label">{entry.name}</span>
+              <Bars min={0} max={100} current={entry.value} />
+            </div>
+          ))}
         </div>
-      ))}
+      ) : null}
+
+      <section className="playerSkillsetBars__traits">
+        <p className="playerSkillsetBars__traitsTitle">Traits</p>
+        {traitEntries.length > 0 ? (
+          <ul className="playerSkillsetBars__traitList">
+            {traitEntries.map((trait) => (
+              <li className="playerSkillsetBars__traitItem" key={trait.id}>
+                {trait.name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="playerSkillsetBars__traitsEmpty">No traits</p>
+        )}
+      </section>
     </div>
   );
 };
 
 PlayerSkillsetBars.propTypes = {
   skills: PropTypes.object,
+  traits: PropTypes.arrayOf(
+    PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+      }),
+    ])
+  ),
   className: PropTypes.string,
 };
 
 PlayerSkillsetBars.defaultProps = {
   skills: null,
+  traits: [],
   className: "",
 };
 

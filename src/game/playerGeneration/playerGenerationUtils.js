@@ -15,6 +15,7 @@ import {
   clamp,
   createEqualSkillSet,
 } from "./skillTransferUtils";
+import { generatePlayerTraits } from "./playerTraitGenerationUtils";
 
 const normalizeOverall = (overall) => {
   const parsed = Number(overall);
@@ -51,6 +52,10 @@ const createPlayerFromSkills = ({ playerType, targetOverall, skills, skillKeys, 
   const roundedOverall = Math.round(calculatedOverall);
   const generatedName = generatePlayerName();
   const appearance = generatePlayerAppearance();
+  const generatedTraits = generatePlayerTraits({
+    playerType,
+    influenceRule,
+  });
   const potential = generatePlayerPotential({
     currentOverall: roundedOverall,
   });
@@ -66,6 +71,8 @@ const createPlayerFromSkills = ({ playerType, targetOverall, skills, skillKeys, 
     influenceRule,
     appearance,
     skills,
+    traits: generatedTraits.traits,
+    traitGenerationDebug: generatedTraits.debug,
   };
 };
 

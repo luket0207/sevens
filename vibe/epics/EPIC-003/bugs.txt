@@ -1,0 +1,54 @@
+BUG-001
+
+I want to change how the player's potential is stored and displayed slightly. Right now we get a random value between 50 and the player's current overall rating. This should still happen.
+
+But then to get the potential, instead of just displaying the random number, we need to add the random number to the current overall rating and that gives us the final potential value.
+
+So this means if a player's rating is 22 and it's potential was randomly generated to be 10, then the potential value would then be 32.
+
+Status: fixed
+
+Repro steps:
+1. Generate players from the career-start Players debug flow.
+2. Compare a generated player's `overall` and `potential`.
+
+Expected vs actual:
+- Expected: keep random potential delta generation based on current overall to max-overall gap, but store/display final potential as `overall + delta`.
+- Actual: potential stored/displayed only the delta value.
+
+Suspected cause:
+- Potential utility returned only the random delta instead of final potential value.
+
+Attempted fixes:
+- Kept existing random-delta path (`1..(maxOverall - currentOverall)`).
+- Updated potential return value to `currentOverall + delta`.
+- Added boundary handling for maxed-overall players so potential resolves to current overall.
+
+Final fix:
+- Updated `generatePlayerPotential` in `src/game/playerGeneration/potentialGenerationUtils.js` to return final potential value (`overall + random delta`) instead of delta only.
+
+
+BUG-002
+
+The player's potential should also be displayed in their details on the team management screen. 
+
+Status: fixed
+
+Repro steps:
+1. Open `/team-management`.
+2. Hover/click a player to populate the Player Skill Inspector details panel.
+
+Expected vs actual:
+- Expected: selected player details include potential value.
+- Actual: inspector details omitted potential.
+
+Suspected cause:
+- Shared Team Management inspector UI did not render player potential metadata.
+
+Attempted fixes:
+- Added a potential summary row to the shared inspector component used by Team Management.
+- Added light styling for the new summary row.
+
+Final fix:
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx` now renders `Potential <value>` in Player Skill Inspector details.
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss` includes styling for the new inspector summary line.

@@ -33,3 +33,15 @@ This epic added league-table simulation, match result generation, cup progressio
 
 EPIC-011 - Calendar and Career Flow Tidy Up (Status: done)
 This epic focused on UX polish for calendar and progression flow: context-aware Continue labels, day-one setup gate behavior, icon-and-colour calendar events, improved tooltip/event display rules, and fixture/draw formatting refinements. Bug fixes addressed playoff visibility filtering and tooltip-trigger styling/sizing consistency.
+
+EPIC-012 - Career Start Wizard and Shared Team Setup Layout (Status: done)
+This epic converted `/career/start` into a 4-tab wizard (Name/Stadium, Kits, Players, Team Selection) with free tab navigation and globally accessible Start Career actions. It moved the initial required team arrangement/tactics setup into pre-career flow and introduced a shared top-strip + side-on pitch layout reused by both Career Start Team Selection and Team Management. The duplicate in-career day-1 team setup gate was removed, with pre-career setup now persisted into generated player-team state.
+
+EPIC-013 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+
+EPIC-014 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+
+EPIC-015 - Placeholder (Status: not started)
+Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.

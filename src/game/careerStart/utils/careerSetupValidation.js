@@ -3,6 +3,7 @@ import { isSupportedKitColour } from "../kit/kitColours";
 import { hasGoodKitContrast } from "../kit/kitContrast";
 import { isValidShirtPattern } from "../kit/shirtPatterns";
 import { hasValidCareerStartingPlayers } from "./teamSelectorValidation";
+import { isSavedTeamManagementComplete } from "../../teamManagement/utils/teamManagementState";
 
 const getTrimmedText = (value) => (typeof value === "string" ? value.trim() : "");
 
@@ -41,6 +42,7 @@ export const isCareerSetupComplete = ({
   awayColour,
   goalkeeperKit,
   players,
+  teamManagement,
 }) => {
   return (
     hasRequiredText(teamName) &&
@@ -52,6 +54,7 @@ export const isCareerSetupComplete = ({
       awayColour,
       goalkeeperKit,
     }) &&
-    hasValidPlayers(players)
+    hasValidPlayers(players) &&
+    isSavedTeamManagementComplete(teamManagement)
   );
 };

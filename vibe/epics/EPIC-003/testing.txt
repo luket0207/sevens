@@ -186,3 +186,24 @@ Automated needed:
 - Add unit tests for forced-rule validation, alias handling (`None`), and invalid forced-rule errors.
 - Add hook tests for pass-through behavior to shared generator utilities.
 Status: passed
+
+BUG-001 and BUG-002 - Potential final value and Team Management potential details
+Manual steps:
+1. Open `/career/start` -> `Players`.
+2. Generate one or more players and verify `Potential` is now greater than or equal to `Overall` and reflects final value (`overall + generated delta`), not raw delta.
+3. Open `/team-management`.
+4. Hover/click players in strip/pitch and inspect the Player Skill Inspector panel.
+5. Verify inspector shows `Potential <value>` for selected player.
+Expected:
+- Generated player potential stores/displays final potential value (not delta-only value).
+- Team Management details panel includes potential for inspected players.
+
+Command checks run after this bugfix:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide baseline lint issues in unrelated engine/info modules.
+
+Automated still needed:
+- Unit test for `generatePlayerPotential` verifying final value semantics (`overall + delta`) and upper/lower-bound behavior.
+- Component test for Team Setup inspector potential rendering when player is selected.
+
+Test status: in progress (manual steps documented, not executed in this pass), failed (lint baseline unchanged)

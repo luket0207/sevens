@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { MODAL_BUTTONS, useModal } from "../../../engine/ui/modal/modalContext";
+import {
+  FORM_RESULT_CODES,
+  normaliseTeamForm,
+  TEAM_FORM_LENGTH,
+} from "../../careerSimulation/utils/teamForm";
 import LeagueTeamSquadModalContent from "./leagueTeamSquadModalContent";
 import "./leagueTablePanel.scss";
 
@@ -19,11 +24,51 @@ const resolveTeamOverallValue = (team) => {
   return Math.max(0, Math.round(totalOverall / players.length));
 };
 
+const FORM_RESULT_LABELS = Object.freeze({
+  [FORM_RESULT_CODES.WIN]: "Win",
+  [FORM_RESULT_CODES.DRAW]: "Draw",
+  [FORM_RESULT_CODES.LOSS]: "Loss",
+});
+
+const resolveFormEntries = ({ teamId, teamLookupById, teamFormByTeamId }) => {
+  const fromSimulationState = normaliseTeamForm(teamFormByTeamId?.[teamId], TEAM_FORM_LENGTH);
+  if (fromSimulationState.length > 0) {
+    return fromSimulationState;
+  }
+
+  const fromTeamLookup = normaliseTeamForm(teamLookupById?.[teamId]?.form, TEAM_FORM_LENGTH);
+  if (fromTeamLookup.length > 0) {
+    return fromTeamLookup;
+  }
+
+  return [];
+};
+
+const toFixedFormDisplay = (formEntries) => {
+  const safeEntries = normaliseTeamForm(formEntries, TEAM_FORM_LENGTH);
+  const emptySlots = Math.max(0, TEAM_FORM_LENGTH - safeEntries.length);
+  return [...Array(emptySlots).fill(""), ...safeEntries];
+};
+
+const resolveFormDotClassName = (resultCode) => {
+  if (resultCode === FORM_RESULT_CODES.WIN) {
+    return "leagueTablePanel__formDot leagueTablePanel__formDot--win";
+  }
+  if (resultCode === FORM_RESULT_CODES.DRAW) {
+    return "leagueTablePanel__formDot leagueTablePanel__formDot--draw";
+  }
+  if (resultCode === FORM_RESULT_CODES.LOSS) {
+    return "leagueTablePanel__formDot leagueTablePanel__formDot--loss";
+  }
+  return "leagueTablePanel__formDot leagueTablePanel__formDot--empty";
+};
+
 const LeagueTablePanel = ({
   tablesByCompetition,
   defaultCompetitionId,
   playerTeamId,
   teamLookupById,
+  teamFormByTeamId,
 }) => {
   const { openModal } = useModal();
   const competitionIds = useMemo(
@@ -99,12 +144,22 @@ const LeagueTablePanel = ({
               <th>GF</th>
               <th>GA</th>
               <th>GD</th>
+              <th>Form</th>
               <th>Pts</th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry) => {
               const isPlayerTeam = entry.teamId === playerTeamId;
+              const formEntries = resolveFormEntries({
+                teamId: entry.teamId,
+                teamLookupById,
+                teamFormByTeamId,
+              });
+              const formDisplay = toFixedFormDisplay(formEntries);
+              const formLabel = formDisplay
+                .map((resultCode) => FORM_RESULT_LABELS[resultCode] ?? "No result")
+                .join(", ");
               return (
                 <tr
                   key={entry.teamId}
@@ -132,6 +187,17 @@ const LeagueTablePanel = ({
                   <td>{entry.goalsFor}</td>
                   <td>{entry.goalsAgainst}</td>
                   <td>{entry.goalDifference}</td>
+                  <td className="leagueTablePanel__formCell">
+                    <div className="leagueTablePanel__form" aria-label={formLabel}>
+                      {formDisplay.map((resultCode, index) => (
+                        <span
+                          key={`${entry.teamId}-form-${index}`}
+                          className={resolveFormDotClassName(resultCode)}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                  </td>
                   <td>{entry.points}</td>
                 </tr>
               );
@@ -148,6 +214,7 @@ LeagueTablePanel.propTypes = {
   defaultCompetitionId: PropTypes.string,
   playerTeamId: PropTypes.string,
   teamLookupById: PropTypes.object,
+  teamFormByTeamId: PropTypes.object,
 };
 
 LeagueTablePanel.defaultProps = {
@@ -155,6 +222,7 @@ LeagueTablePanel.defaultProps = {
   defaultCompetitionId: "",
   playerTeamId: "",
   teamLookupById: {},
+  teamFormByTeamId: {},
 };
 
 export default LeagueTablePanel;

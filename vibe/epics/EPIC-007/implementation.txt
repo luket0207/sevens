@@ -208,3 +208,33 @@ Files changed:
 
 Tradeoffs / follow-up tasks:
 - None for this scope; schedule order and stage structure remain unchanged.
+
+----------------------------------------------------------------
+BUGFIX - BUG-005 Playoff Tooltip Placeholder and Formatting Cleanup
+Date: 2026-03-09
+Status: done
+
+What was implemented:
+- Updated calendar tooltip resolution so playoff events no longer show tooltips while opponent placeholders are unresolved.
+- Added a dedicated playoff tooltip resolver that reads resolved team names from `simulationState.seasonOutcomes`.
+- Added opponent text normalization to prevent malformed duplicate prefixes like `vs 2nd vs 3rd` and to use clean `Team A v Team B` formatting when matchup text is already pair-based.
+- Kept non-playoff tooltip behavior intact through shared normalization helper usage.
+
+Engine components considered:
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`.
+
+Engine components used:
+- `tooltip` (existing calendar tooltip component behavior preserved; logic input refined).
+- `gameContext` indirectly through existing simulation state (`seasonOutcomes`) consumed by calendar tooltip resolver.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this bug fix is isolated to calendar tooltip text-resolution logic.
+
+Files changed:
+- `src/game/careerCalendar/utils/calendarEventDisplay.js`
+- `vibe/epics/EPIC-007/bugs.txt`
+- `vibe/epics/EPIC-007/implementation.txt`
+- `vibe/epics/EPIC-007/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Playoff tooltip now depends on `seasonOutcomes` for resolved names; if playoff scheduling becomes a future explicit fixture flow, this resolver should also read fixture-day match metadata when available.
