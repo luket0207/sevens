@@ -4,6 +4,7 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
+import { ensureCareerCardState } from "../cards";
 import { getContinueFlowLabel, resolveCupDrawContinueAction } from "../careerFlow/utils/continueFlow";
 import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import "./cupDraw.scss";
@@ -18,6 +19,7 @@ const CupDraw = () => {
   const generationStatus = gameState?.career?.generation?.status ?? "idle";
   const calendar = gameState?.career?.calendar ?? null;
   const pendingCupDraw = calendar?.pendingCupDraw ?? null;
+  const cardsState = ensureCareerCardState(gameState?.career?.cards);
   const draws = Array.isArray(pendingCupDraw?.draws) ? pendingCupDraw.draws : EMPTY_DRAWS;
   const seasons = Array.isArray(calendar?.seasons) ? calendar.seasons : [];
   const activeSeason = seasons.find((season) => season.id === calendar?.activeSeasonId) ?? seasons[0] ?? null;
@@ -83,6 +85,10 @@ const CupDraw = () => {
 
   if (generationStatus !== "complete" || !calendar || !activeSeason) {
     return <Navigate to="/career/start" replace />;
+  }
+
+  if (cardsState?.pendingRewardChoice) {
+    return <Navigate to="/career/card-reward" replace />;
   }
 
   if (!pendingCupDraw) {

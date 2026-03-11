@@ -2,6 +2,7 @@ import { isValidGoalkeeperKit } from "../kit/goalkeeperKits";
 import { isSupportedKitColour } from "../kit/kitColours";
 import { hasGoodKitContrast } from "../kit/kitContrast";
 import { isValidShirtPattern } from "../kit/shirtPatterns";
+import { hasValidCareerStartingCoaches } from "./coachSelectorValidation";
 import { hasValidCareerStartingPlayers } from "./teamSelectorValidation";
 import { isSavedTeamManagementComplete } from "../../teamManagement/utils/teamManagementState";
 
@@ -42,6 +43,7 @@ export const isCareerSetupComplete = ({
   awayColour,
   goalkeeperKit,
   players,
+  coaches,
   teamManagement,
 }) => {
   return (
@@ -55,6 +57,7 @@ export const isCareerSetupComplete = ({
       goalkeeperKit,
     }) &&
     hasValidPlayers(players) &&
+    hasValidCareerStartingCoaches(coaches) &&
     isSavedTeamManagementComplete(teamManagement)
   );
 };

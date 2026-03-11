@@ -13,6 +13,55 @@ $primaryForeground: #ffffff;    // White text on primary
 $secondaryForeground: #ffffff;  // White text on secondary
 $tertiaryForeground: #115752;   // Teal text on tertiary
 
+/* Shared button palette tokens (EPIC-016) */
+$buttonPrimaryBackgroundTop: #c88c43;
+$buttonPrimaryBackgroundBottom: #9f692d;
+$buttonPrimaryText: #fff6e5;
+$buttonPrimaryBorder: #dcb57a;
+$buttonPrimaryHoverTop: #d09a53;
+$buttonPrimaryHoverBottom: #aa7437;
+$buttonPrimaryHoverBorder: #e4c490;
+$buttonPrimaryActiveTop: #b7803f;
+$buttonPrimaryActiveBottom: #8f5f29;
+$buttonPrimaryFocusRing: rgba(217, 176, 112, 0.36);
+$buttonPrimaryGlow: rgba(198, 146, 74, 0.3);
+$buttonPrimaryDisabledTop: #89765c;
+$buttonPrimaryDisabledBottom: #726149;
+$buttonPrimaryDisabledText: #eadfcd;
+$buttonPrimaryDisabledBorder: #9e8a6e;
+
+$buttonSecondaryBackgroundTop: #e2b26f;
+$buttonSecondaryBackgroundBottom: #be8b4a;
+$buttonSecondaryText: #3a2a13;
+$buttonSecondaryBorder: #e8c996;
+$buttonSecondaryHoverTop: #e8bf82;
+$buttonSecondaryHoverBottom: #c99857;
+$buttonSecondaryHoverBorder: #f0d7ad;
+$buttonSecondaryActiveTop: #d2a462;
+$buttonSecondaryActiveBottom: #ad7b3f;
+$buttonSecondaryFocusRing: rgba(228, 194, 136, 0.34);
+$buttonSecondaryGlow: rgba(201, 154, 88, 0.26);
+$buttonSecondaryDisabledTop: #a9987e;
+$buttonSecondaryDisabledBottom: #8f7f67;
+$buttonSecondaryDisabledText: #efe5d4;
+$buttonSecondaryDisabledBorder: #b9a68a;
+
+$buttonTertiaryBackgroundTop: #f4ead0;
+$buttonTertiaryBackgroundBottom: #e4d4b1;
+$buttonTertiaryText: #5b4626;
+$buttonTertiaryBorder: #c7ab7c;
+$buttonTertiaryHoverTop: #f7efdb;
+$buttonTertiaryHoverBottom: #ebddbd;
+$buttonTertiaryHoverBorder: #d4bb8f;
+$buttonTertiaryActiveTop: #e7d6b2;
+$buttonTertiaryActiveBottom: #d7c59f;
+$buttonTertiaryFocusRing: rgba(199, 168, 117, 0.3);
+$buttonTertiaryGlow: rgba(181, 143, 82, 0.22);
+$buttonTertiaryDisabledTop: #d5ccbb;
+$buttonTertiaryDisabledBottom: #c5bcac;
+$buttonTertiaryDisabledText: #7d6d51;
+$buttonTertiaryDisabledBorder: #aea086;
+
 /* Text */
 
 $darkText: #242424; // dark grey;
@@ -68,3 +117,9 @@ $calendarEventChampionsCupDrawTile: #b494e8;
 $calendarEventChampionsCupDrawIcon: #7b4db8;
 $calendarEventFinalIcon: #e6c14a;
 $calendarEventPlayoffIcon: #e6cc3a;
+
+/* Roguelike card type colours */
+$cardTypeTraining: #3f7ec7;
+$cardTypeScouting: #e6cc3a;
+$cardTypeAcademy: #d9822b;
+$cardTypeStaff: #a83232;

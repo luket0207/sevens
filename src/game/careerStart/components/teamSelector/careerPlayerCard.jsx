@@ -48,18 +48,6 @@ const CareerPlayerCard = ({
         </div>
       </div>
 
-      <div className="careerStart__playerMeta">
-        <span>
-          <strong>Type:</strong> {player.playerType}
-        </span>
-        <span>
-          <strong>Influence:</strong> {player.influenceRule}
-        </span>
-        <span>
-          <strong>Potential:</strong> {player.potential}
-        </span>
-      </div>
-
       <div className="careerStart__skillsGrid">
         <div className="careerStart__skillRow careerStart__skillRow--overall">
           <span>

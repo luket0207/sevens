@@ -9,6 +9,12 @@ import {
   getSimulationFixtureById,
   simulateCareerDay,
 } from "../careerSimulation";
+import {
+  ensureCareerCardState,
+  generateCardOfferSet,
+  resolveFormWinsBucket,
+  resolveLeagueTierFromCompetitionId,
+} from "../cards";
 import "./match.scss";
 
 const Match = () => {
@@ -24,11 +30,28 @@ const Match = () => {
   const currentDayIndex = Number.isInteger(calendar?.currentDayIndex) ? calendar.currentDayIndex : 0;
   const currentDay = activeSeason?.days?.[currentDayIndex] ?? null;
   const simulationState = calendar?.simulation ?? null;
+  const cardsState = ensureCareerCardState(gameState?.career?.cards);
   const pendingPlayerFixtureId = simulationState?.pendingPlayerFixtureId ?? "";
   const pendingFixture = getSimulationFixtureById({
     simulationState,
     fixtureId: pendingPlayerFixtureId,
   });
+
+  const resolvePlayerMatchResultLabel = (selectedResult) => {
+    if (selectedResult === "draw") {
+      return "Draw";
+    }
+    const isPlayerHome = pendingFixture?.homeTeamId === careerWorld?.playerTeam?.id;
+    const isPlayerAway = pendingFixture?.awayTeamId === careerWorld?.playerTeam?.id;
+
+    if (selectedResult === "home_win") {
+      return isPlayerHome ? "Win" : "Lose";
+    }
+    if (selectedResult === "away_win") {
+      return isPlayerAway ? "Win" : "Lose";
+    }
+    return "Lose";
+  };
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -36,6 +59,10 @@ const Match = () => {
 
   if (generationStatus !== "complete" || !careerWorld || !calendar || !activeSeason || !currentDay) {
     return <Navigate to="/career/start" replace />;
+  }
+
+  if (cardsState?.pendingRewardChoice) {
+    return <Navigate to="/career/card-reward" replace />;
   }
 
   if (!pendingFixture) {
@@ -72,6 +99,18 @@ const Match = () => {
     const allCupDraws = [...simulationResult.createdCupDraws, ...seasonFixtureDraws];
     const shouldSuppressDayResultsPanel = currentDay.dayOfSeason === 1;
     const shouldShowDayResultsPanel = dayResults.length > 0 && !shouldSuppressDayResultsPanel;
+    const playerTeamId = careerWorld?.playerTeam?.id ?? "";
+    const rewardContext = {
+      leagueTier: resolveLeagueTierFromCompetitionId(careerWorld?.playerTeam?.competitionId),
+      formWins: resolveFormWinsBucket(
+        simulationResult.nextSimulationState?.teamFormByTeamId?.[playerTeamId] ?? []
+      ),
+      matchResult: resolvePlayerMatchResultLabel(selectedResult),
+    };
+    const rewardOfferResult = generateCardOfferSet({
+      context: rewardContext,
+      source: "post_match",
+    });
 
     setGameState((prev) => ({
       ...prev,
@@ -106,15 +145,32 @@ const Match = () => {
           seasonFixturesRevealed:
             Boolean(prev.career?.calendar?.seasonFixturesRevealed) || shouldRevealSeasonFixtures,
         },
+        cards: {
+          ...ensureCareerCardState(prev?.career?.cards),
+          pendingRewardChoice: {
+            source: "post_match",
+            context: rewardOfferResult.context,
+            rewardMatrixRow: rewardOfferResult.rewardMatrixRow,
+            offeredCards: rewardOfferResult.offeredCards,
+            rollDebug: rewardOfferResult.rollDebug,
+            staffSubtypeRolls: rewardOfferResult.staffSubtypeRolls,
+            rerollCount: 0,
+            createdAt: new Date().toISOString(),
+          },
+          debug: {
+            ...ensureCareerCardState(prev?.career?.cards).debug,
+            lastRewardContext: rewardOfferResult.context,
+            lastRewardMatrixRow: rewardOfferResult.rewardMatrixRow,
+            lastRolls: rewardOfferResult.rollDebug,
+            lastStaffSubtypeRolls: rewardOfferResult.staffSubtypeRolls,
+            lastProceduralStaffCard: rewardOfferResult.proceduralStaffCards[0] ?? null,
+            lastRewardSource: "post_match",
+          },
+          lastUpdatedAt: new Date().toISOString(),
+        },
       },
     }));
-
-    if (allCupDraws.length > 0) {
-      navigate("/cup-draw");
-      return;
-    }
-
-    navigate(shouldShowDayResultsPanel ? "/career/day-results" : "/career/home");
+    navigate("/career/card-reward");
   };
 
   return (

@@ -4,7 +4,6 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Bars from "../../engine/ui/bars/bars";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
-import { CAREER_COMPETITION_SCHEMA } from "./constants/careerCompetitionSchema";
 import { CAREER_GENERATION_PHASES, generateCareerWorldData } from "./utils/careerGenerator";
 import "./careerGenerationLoading.scss";
 
@@ -19,8 +18,6 @@ const DEFAULT_PROGRESS = Object.freeze({
 });
 
 const toIsoNow = () => new Date().toISOString();
-const TOTAL_COMPETITION_COUNT = CAREER_COMPETITION_SCHEMA.length;
-const MAX_DEBUG_EVENTS = 160;
 
 const CareerGenerationLoading = () => {
   const navigate = useNavigate();
@@ -29,10 +26,6 @@ const CareerGenerationLoading = () => {
   const generationStatus = generationState.status ?? "idle";
   const progress = generationState.progress ?? DEFAULT_PROGRESS;
   const generationError = generationState.error ?? "";
-  const completedCompetitionSummaries = Array.isArray(generationState.completedCompetitionSummaries)
-    ? generationState.completedCompetitionSummaries
-    : [];
-  const debugEvents = Array.isArray(generationState.debugEvents) ? generationState.debugEvents : [];
   const activeRunRef = useRef(null);
 
   const canRunGeneration = useMemo(
@@ -62,50 +55,6 @@ const CareerGenerationLoading = () => {
         const generationResult = await generateCareerWorldData({
           careerSetup: gameState.career?.setup,
           shouldCancel: () => run.cancelled,
-          onDebugEvent: (event) => {
-            if (run.cancelled) return;
-
-            setGameState((prev) => {
-              const currentEvents = Array.isArray(prev.career?.generation?.debugEvents)
-                ? prev.career.generation.debugEvents
-                : [];
-              const nextEvents = [...currentEvents, event];
-
-              return {
-                ...prev,
-                career: {
-                  ...prev.career,
-                  generation: {
-                    ...(prev.career?.generation ?? {}),
-                    debugEvents: nextEvents.slice(-MAX_DEBUG_EVENTS),
-                  },
-                },
-              };
-            });
-          },
-          onCompetitionGenerated: ({ competitionSummary }) => {
-            if (run.cancelled) return;
-
-            setGameState((prev) => {
-              const currentSummaries = Array.isArray(
-                prev.career?.generation?.completedCompetitionSummaries
-              )
-                ? prev.career.generation.completedCompetitionSummaries
-                : [];
-              const filtered = currentSummaries.filter((item) => item.id !== competitionSummary.id);
-
-              return {
-                ...prev,
-                career: {
-                  ...prev.career,
-                  generation: {
-                    ...(prev.career?.generation ?? {}),
-                    completedCompetitionSummaries: [...filtered, competitionSummary],
-                  },
-                },
-              };
-            });
-          },
           onProgress: (nextProgress) => {
             if (!run.cancelled) {
               setGameValue("career.generation.progress", nextProgress);
@@ -232,46 +181,9 @@ const CareerGenerationLoading = () => {
     <PageLayout title="Generating Career" subtitle="Building leagues, teams, and players for your new save.">
       <section className="careerGeneration__panel">
         <div className="careerGeneration__spinner" aria-hidden="true" />
-        <p className="careerGeneration__phase">{progress.phaseLabel}</p>
-        <p className="careerGeneration__detail">{progress.detail || "Working..."}</p>
+        <p className="careerGeneration__phase">Creating your career world...</p>
         <Bars min={0} max={100} current={progress.percent ?? 0} />
-        <p className="careerGeneration__note">
-          Progress: {progress.percent ?? 0}% ({progress.completedUnits ?? 0}/{progress.totalUnits ?? 1})
-        </p>
-        <div className="careerGeneration__leagueList">
-          <p className="careerGeneration__note">
-            Completed Competitions: {completedCompetitionSummaries.length} / {TOTAL_COMPETITION_COUNT}
-          </p>
-          {completedCompetitionSummaries.length === 0 ? (
-            <p className="careerGeneration__note">No competitions completed yet.</p>
-          ) : (
-            <ul className="careerGeneration__leagueItems">
-              {completedCompetitionSummaries.map((summary) => (
-                <li className="careerGeneration__leagueItem" key={summary.id}>
-                  <strong>{summary.name}</strong> - Teams: {summary.teamCount}, Players:{" "}
-                  {summary.generatedPlayerCount}, Managers: {summary.generatedManagerCount ?? 0}, OVR range:{" "}
-                  {summary.minOverall}-{summary.maxOverall}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="careerGeneration__leagueList">
-          <p className="careerGeneration__note">Generator Trace (latest first)</p>
-          {debugEvents.length === 0 ? (
-            <p className="careerGeneration__note">No debug events yet.</p>
-          ) : (
-            <ul className="careerGeneration__leagueItems careerGeneration__leagueItems--scroll">
-              {[...debugEvents]
-                .reverse()
-                .map((event) => (
-                  <li className="careerGeneration__leagueItem" key={event.id}>
-                    <strong>{event.timestamp}</strong> [{event.type}] {event.message}
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
+        <p className="careerGeneration__note">Progress: {progress.percent ?? 0}%</p>
       </section>
     </PageLayout>
   );

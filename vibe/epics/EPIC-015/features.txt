@@ -1,0 +1,386 @@
+EPIC-015 - Career Start Coaches Tab, Team Selection UX Tidy Up, and Team Selection Rebalance
+
+Overview
+The goal of this epic is to improve the /career/start wizard in three main ways:
+
+- add coach selection into the wizard
+- tidy and simplify the player/team selection flow
+- rebalance the generated player range for the initial team selection
+
+This epic is about:
+- adding a new Coaches tab
+- selecting the player's starting coaches before career start
+- removing the old separate Players tab
+- merging player generation/choice and team selection into one cleaner flow
+- gating team selection until players have been chosen
+- adding a random auto-place feature for the pitch
+- tightening the initial player overall range from 20-25 down to 20-22
+
+This epic is not about:
+- changing the core coach system outside career start
+- changing the card-based staff systems
+- changing the team selection slot structure itself
+- changing the core player generation system beyond the initial selection range rebalance
+
+================================================================
+Core Goals
+================================================================
+
+The core outcomes of this epic are:
+
+1. Add starting coach selection to /career/start
+- the user should select 2 coaches before starting the career
+- coaches should be selected in a similar 3-choice flow to players
+
+2. Simplify the wizard structure
+- remove the standalone Players tab
+- move its current functionality into Team Selection
+- make Team Selection a two-stage tab:
+  - first select the players
+  - then arrange/select the team on the pitch
+
+3. Improve team setup usability
+- hide the pitch/team selection portion until the player pool has been fully selected
+- add a button to randomly place all selected players onto the pitch
+
+4. Rebalance initial player generation
+- keep the current generation structure and influence spread approach
+- reduce the initial outfield overall range from 20-25 to 20-22
+
+================================================================
+Career Start Wizard Structure Update
+================================================================
+
+After this epic, the wizard should be restructured to:
+
+1. Name and Stadium Name
+2. Kits
+3. Team Selection
+4. Coaches
+
+This means:
+- the old Players tab is removed
+- the Team Selection tab now owns both:
+  - player choice generation/selection
+  - team placement on the pitch
+
+The user should still be able to:
+- move freely between tabs
+- revisit tabs
+- complete setup from any tab once the full setup is valid
+
+================================================================
+Coach Selection Rules
+================================================================
+
+The player should begin the career by selecting 2 coaches.
+
+Coach selection flow:
+- the player gets 2 coach choices total
+- each choice presents 3 random common staff-card coaches
+- the player selects 1 from each group of 3
+- after selecting 2 coaches total, the Coaches section becomes valid
+
+Coach type rules:
+- only common staff member coaches are used here
+- do not offer staff upgrades in this wizard coach selection flow
+- the offered coaches should be procedural staff-card coaches using the existing staff card/stat generation rules where possible
+
+Coach presentation rules:
+- coach attributes should be displayed clearly
+- show coach stats similarly to how player stats are shown
+- reuse the existing skillset/stat display component if practical
+- if reuse is not clean as-is, extend/adapt the component sensibly rather than duplicating a second stat display system
+
+Coach validity rule:
+- the Coaches tab is valid only once the user has chosen 2 coaches
+
+================================================================
+Team Selection Tab Restructure
+================================================================
+
+The current separate Players tab should be removed.
+
+The functionality currently inside that Players tab should be moved into the Team Selection tab.
+
+The Team Selection tab should now work in 2 phases:
+
+Phase 1 - Player Selection
+- the user selects their initial generated players
+
+Phase 2 - Team Selection / Placement
+- once all required players have been selected, reveal the pitch arrangement UI
+- the user can then place the selected players onto the pitch
+
+Important visibility rule:
+- the team selection/pitch arrangement UI must remain hidden until the player selection phase is complete
+- as soon as the player pool is fully selected, the team selection UI becomes visible in the same tab
+
+This should make the flow feel more natural and reduce the need to move between tabs for what is really one continuous setup process.
+
+================================================================
+Random Auto-Place Feature
+================================================================
+
+Add a button in the team placement section that randomly places all selected players onto the pitch.
+
+Rules:
+- only available once the player pool has been fully selected
+- should place all eligible outfield players into the valid pitch slots
+- should keep the goalkeeper fixed in the goalkeeper slot as normal
+- should produce a valid full arrangement if enough players are available
+- this is a convenience feature only; the user can still manually rearrange players afterwards
+
+This should work in the same shared pitch/formation component flow already being used in the wizard and team management.
+
+================================================================
+Initial Team Selection Rebalance
+================================================================
+
+The initial player selection flow currently generates outfield players with overall ratings between 20 and 25.
+
+This epic changes only the range:
+- old range: 20 to 25
+- new range: 20 to 22
+
+Keep everything else the same:
+- same overall distribution logic shape
+- same forced influence spread logic
+- same grouping and choice logic
+- same general player generation process
+
+Only tighten the rating spread so the initial team is more compressed and lower-powered.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1501 - Add Coaches Tab to Career Start Wizard
+----------------------------------------------------------------
+
+Description
+Add a new Coaches tab to the /career/start wizard.
+
+Requirements
+- Add a dedicated Coaches tab to the career start wizard.
+- Update the wizard structure so it includes:
+  - Name and Stadium Name
+  - Kits
+  - Team Selection
+  - Coaches
+- Remove the standalone Players tab from the wizard structure.
+- Keep navigation between tabs free and revisitable.
+
+Acceptance Criteria
+- A Coaches tab exists in the wizard.
+- The Players tab has been removed.
+- The wizard structure reflects the new setup flow correctly.
+
+----------------------------------------------------------------
+FEAT-1502 - Generate Coach Choice Pools for Career Start
+----------------------------------------------------------------
+
+Description
+Generate the coach options used in the Coaches tab.
+
+Requirements
+- The player must make 2 coach selections total.
+- Each coach selection should present exactly 3 random coaches.
+- These offered coaches must be common staff member coaches only.
+- Do not include staff upgrades in this coach-selection flow.
+- Reuse the existing staff member generation logic where sensible, constrained to common rarity.
+- Keep the two coach-choice sets separate and stable once generated for the current setup flow.
+
+Acceptance Criteria
+- The user receives 2 coach choices.
+- Each choice contains 3 random common staff member coaches.
+- No staff upgrade cards appear in this flow.
+
+----------------------------------------------------------------
+FEAT-1503 - Build Coach Selection Interaction for Career Start
+----------------------------------------------------------------
+
+Description
+Allow the user to choose their 2 starting coaches.
+
+Requirements
+- The user must select 1 coach from each of the 2 groups of 3.
+- Selected coaches should be saved into the player’s starting staff state for the career.
+- Prevent choosing more than one coach from the same choice group.
+- Once 2 coaches have been selected, the Coaches tab becomes valid.
+
+Acceptance Criteria
+- The user can select 2 starting coaches.
+- Exactly 1 coach is chosen from each 3-choice set.
+- The selected coaches are stored in setup state.
+- The Coaches section becomes valid only when both choices are made.
+
+----------------------------------------------------------------
+FEAT-1504 - Display Coach Attributes Using Shared Stat Display Approach
+----------------------------------------------------------------
+
+Description
+Show coach attributes clearly in the Coaches tab using the same or closely related display approach as players.
+
+Requirements
+- Display coach attributes in a structured way.
+- Reuse the existing player skillset/stat display component if practical.
+- If direct reuse is not clean, adapt or extend the shared stat display approach rather than creating a disconnected display system.
+- At minimum, show the coach’s key generated attributes clearly, including:
+  - Scouting
+  - Judgement
+  - Youth Training
+  - GK Training
+  - DF Training
+  - MD Training
+  - AT Training
+  - Overall Rating
+- Keep the display readable and comparable across the 3 choices.
+
+Acceptance Criteria
+- Coach stats are clearly shown in the selection UI.
+- The display system reuses or sensibly extends the existing stat display approach.
+- Users can compare the 3 coaches in each choice easily.
+
+----------------------------------------------------------------
+FEAT-1505 - Remove Players Tab and Merge Its Content into Team Selection
+----------------------------------------------------------------
+
+Description
+Remove the standalone Players tab and move its current functionality into the Team Selection tab.
+
+Requirements
+- Remove the Players tab from the wizard.
+- Move the current player-selection component/flow into the Team Selection tab.
+- Ensure the new Team Selection tab contains both:
+  - player selection
+  - later team placement
+- Preserve existing player selection logic during the migration.
+
+Acceptance Criteria
+- The Players tab no longer exists.
+- Its functionality now lives inside Team Selection.
+- Existing player selection behaviour still works after the move.
+
+----------------------------------------------------------------
+FEAT-1506 - Gate Team Placement UI Until Player Selection Is Complete
+----------------------------------------------------------------
+
+Description
+Hide the team placement/pitch arrangement UI until the player-selection stage has been completed.
+
+Requirements
+- Inside the Team Selection tab, initially show only the player selection phase.
+- Keep the pitch/team arrangement section hidden until all required players have been selected.
+- As soon as player selection is complete, reveal the team placement UI in the same tab.
+- Preserve selected player state during this transition.
+
+Acceptance Criteria
+- The pitch arrangement UI is hidden before player selection is complete.
+- It becomes visible immediately once player selection is complete.
+- The transition feels like one continuous setup flow.
+
+----------------------------------------------------------------
+FEAT-1507 - Add Random Auto-Place Button to Team Placement Section
+----------------------------------------------------------------
+
+Description
+Add a convenience button that randomly places all selected players onto the pitch.
+
+Requirements
+- Add a Random Place or equivalent button in the team placement section.
+- Only make it usable once the player pool has been fully selected.
+- When clicked:
+  - place all selected outfield players into the valid pitch slots
+  - keep the goalkeeper fixed as normal
+  - produce a valid full arrangement where possible
+- The user must still be able to manually rearrange players afterwards.
+
+Acceptance Criteria
+- A random placement button exists in the team placement section.
+- Clicking it fills the pitch with a valid arrangement.
+- Players can still be manually rearranged afterwards.
+
+----------------------------------------------------------------
+FEAT-1508 - Rebalance Initial Outfield Selection Range from 20-25 to 20-22
+----------------------------------------------------------------
+
+Description
+Tighten the overall range used for the initial outfield player generation in career start.
+
+Requirements
+- Change the initial outfield player generation range from:
+  - 20 to 25
+  to:
+  - 20 to 22
+- Keep the rest of the generation structure the same.
+- Preserve:
+  - forced influence spread
+  - generation grouping logic
+  - general distribution behaviour
+- Only reduce the rating band.
+
+Acceptance Criteria
+- Initial outfield players in the career start flow are generated only between 20 and 22 overall.
+- The rest of the existing player selection generation logic remains unchanged.
+
+----------------------------------------------------------------
+FEAT-1509 - Update Team Selection Validation to Match the New Merged Flow
+----------------------------------------------------------------
+
+Description
+Ensure the merged Team Selection tab still contributes correctly to overall start-career validity.
+
+Requirements
+- Preserve the existing overall start-career validation logic.
+- Ensure the merged Team Selection tab is only treated as valid when:
+  - required players have been selected
+  - required team placement is complete
+- Keep this integrated cleanly with the other wizard tabs, including the new Coaches tab.
+
+Acceptance Criteria
+- Team Selection validity still works correctly after the tab merge.
+- Start Career validation still behaves correctly across the full wizard.
+
+----------------------------------------------------------------
+FEAT-1510 - Add Setup State and Debug Support for New Wizard Flow
+----------------------------------------------------------------
+
+Description
+Provide lightweight debug/development support for validating the new wizard structure and state transitions.
+
+Requirements
+- Add development-friendly visibility for:
+  - selected coaches
+  - coach-choice completion state
+  - player selection completion state
+  - team placement completion state
+  - merged Team Selection tab validity
+  - full wizard validity
+- Keep this lightweight and suitable for implementation/debugging only.
+
+Acceptance Criteria
+- Developers can inspect the important state behind the new wizard flow.
+- The new Coaches tab and merged Team Selection flow are easier to validate during implementation.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The /career/start wizard includes a new Coaches tab.
+- The Players tab has been removed.
+- The wizard now uses:
+  - Name and Stadium Name
+  - Kits
+  - Team Selection
+  - Coaches
+- The player selects 2 starting coaches from 2 separate groups of 3 random common staff member coaches.
+- Coach attributes are clearly displayed using the same or a shared-compatible stat display approach as players.
+- The Team Selection tab now contains both player selection and team placement.
+- The team placement UI remains hidden until all required players have been selected.
+- A random auto-place button exists and can fill the pitch with a valid arrangement.
+- The initial outfield overall generation range has been tightened from 20-25 to 20-22.
+- Overall start-career validation still works correctly with the new tab structure and setup flow.

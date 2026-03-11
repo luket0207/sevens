@@ -1,0 +1,312 @@
+EPIC-015 Implementation Log
+Date: 2026-03-10
+
+Scope implemented:
+- Added starting coach selection to `/career/start`.
+- Merged player selection into Team Selection and removed standalone Players tab from the wizard flow.
+- Added Team Selection phase gating + random auto-place convenience action.
+- Rebalanced initial outfield selection overall spread from 20-25 down to 20-22.
+
+Feature status:
+- FEAT-1501: done
+- FEAT-1502: done
+- FEAT-1503: done
+- FEAT-1504: done
+- FEAT-1505: done
+- FEAT-1506: done
+- FEAT-1507: done
+- FEAT-1508: done
+- FEAT-1509: done
+- FEAT-1510: done
+
+What was implemented:
+- Wizard structure update:
+  - Replaced tab flow with:
+    - Name and Stadium Name
+    - Kits
+    - Team Selection
+    - Coaches
+  - Removed standalone Players tab from navigation and rendering.
+- Coach selector system:
+  - Added coach selector state shape with `choiceGroups`, `selectedByGroup`, `isComplete`.
+  - Added generation utility that creates 2 stable groups of 3 common staff member coach cards.
+  - Added validation helpers to:
+    - read selected coaches from selector state
+    - determine selector completion
+    - validate career starting coaches for setup completion.
+  - Added Coaches tab UI that:
+    - generates/regenerates coach options
+    - enforces one selected coach per group
+    - shows progress (0/2, 1/2, 2/2)
+    - stores selected coaches in `career.setup.coaches` and selector state in `career.setup.coachSelector`.
+- Coach attribute presentation:
+  - Reused `PlayerSkillsetBars` and extended it for coach stats.
+  - Added coach stat ordering keys:
+    - Overall Rating, Scouting, Judgement, Youth Training, GK/DF/MD/AT Training
+  - Added `hideTraits` prop so coach cards display stat bars without trait section.
+- Team Selection merge and gating:
+  - Team Selection tab now contains two phases:
+    - Phase 1: existing player generation and selection flow (`CareerTeamSelector`)
+    - Phase 2: pitch placement and tactic setup
+  - Phase 2 remains hidden until player selection is complete.
+  - Added random auto-place action in Phase 2:
+    - shuffles selected outfield players into valid slots
+    - goalkeeper stays fixed via setup state.
+- Setup and validation integration:
+  - Career setup validation now requires valid starting coaches.
+  - Team Selection tab completion now reflects merged validity:
+    - player selection complete
+    - team placement complete.
+  - Added lightweight debug visibility for:
+    - selected coach count/names
+    - coach selection completion
+    - player selection completion
+    - team placement completion
+    - merged Team Selection completion
+    - full wizard validity.
+- Generation rebalance + persistence:
+  - Tightened outfield weighted overall pool to 20/21/22 only.
+  - Persisted selected starting coaches to generated player-team state:
+    - `playerTeam.coaches`
+    - `playerTeam.staff.coaches`.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for persisted setup state additions (`coaches`, `coachSelector`) and wizard flow data.
+- `bars` via shared `PlayerSkillsetBars` reuse for coach stat display.
+- `button` for coach generation/selection actions and random auto-place.
+- `rng` for coach option generation IDs and random auto-place shuffling.
+
+Engine components not used (and why):
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip` were not needed; all interactions fit existing inline tab flow.
+- `makeDecision` was not needed because weighted/rule logic already exists in feature-level generators.
+- `saveGame` and `timer` required no direct changes for this implementation.
+
+Files changed:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/game/careerStart/components/careerStartCoachSelectionTab.jsx`
+- `src/game/careerStart/components/careerStartTeamSelectionTab.jsx`
+- `src/game/careerStart/utils/coachSelectorState.js`
+- `src/game/careerStart/utils/coachSelectorGeneration.js`
+- `src/game/careerStart/utils/coachSelectorValidation.js`
+- `src/game/careerStart/utils/teamSelectorGeneration.js`
+- `src/game/careerStart/utils/careerSetupValidation.js`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- A lightweight flow debug panel is included in the wizard for implementation validation; remove or gate later if production UX should stay minimal.
+- Repository lint baseline is currently failing in unrelated files, so lint cannot be used as a clean EPIC-only signal yet.
+
+Bug fix pass (2026-03-11):
+- Implemented BUG-001 to BUG-005 from `EPIC-015/bugs.txt`.
+- Key updates:
+  - Goalkeeper generation range aligned to 20-22.
+  - Career setup defaults changed to unselected kit values for new setup state.
+  - Removed saved shirt preview block from kits tab.
+  - Goalkeeper kit selection now uses shirt image previews.
+  - Player and coach options now auto-generate on first tab load (no manual generate/regenerate controls).
+  - Player selection panel now hides once Team Selection Phase 2 is unlocked, locking first generated set for that setup run.
+  - Coach flow now shows one group at a time, revealing group 2 only after group 1 is selected.
+  - Coach skill labels now render with light text styling for readability.
+
+Engine components considered for bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug fixes:
+- `gameContext` for default setup state changes (no default kit selection).
+- `button` for existing interaction controls in kits/team/coach flows.
+- `rng` indirectly through existing player/coach generation utilities and random auto-place behavior.
+- `bars` remains reused via `PlayerSkillsetBars`, with coach-specific style override.
+
+Engine components not used (and why):
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required for this bug-fix scope.
+
+Additional files changed in bug-fix pass:
+- `src/game/careerStart/components/teamKitSelector.jsx`
+- `src/game/careerStart/components/teamSelector/careerTeamSelector.jsx`
+- `src/game/careerStart/components/careerStartTeamSelectionTab.jsx`
+- `src/game/careerStart/components/careerStartCoachSelectionTab.jsx`
+- `src/game/careerStart/utils/teamSelectorGeneration.js`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/engine/gameContext/gameContext.jsx`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 2):
+- Implemented BUG-006 to BUG-014 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Removed phase-1 wrapper/title/helper copy from team selector view.
+  - Removed career-start wizard debug UI from rendered flow.
+  - Included goalkeeper kit randomisation in full kit randomise action.
+  - Removed Type/Influence/Potential metadata rows from player choice cards.
+  - Repositioned Random Auto-Place beneath Player Skill Inspector.
+  - Updated team setup inspector layout to flex-start alignment with natural height behavior.
+  - Updated top step-nav forward button to become `Start Career` when full setup is valid.
+  - Simplified career generation loading screen to spinner + simple progress bar display (no debug/trace output).
+  - Removed boxed action panel styling around start action and capped Start Career button width to 400px.
+
+Engine components considered for update-2 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-2 bug fixes:
+- `button` for wizard navigation/start controls and team placement action controls.
+- `bars` for the simplified generation loading progress bar.
+- `rng` via kit randomiser update for goalkeeper kit random selection.
+
+Engine components not used (and why):
+- `gameContext`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required for this UI/layout-focused bug-fix pass.
+
+Additional files changed in update-2 bug-fix pass:
+- `src/game/careerStart/components/careerStartTeamSelectionTab.jsx`
+- `src/game/careerStart/components/teamSelector/careerTeamSelector.jsx`
+- `src/game/careerStart/components/teamSelector/careerPlayerCard.jsx`
+- `src/game/careerStart/kit/kitRandomizer.js`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.scss`
+- `src/game/careerGeneration/careerGenerationLoading.jsx`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 3):
+- Implemented BUG-015 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Centered the Start Career action area content.
+  - Increased top/bottom padding around the action area.
+  - Kept Start Career width cap while adding auto horizontal centering.
+
+Engine components considered for update-3 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-3 bug fix:
+- `button` (existing Start Career action control styling context).
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this CSS/UI alignment adjustment.
+
+Additional files changed in update-3 bug-fix pass:
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 4):
+- Implemented BUG-016 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Replaced shared button palette tokens from teal/blue to warm yellow/orange tones.
+  - Kept existing shared button variant/state styling architecture unchanged (token-only swap).
+  - Tuned primary/secondary/tertiary default, hover, active, focus, and disabled token values for contrast against existing teal/beige backgrounds.
+
+Engine components considered for update-4 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-4 bug fix:
+- `button` shared styling system via token consumption in `button.scss`.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a token-level visual palette update only.
+
+Additional files changed in update-4 bug-fix pass:
+- `src/assets/scss/ui/colours.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 5):
+- Implemented BUG-017 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Reduced saturation/brightness of the warm button palette introduced in BUG-016.
+  - Preserved warm yellow/orange direction while shifting toward more muted earthy tones.
+  - Retuned primary/secondary/tertiary default, hover, active, focus, and disabled tokens for a calmer visual fit with existing backgrounds.
+
+Engine components considered for update-5 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-5 bug fix:
+- `button` shared styling system via global token consumption in `button.scss`.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a styling token adjustment only.
+
+Additional files changed in update-5 bug-fix pass:
+- `src/assets/scss/ui/colours.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`

@@ -13,19 +13,16 @@ import {
 
 const GOALKEEPER_TARGET_OVERALL_RANGE = Object.freeze({
   min: 20,
-  max: 25,
+  max: 22,
 });
 
 const OUTFIELD_POOL_SIZE = 18;
 const OUTFIELD_GROUP_SIZE = 3;
 
 const OUTFIELD_OVERALL_WEIGHTS = Object.freeze([
-  Object.freeze({ overall: 20, weight: 1 }),
+  Object.freeze({ overall: 20, weight: 2 }),
   Object.freeze({ overall: 21, weight: 4 }),
   Object.freeze({ overall: 22, weight: 5 }),
-  Object.freeze({ overall: 23, weight: 4 }),
-  Object.freeze({ overall: 24, weight: 2 }),
-  Object.freeze({ overall: 25, weight: 1 }),
 ]);
 
 const FORCED_INFLUENCE_RULES = Object.freeze(

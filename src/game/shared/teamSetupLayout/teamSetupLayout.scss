@@ -118,8 +118,19 @@
 .teamSetupLayout__body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(280px, 28vw, 420px);
-  align-items: stretch;
+  align-items: flex-start;
   gap: 0.8rem;
+}
+
+.teamSetupLayout__inspectorColumn {
+  display: grid;
+  gap: 0.6rem;
+  align-content: flex-start;
+}
+
+.teamSetupLayout__inspectorFooter {
+  display: grid;
+  gap: 0.4rem;
 }
 
 .teamSetupLayout__pitch {
@@ -296,9 +307,8 @@
   background: rgba($secondaryBackground, 0.86);
   padding: 0.7rem;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 0.45rem;
-  min-height: 100%;
 
   h3 {
     font-size: 0.95rem;
@@ -311,15 +321,15 @@
   background: rgba($siteBackground, 0.28);
   padding: 0.55rem;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
   gap: 0.45rem;
-  min-height: 100%;
 }
 
 .teamSetupLayout__inspectorHead {
   display: flex;
   gap: 0.55rem;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 
@@ -333,6 +343,7 @@
 .teamSetupLayout__inspectorProfile {
   min-width: 120px;
   max-width: 132px;
+  margin-inline: auto;
 }
 
 .teamSetupLayout__inspectorSkillset {

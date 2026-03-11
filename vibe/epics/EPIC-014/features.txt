@@ -1,460 +1,980 @@
-EPIC-014 - Player Growth and Training System
+EPIC-014 - Roguelike Card System and Card Library Foundation
 
 Overview
-This epic introduces the player growth and training system.
+The goal of this epic is to replace the reverted training-first approach with the new roguelike card structure for the game.
 
-Training is the first system that allows players to improve their ratings over time.
-
-Training works through:
-- training sessions
-- coaches
-- success probabilities
-- player potential limits
-- sub-rating progression
-
-Training sessions are scheduled on the calendar and executed automatically when their day arrives.
-
-Training cannot be scheduled on match days.
-
-Training success can improve player skill ratings using a sub-rating progression system.
+There is no overall progression layer outside the current career. Progress in a run comes from the luck and quality of procedurally generated items and opportunities offered during that career.
 
 This epic introduces:
-- the training bar UI
-- training session inventory
-- drag/drop scheduling onto the calendar
-- coach hiring and weekly availability
-- automatic coach training session generation
-- training session execution and player growth
-- training results summaries
+- the core card system
+- post-match card rewards
+- the card library
+- card rerolling by discarding cards
+- the 4 card types:
+  - Training
+  - Scouting
+  - Academy
+  - Staff
+- procedurally generated staff member cards
+- fixed staff upgrade cards
+- card rarity handling
+- card colours by type
+- debug tools to manually trigger card rewards
 
-This epic does not introduce:
-- advanced coach personalities
-- coach progression
-- player morale effects
-- training injuries
+This epic is only about:
+- generating cards
+- offering cards
+- adding chosen cards to the player's library
+- displaying and managing the card library
+- defining the exact data structures and reward rules
 
-Those systems may be introduced later.
+This epic is not yet about:
+- using training cards
+- using scouting cards
+- using academy cards
+- using staff upgrade cards
+- academy gameplay resolution
+- scouting gameplay resolution
+- youth promotion gameplay resolution
+- coach hiring effects from cards
+- money/cost systems
+- permanent progression between careers
+
+================================================================
+Core Roguelike Structure
+================================================================
+
+The game loop should now start building a roguelike reward structure around cards.
+
+Cards are awarded after every match.
+
+The user must choose 1 card from 3 offered cards before returning to the calendar.
+
+Those cards are generated individually from the reward matrix in this epic.
+
+The chosen card is added to the player's card library.
+
+The player may also reroll the offered 3 cards by discarding 1 card from their existing card library.
+- 1 discarded card = 1 reroll
+- the rerolled choice still results in the user choosing 1 of the new 3 cards
+- the chosen card is still added to the library
+
+The library contains all card types together in one place, but it must be sortable and filterable.
+
+================================================================
+Card Types
+================================================================
+
+There are 4 top-level card types:
+
+- Training
+- Scouting
+- Academy
+- Staff
+
+Card colours:
+- Training Cards = blue
+- Scouting Cards = yellow
+- Academy Cards = orange
+- Staff Cards = red
+
+Staff cards have 2 internal sub-types:
+- Staff Member
+- Staff Upgrade
+
+For staff cards:
+- it is always a 50/50 split whether the generated staff card is:
+  - a staff member card
+  - a staff upgrade card
+
+================================================================
+Card Reward Timing
+================================================================
+
+Card reward choices happen at the end of every match.
+
+This means:
+- after the player's match result flow is resolved
+- before the player returns to the calendar
+- the player must choose 1 of the 3 cards offered
+- the card choice step is mandatory unless using a reroll flow before choosing
+
+The 3 offered cards:
+- are generated independently
+- can all be different
+- can contain duplicates by type
+- can contain 2 or even 3 of the same card type if the random rolls produce that result
+
+There are no restrictions forcing one of each type in the offer.
+
+================================================================
+Card Reward Matrix
+================================================================
+
+The 3 offered cards are generated using the following matrix.
+
+Inputs:
+- League
+- Form
+- Match Result
+
+Outputs:
+- Training Common
+- Training Uncommon
+- Training Rare
+- Scouting Common
+- Scouting Uncommon
+- Scouting Rare
+- Academy Common
+- Academy Uncommon
+- Academy Rare
+- Staff Common
+- Staff Uncommon
+- Staff Rare
+
+Use this exact table:
+
+League	Form	Match Result		Training Common	Training Uncommon	Training Rare	Scouting Common	Scouting Uncommon	Scouting Rare	Academy Common	Academy Uncommon	Academy Rare	Staff Common	Staff Uncommon	Staff Rare
+5	0 Wins	Win		60	27	0	5	0	0	6	0	0	2	0	0
+5	0 Wins	Draw		80	10	0	1	0	0	8	0	0	1	0	0
+5	0 Wins	Lose		100	0	0	0	0	0	0	0	0	0	0	0
+5	1 Win	Win		55	20	0	6	0	0	12	5	0	2	0	0
+5	1 Win	Draw		72	12	0	3	0	0	11	1	0	1	0	0
+5	1 Win	Lose		92	0	0	2	0	0	5	0	0	1	0	0
+5	2 Wins	Win		48	18	0	7	1	0	14	9	0	2	1	0
+5	2 Wins	Draw		66	10	0	4	0	0	16	3	0	1	0	0
+5	2 Wins	Lose		86	0	0	4	0	0	8	0	0	2	0	0
+5	3 Wins	Win		40	16	0	8	2	0	16	14	2	1	1	0
+5	3 Wins	Draw		58	9	0	5	1	0	18	7	0	1	1	0
+5	3 Wins	Lose		80	0	0	6	0	0	11	0	0	3	0	0
+5	4 Wins	Win		32	14	0	8	3	0	18	16	6	1	2	0
+5	4 Wins	Draw		50	8	0	6	1	0	20	12	1	1	1	0
+5	4 Wins	Lose		74	0	0	7	0	0	15	0	0	4	0	0
+5	5 Wins	Win		24	12	0	8	4	0	20	18	10	1	3	0
+5	5 Wins	Draw		42	7	0	6	2	0	22	16	3	1	1	0
+5	5 Wins	Lose		68	0	0	8	0	0	19	0	0	5	0	0
+4	0 Wins	Win		45	26	1	6	1	0	14	6	0	1	0	0
+4	0 Wins	Draw		68	14	0	3	1	0	12	2	0	0	0	0
+4	0 Wins	Lose		88	0	0	3	0	0	8	0	0	1	0	0
+4	1 Win	Win		38	22	1	7	2	0	15	11	2	1	1	0
+4	1 Win	Draw		58	12	0	4	1	0	16	7	1	1	0	0
+4	1 Win	Lose		80	0	0	5	0	0	12	0	0	3	0	0
+4	2 Wins	Win		30	20	2	8	3	0	16	14	5	1	1	0
+4	2 Wins	Draw		50	10	0	5	2	0	18	12	2	1	0	0
+4	2 Wins	Lose		72	0	0	7	0	0	17	0	0	4	0	0
+4	3 Wins	Win		22	18	2	8	4	0	18	16	8	1	3	0
+4	3 Wins	Draw		42	9	0	6	2	0	20	16	4	1	0	0
+4	3 Wins	Lose		64	0	0	8	0	0	22	0	0	6	0	0
+4	4 Wins	Win		14	16	2	9	4	0	18	18	13	1	4	1
+4	4 Wins	Draw		34	8	0	6	3	0	20	20	7	1	1	0
+4	4 Wins	Lose		56	0	0	9	0	0	27	0	0	8	0	0
+4	5 Wins	Win		8	14	2	9	5	0	18	19	18	1	4	2
+4	5 Wins	Draw		26	7	0	6	3	0	20	22	13	1	2	0
+4	5 Wins	Lose		48	0	0	10	0	0	32	0	0	10	0	0
+3	0 Wins	Win		0	34	4	6	3	1	18	19	10	0	2	3
+3	0 Wins	Draw		30	15	0	4	2	0	18	18	10	1	2	0
+3	0 Wins	Lose		76	0	0	8	0	0	13	0	0	3	0	0
+3	1 Win	Win		0	30	6	6	4	1	18	18	12	0	2	3
+3	1 Win	Draw		24	14	1	4	3	0	18	18	14	1	3	0
+3	1 Win	Lose		70	0	0	9	0	0	16	0	0	5	0	0
+3	2 Wins	Win		0	26	8	6	5	2	17	18	14	0	1	3
+3	2 Wins	Draw		18	12	2	5	3	1	18	19	18	0	4	0
+3	2 Wins	Lose		62	0	0	10	0	0	21	0	0	7	0	0
+3	3 Wins	Win		0	22	10	6	5	2	16	19	17	0	1	2
+3	3 Wins	Draw		12	10	2	5	4	1	18	19	24	0	5	0
+3	3 Wins	Lose		54	0	0	10	0	0	27	0	0	9	0	0
+3	4 Wins	Win		0	18	12	6	5	3	14	18	20	0	1	3
+3	4 Wins	Draw		8	8	3	5	4	1	18	20	26	0	7	0
+3	4 Wins	Lose		46	0	0	9	0	0	35	0	0	10	0	0
+3	5 Wins	Win		0	14	14	6	5	4	12	18	22	0	1	4
+3	5 Wins	Draw		4	6	4	5	4	2	17	20	29	0	9	0
+3	5 Wins	Lose		45	0	0	8	0	0	37	0	0	10	0	0
+2	0 Wins	Win		0	28	8	5	3	2	16	17	16	0	1	4
+2	0 Wins	Draw		18	12	2	4	3	1	16	18	20	0	6	0
+2	0 Wins	Lose		70	0	0	8	0	0	17	0	0	5	0	0
+2	1 Win	Win		0	24	10	5	4	3	15	18	17	0	1	3
+2	1 Win	Draw		12	10	3	4	4	1	16	18	24	0	8	0
+2	1 Win	Lose		62	0	0	9	0	0	22	0	0	7	0	0
+2	2 Wins	Win		0	20	12	5	4	3	14	18	20	0	1	3
+2	2 Wins	Draw		8	8	4	4	4	2	15	18	28	0	9	0
+2	2 Wins	Lose		54	0	0	10	0	0	28	0	0	8	0	0
+2	3 Wins	Win		0	16	14	5	4	4	12	18	21	0	1	5
+2	3 Wins	Draw		4	6	5	4	4	2	14	18	33	0	10	0
+2	3 Wins	Lose		46	0	0	11	0	0	33	0	0	10	0	0
+2	4 Wins	Win		0	12	16	4	4	5	10	18	23	0	1	7
+2	4 Wins	Draw		0	5	6	4	4	3	12	18	38	0	10	0
+2	4 Wins	Lose		40	0	0	11	0	0	39	0	0	10	0	0
+2	5 Wins	Win		0	8	18	4	4	6	8	18	24	0	1	9
+2	5 Wins	Draw		0	3	8	4	4	4	10	18	39	0	10	0
+2	5 Wins	Lose		40	0	0	11	0	0	39	0	0	10	0	0
+1	0 Wins	Win		0	24	12	4	3	4	14	16	18	0	2	3
+1	0 Wins	Draw		10	10	4	3	3	2	14	16	28	0	8	2
+1	0 Wins	Lose		64	0	0	8	0	0	20	0	0	8	0	0
+1	1 Win	Win		0	20	14	4	3	5	12	16	18	0	2	6
+1	1 Win	Draw		6	8	5	3	3	3	14	16	33	0	7	2
+1	1 Win	Lose		56	0	0	9	0	0	26	0	0	9	0	0
+1	2 Wins	Win		0	16	16	4	3	6	10	16	19	0	2	8
+1	2 Wins	Draw		2	6	6	3	3	4	13	16	37	0	7	3
+1	2 Wins	Lose		48	0	0	10	0	0	32	0	0	10	0	0
+1	3 Wins	Win		0	12	18	4	3	7	10	16	20	0	2	8
+1	3 Wins	Draw		0	4	7	3	3	5	12	16	42	0	5	3
+1	3 Wins	Lose		42	0	0	10	0	0	38	0	0	10	0	0
+1	4 Wins	Win		0	8	20	4	3	8	9	16	22	0	1	9
+1	4 Wins	Draw		0	2	8	3	3	5	8	16	45	0	6	4
+1	4 Wins	Lose		41	0	0	9	0	0	40	0	0	10	0	0
+1	5 Wins	Win		0	4	22	4	3	9	6	14	28	0	1	9
+1	5 Wins	Draw		0	0	10	3	3	6	6	15	47	0	4	6
+1	5 Wins	Lose		42	0	0	8	0	0	40	0	0	10	0	0
+
+Implementation note:
+- use this matrix exactly as the probability source for generating each offered card
+- the 3 offered cards are each rolled independently using the relevant row
+- league = the player's current league
+- form = current wins-in-form bucket
+- match result = the player's last match result
+
+================================================================
+Training Cards
+================================================================
+
+Training cards are fixed-definition cards.
+
+Use the following exact table:
+
+ID	Training Name	Rarity	Type	Positions	Shot Stopping	Distribution	Control	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting
+TR-C-001	Target Practice	Common	GK	GK	0	5	3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-C-002	Deflection Practice	Common	GK	GK	3	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-U-001	Pens and Free Kicks	Uncommon	GK	GK, AT, MD	5	0	2	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	0	0	0	0	2
+TR-R-001	Final 3rd Drills	Rare	GK	All	5	3	0	3	0	0	1	0	0	0	0	0	0	1	0	0	2	0	0	1	0	0	0	2
+TR-C-003	Defensive Drills	Common	DF	DF	0	0	0	4	3	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-R-002	Bringing it out from the back	Rare	DF	DF	0	0	0	0	2	3	4	5	3	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-U-002	Defensive Positioning	Uncommon	DF	DF, MD	0	0	0	0	3	0	1	2	0	0	1	2	0	0	2	0	0	0	0	0	0	0	0	0
+TR-R-003	Through Ball Drills	Rare	DF	DF, AT	0	0	0	5	3	0	2	3	0	0	0	0	0	0	0	0	0	0	0	0	2	2	0	1
+TR-C-004	Defending Corners	Common	DF	All	0	0	0	1	2	0	1	0	0	0	0	1	0	1	0	0	0	0	1	0	1	0	0	0
+TR-C-005	Passing Drills	Common	MD	MD	0	0	0	0	0	0	0	0	0	0	0	0	5	0	2	1	0	0	0	0	0	0	0	0
+TR-R-004	Rondo	Rare	MD	MD	0	0	0	0	0	0	0	0	0	0	2	2	4	5	4	1	0	0	0	0	0	0	0	0
+TR-U-003	In Possession Positioning	Uncommon	MD	MD, DF	0	0	0	0	0	1	2	2	0	0	0	0	1	2	1	2	0	0	0	0	0	0	0	0
+TR-R-005	Edge of the Box Drills	Rare	MD	MD, AT	0	0	0	0	0	0	0	0	0	0	0	0	4	0	0	4	4	0	0	2	0	0	2	2
+TR-C-006	Team Shape	Common	MD	All	0	0	0	0	0	1	1	0	0	0	0	1	1	1	0	0	0	0	1	1	1	0	0	0
+TR-C-007	1 on 1's	Common	AT	AT	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	2	1	2	3
+TR-R-006	Balls into the Box	Rare	AT	AT	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	5	5	2	6
+TR-U-004	Defending from the front	Uncommon	AT	AT, MD	0	0	0	0	0	0	0	0	0	0	2	2	0	0	1	0	0	3	2	0	0	1	0	0
+TR-R-007	2 v 1	Rare	AT	AT, DF	0	0	0	3	3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	4	2	4	2
+TR-C-008	Shooting Drills	Common	AT	All	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	2	0	0	0	0	0	1	2
+
+For this epic:
+- training cards are data-only cards in the library/reward system
+- do not implement their gameplay effects yet
+
+================================================================
+Scouting Cards
+================================================================
+
+Scouting cards are fixed-definition cards.
+
+Use the following exact table:
+
+ID	Name	Rarity	Duration (Days)	Player Quantity per Session	Bad Player Chance	Ok Player Chance	Good Player Chance	Great Player Chance	Elite Player Chance	Text
+SC-C-001	Local School Outreach	Common	1	10	69.5	26	4.2	0.3	0	Launch a scouting session at a local school
+SC-C-002	Trial Prospect	Common	2	1	32	51	12	5	0	Bring a local talent into the academy for a trail
+SC-C-003	Academy Open Day	Common	1	3	50	43	5	2	0	Hold an Open Day at the academy
+SC-C-004	Youth Training Camp	Common	5	10	37	45.8	12	5	0.2	Hold a Training Camp at the Academy
+SC-U-001	National Talent Tour	Uncommon	14	20	45	30	19	5	1	Tour the country to find new talent
+SC-U-002	Academy League Scout	Uncommon	1	7	23	48	24	4	1	Attend an Academy League match
+SC-U-003	Local Academy Network	Uncommon	3	10	28	51	16	3	2	Scout local academies
+SC-U-004	International Student Prospect	Uncommon	7	1	50	25	9	8	8	Take a student from abroad
+SC-R-001	Global Scouting Tour	Rare	21	20	47	24	12	10	7	Send a coach on a World Tour
+SC-R-002	Elite Talent Poach	Rare	1	1	0	5	45	35	15	Poach a known talent
+SC-R-003	Foreign Academy Watch	Rare	5	7	20	35	30	10	5	Go to watch a foreign academy game
+SC-R-004	National Trial Day	Rare	1	10	50	23	16	8	3	Run a country wide trail day
+
+For this epic:
+- scouting cards are data-only cards in the library/reward system
+- do not implement their gameplay effects yet
+
+================================================================
+Academy Cards
+================================================================
+
+Academy cards are fixed-definition cards.
+
+Use the following exact table:
+
+ID	Name	Rarity	Effect
+AC-C-001	Organise Weak Friendly Game	Common	Reduce all academy player's maturity by 1
+AC-C-002	Run Training Drills	Common	Give the coaches a slight chance of working out players current values
+AC-C-003	3v3 mini games	Common	Give the coaches a slight chance of working out players potential values
+AC-C-004	1 on 1 sesson	Common	Reduce 1 academy player's maturity by 3
+AC-U-001	Organise Average Friendly Game	Uncommon	Reduce all academy player's maturity by 3
+AC-U-002	Expand Academy	Uncommon	Add an Academy slot
+AC-U-003	Full Training Games	Uncommon	Give the coaches a good chance of working out players current values
+AC-U-004	Classroom Lessons	Uncommon	Give the coaches a good chance of working out players potential values
+AC-R-001	Organise Stong Friendly Game	Rare	Reduce all academy player's maturity by 5
+AC-R-002	Mentor Sessions	Rare	Give the coaches a excellent chance of working out players current values
+AC-R-003	Video Analysis	Rare	Give the coaches a excellent chance of working out players potential values
+AC-R-004	Train with the first team	Rare	Reduce 1 academy player's maturity by 10
+
+For this epic:
+- academy cards are data-only cards in the library/reward system
+- do not implement their gameplay effects yet
+
+================================================================
+Staff Cards
+================================================================
+
+Staff cards are different from the other card categories.
+
+There are 2 sub-types:
+- Staff Member cards
+- Staff Upgrade cards
+
+Selection rule:
+- whenever the reward system has selected a Staff card
+- there is a 50/50 chance it becomes:
+  - a Staff Member card
+  - a Staff Upgrade card
 
 ----------------------------------------------------------------
-Training System Core Rules
+Staff Member Cards
 ----------------------------------------------------------------
 
-A training session can be scheduled on a calendar day.
+Staff member cards are procedurally generated cards.
 
-Restrictions:
-- training cannot be scheduled on match days
-- training cannot be scheduled on the current day
-- training cannot be scheduled on past days
+Staff Member card fields:
 
-Training sessions are placed by dragging them from the Training Bar onto valid calendar days.
+Meta
+- Name
+- Rarity
+- Role Preference
+- Overall Rating
 
-Training sessions cannot be moved once scheduled.
-They may only be:
-- placed
-- cancelled
+Youth Team
+- Scouting
+- Judgement
+- Youth Training
 
-A scheduled training session may be cancelled up until the day before it occurs.
+Training
+- GK Training
+- DF Training
+- MD Training
+- AT Training
+
+Definitions:
+- Rarity = Common / Uncommon / Rare
+- Role Preference = 1 to 5
+  - 1 means youth team attributes should be stronger
+  - 3 means even
+  - 5 means training attributes should be stronger
+- Overall Rating = average of all numerical ratings
+
+Generation rules:
+- use the rarity and role preference table below exactly
+- generate an overall Youth Team rating range
+- generate an overall Training rating range
+- then reverse engineer the individual attributes within those sets so they average into those ranges
+
+Use this exact table:
+
+Rarity	Role Preference		Overall Youth Team Rating Range	Overall Training Rating Range
+Common	1		40 - 60	10 - 20
+Common	2		30 - 60	20 - 40
+Common	3		20 - 60 	20 - 60
+Common	4		20 - 40	30 - 60
+Common	5		10 - 20	40 - 60
+Uncommon	1		60 - 80	30 - 40
+Uncommon	2		50 - 80	40 - 60
+Uncommon	3		40 - 80	40 - 80
+Uncommon	4		40 - 60	50 - 80
+Uncommon	5		30 - 40	60 - 80
+Rare	1		80 - 100	50 - 60
+Rare	2		70 - 100	60 - 80
+Rare	3		60 - 100	60 - 100
+Rare	4		60 - 80	70 - 100
+Rare	5		50 - 60	80 - 100
+
+Detailed attribute rules:
+- Youth Team set includes:
+  - Scouting
+  - Judgement
+  - Youth Training
+- Training set includes:
+  - GK Training
+  - DF Training
+  - MD Training
+  - AT Training
+- values are between 1 and 100
+- rarity and role preference determine the average band for each set
+- individual stats in a set should be varied, but reverse engineered to the intended set average
+- Overall Rating should then be the average of all numerical ratings on the card
+
+For this epic:
+- staff member cards are just card objects in the reward/library system
+- do not implement hiring/usage behaviour yet
 
 ----------------------------------------------------------------
-Training Bar
+Staff Upgrade Cards
 ----------------------------------------------------------------
 
-A new Training Bar must appear directly under the calendar.
+Staff upgrade cards are fixed-definition cards.
+
+Selection rules:
+- the rarity of the upgrade card must match the rarity already rolled for the Staff card
+- within that rarity, all upgrade cards have equal chance of being selected
+
+Use this exact table:
+
+Name	Effect	Rarity
+Scout Training Course	Increase Coaches Scouting Rating by 1	Common
+Analyst Workshop	Increase Coaches Judgement Rating by 1	Common
+Goalkeeper Coaching Clinic	Increase Coaches GK Training Rating by 1	Common
+Defensive Drills Seminar	Increase Coaches DF Training Rating by 1	Common
+Midfield Tactics Session	Increase Coaches MD Training Rating by 1	Common
+Attacking Patterns Session	Increase Coaches AT Training Rating by 1	Common
+Advanced Scouting Course	Increase Coaches Scouting Rating by 2	Uncommon
+Talent Evaluation Seminar	Increase Coaches Judgement Rating by 2	Uncommon
+Elite Goalkeeper Workshop	Increase Coaches GK Training Rating by 2	Uncommon
+Advanced Defensive Systems	Increase Coaches DF Training Rating by 2	Uncommon
+Advanced Midfield Control	Increase Coaches MD Training Rating by 2	Uncommon
+Advanced Attacking Systems	Increase Coaches AT Training Rating by 2	Uncommon
+Master Scout Certification	Increase Coaches Scouting Rating by 3	Rare
+Elite Talent Assessment	Increase Coaches Judgement Rating by 3	Rare
+World-Class Goalkeeper Program	Increase Coaches GK Training Rating by 3	Rare
+Defensive Masterclass	Increase Coaches DF Training Rating by 3	Rare
+Midfield Masterclass	Increase Coaches MD Training Rating by 3	Rare
+Attacking Masterclass	Increase Coaches AT Training Rating by 3	Rare
+
+For this epic:
+- staff upgrade cards are data-only cards in the reward/library system
+- do not implement applying their effects yet
+
+================================================================
+Card Library
+================================================================
+
+The player has one card library containing all card types.
+
+The library should:
+- live under the calendar
+- be the same width as the calendar
+- be horizontally scrolling
+- support sorting
+- support filtering
+
+Sorting should at least be capable of handling:
+- card type
+- rarity
+- name
+
+Filtering should at least be capable of handling:
+- Training
+- Scouting
+- Academy
+- Staff
+- rarity
+
+The library must also support card removal:
+- the user should be able to remove/discard cards from the library
+- discarding is used for rerolls
+- discarded cards are removed from the library completely
+
+Cards should remain in the library until:
+- discarded
+- consumed by future systems
+- explicitly removed by a future feature
+
+For this epic, card functionality is not executed; only stored, displayed, filtered, sorted, and discardable.
+
+================================================================
+Post-Match Card Choice Flow
+================================================================
+
+After every match, the player must choose 1 of 3 offered cards before returning to the calendar.
+
+Flow:
+1. determine correct reward row using:
+   - player's current league
+   - player's current form wins
+   - player's last match result
+2. generate 3 offered cards independently
+3. show them to the player
+4. player chooses 1
+5. chosen card added to library
+6. then player can return to the calendar
+
+Reroll flow:
+- before choosing a card, the user may reroll the 3 offered cards
+- to do this they must discard 1 card from their existing library
+- 1 discarded card = 1 reroll
+- after rerolling, a fresh set of 3 cards is generated from the same reward context
+- the user then chooses 1 of those
+
+Important:
+- rerolls are optional
+- cards used for rerolls must come from the library, not the current offered 3 unless you explicitly design that later
+- a reroll still ends with exactly 1 chosen reward card being added to the library
+
+================================================================
+Debug Requirements
+================================================================
+
+For debugging, add a button in the debug section of the calendar that manually triggers a card choice.
 
 Requirements:
-- same width as the calendar
-- fixed height
-- height remains constant even when empty
+- pressing the debug button should generate a normal 3-card reward choice flow
+- choosing a card from this debug flow should still add the chosen card to the library
+- this should not bypass the normal library add flow
+- keep the debug trigger clearly separated from the normal match reward flow
 
-The Training Bar shows:
-- all training sessions currently available to the user
-- coach availability information
-
-Training sessions behave like inventory items:
-- sessions have quantities
-- identical sessions stack
-- quantity decreases when a session is scheduled
-- if quantity reaches zero the session disappears
-
-For debugging purposes:
-- the player should start with 1 of every session
-
-For the real game:
-- the player starts with zero sessions
+================================================================
+Feature List
+================================================================
 
 ----------------------------------------------------------------
-Coach System
-----------------------------------------------------------------
-
-Coaches can be hired from the Staff page.
-
-For now provide:
-- 10 coaches with different qualities
-
-Coach properties:
-
-Name
-GK Rating (0-100)
-DF Rating (0-100)
-MD Rating (0-100)
-AT Rating (0-100)
-Tactics Rating (0-100)
-Scouting Rating (0-100)
-Player Judgement Rating (0-100)
-Sessions per Week (1-3)
-Wage (100-10,000)
-
-Coach session availability resets weekly.
-
-When a coach is used in training:
-- one session is deducted from their weekly session pool
-
-If no coaches are available:
-- the training session is cancelled
-
-----------------------------------------------------------------
-FEAT-1401 - Introduce Training Bar UI
+FEAT-1401 - Define Unified Card Data Model
 ----------------------------------------------------------------
 
 Description
-Create the Training Bar below the calendar.
+Create the core shared card model used across all card types in the game.
 
 Requirements
-- full calendar width
-- fixed height
-- visible even if empty
-- shows training sessions inventory
-- shows coach availability summary
+- Define a reusable card data model that can represent:
+  - Training cards
+  - Scouting cards
+  - Academy cards
+  - Staff Member cards
+  - Staff Upgrade cards
+- Include shared fields such as:
+  - id
+  - name
+  - type
+  - rarity
+  - colour
+  - subtype where relevant
+- Support card-specific payloads for each card type.
+- Keep the structure future-proof for when cards begin doing things later.
 
 Acceptance Criteria
-- Training Bar appears under the calendar
-- layout remains stable with zero sessions
-- sessions are displayed as stackable items
+- A shared card model exists.
+- All 4 top-level card types can be represented.
+- Staff sub-types can also be represented cleanly.
 
 ----------------------------------------------------------------
-FEAT-1402 - Implement Drag-and-Drop Training Scheduling
+FEAT-1402 - Add Centralised Card Type and Colour Configuration
 ----------------------------------------------------------------
 
 Description
-Allow training sessions to be scheduled by dragging them onto calendar days.
+Create the shared config for card types, sub-types, and card colours.
 
 Requirements
-- sessions dragged from training bar
-- sessions dropped onto calendar days
-- prevent placement on:
-  - current day
-  - past days
-  - match days
+- Define the 4 top-level card types:
+  - Training
+  - Scouting
+  - Academy
+  - Staff
+- Define card colours:
+  - Training = blue
+  - Scouting = yellow
+  - Academy = orange
+  - Staff = red
+- Define Staff sub-types:
+  - Staff Member
+  - Staff Upgrade
+- Keep the configuration centralised and reusable by reward and library UI systems.
 
 Acceptance Criteria
-- sessions can be dragged and dropped onto valid days
-- invalid days reject the drop
+- Card type and colour rules are centralised.
+- All card rendering can use the shared config.
 
 ----------------------------------------------------------------
-FEAT-1403 - Training Scheduling Modal with Coach Selection
+FEAT-1403 - Add Training Card Definitions from Exact Source Table
 ----------------------------------------------------------------
 
 Description
-After a session is dropped on a day, show a modal for coach assignment.
+Store the full training card table as fixed card definitions.
 
 Requirements
-Modal must allow:
-- selecting coaches for the training
-- displaying coach availability
-- cancelling the training session
-
-Rules:
-- each selected coach consumes 1 weekly session
-- if no coach is available training is cancelled
+- Implement the Training Cards table exactly as provided in this epic.
+- Preserve all IDs, names, rarities, types, positions, and numeric values exactly.
+- Keep the data reusable for reward generation and card display.
 
 Acceptance Criteria
-- coach selection modal appears on session drop
-- coach sessions decrease when used
-- user may cancel the training
+- The full training card table exists in code/config.
+- All rows match the supplied values exactly.
+- Training cards can be instantiated from this source data.
 
 ----------------------------------------------------------------
-FEAT-1404 - Allow Cancelling Scheduled Training Sessions
+FEAT-1404 - Add Scouting Card Definitions from Exact Source Table
 ----------------------------------------------------------------
 
 Description
-Allow training sessions to be removed from the calendar.
-
-Rules:
-- training may be cancelled until the day before execution
-- cancelled sessions return to the training bar inventory
-- sessions cannot be moved, only removed and re-added
-
-Acceptance Criteria
-- sessions can be cancelled before the training day
-- cancelled sessions return to inventory
-
-----------------------------------------------------------------
-FEAT-1405 - Implement Coach Hiring System
-----------------------------------------------------------------
-
-Description
-Allow coaches to be hired from the Staff page.
+Store the full scouting card table as fixed card definitions.
 
 Requirements
-- create 10 initial coaches with varying quality
-- allow user to hire coaches
-- hired coaches appear in the team staff
+- Implement the Scouting Cards table exactly as provided in this epic.
+- Preserve all IDs, names, rarities, durations, quantities, chance values, and text exactly.
+- Keep the data reusable for reward generation and card display.
 
 Acceptance Criteria
-- coaches can be hired
-- coach stats are visible
-- coach wage displayed
+- The full scouting card table exists in code/config.
+- All rows match the supplied values exactly.
+- Scouting cards can be instantiated from this source data.
 
 ----------------------------------------------------------------
-FEAT-1406 - Weekly Coach Planning System
+FEAT-1405 - Add Academy Card Definitions from Exact Source Table
 ----------------------------------------------------------------
 
 Description
-Every Monday a coach may generate a training session for the player.
+Store the full academy card table as fixed card definitions.
 
-Chance calculation:
-
-(GK + DF + MD + AT) / 4
-
-Example:
-0 + 20 + 60 + 20 = 100
-100 / 4 = 25%
-
-Therefore:
-25% chance a session is generated.
+Requirements
+- Implement the Academy Cards table exactly as provided in this epic.
+- Preserve all IDs, names, rarities, and effect text exactly.
+- Keep the data reusable for reward generation and card display.
 
 Acceptance Criteria
-- Monday modal appears
-- coach generated sessions added to training bar
+- The full academy card table exists in code/config.
+- All rows match the supplied values exactly.
+- Academy cards can be instantiated from this source data.
 
 ----------------------------------------------------------------
-FEAT-1407 - Training Session Rarity Selection
+FEAT-1406 - Add Staff Upgrade Card Definitions from Exact Source Table
 ----------------------------------------------------------------
 
 Description
-Determine rarity of generated session.
+Store the full staff upgrade table as fixed card definitions.
 
-Use the following table:
-
-Sum of Ratings/4	Common	Uncommon	Rare
-0-10	100	0	0
-11-20	90	10	0
-21-30	85	10	5
-31-40	80	15	5
-41-50	75	15	10
-51-60	70	20	10
-61-70	65	20	15
-71-80	60	25	15
-81-90	55	25	20
-91-100	50	30	20
+Requirements
+- Implement the Staff Upgrades table exactly as provided in this epic.
+- Preserve all names, effects, and rarities exactly.
+- Keep the data reusable for reward generation and card display.
 
 Acceptance Criteria
-- session rarity determined from coach rating
+- The full staff upgrade card table exists in code/config.
+- All rows match the supplied values exactly.
+- Staff upgrade cards can be instantiated from this source data.
 
 ----------------------------------------------------------------
-FEAT-1408 - Training Session Type Selection
+FEAT-1407 - Implement Procedural Staff Member Card Generator
 ----------------------------------------------------------------
 
 Description
-Determine training type using weighted coach ratings.
+Create the generator for procedural Staff Member cards.
 
-Weights:
-GK Rating
-DF Rating
-MD Rating
-AT Rating
-
-Example:
-0 / 20 / 60 / 20
-
-Results:
-0% GK
-20% DF
-60% MD
-20% AT
+Requirements
+- Staff Member cards must include:
+  - Name
+  - Rarity
+  - Role Preference
+  - Overall Rating
+  - Scouting
+  - Judgement
+  - Youth Training
+  - GK Training
+  - DF Training
+  - MD Training
+  - AT Training
+- Use the rarity and role preference table from this epic exactly.
+- Generate Youth Team and Training set averages from the allowed ranges.
+- Reverse engineer the individual attributes within each set so they average into those ranges.
+- Keep individual stats varied but valid.
+- Calculate Overall Rating as the average of all numerical ratings.
 
 Acceptance Criteria
-- training type selected using weighted ratings
+- Staff Member cards are procedurally generated.
+- Their generated ratings follow the rarity/role preference table exactly.
+- Overall Rating reflects the generated stats correctly.
 
 ----------------------------------------------------------------
-FEAT-1409 - Add Training Session Inventory System
+FEAT-1408 - Implement 50/50 Staff Card Sub-Type Split
 ----------------------------------------------------------------
 
 Description
-Store sessions inside the Training Bar.
+When a Staff card reward is generated, determine whether it is a Staff Member or Staff Upgrade card.
 
-Rules:
-- sessions stack
-- quantity tracked
-- quantity decreases when scheduled
-- removed when quantity reaches zero
+Requirements
+- Every Staff card reward must first resolve to:
+  - Staff Member
+  - or Staff Upgrade
+- This split must be 50/50.
+- If Staff Upgrade is selected, its rarity must match the originally rolled Staff rarity.
+- If Staff Member is selected, its generated rarity must match the originally rolled Staff rarity.
 
 Acceptance Criteria
-- inventory stacking works
-- quantities update correctly
+- Staff rewards resolve to Member or Upgrade at a 50/50 split.
+- The originally rolled rarity is preserved correctly.
 
 ----------------------------------------------------------------
-FEAT-1410 - Implement Training Session Execution
+FEAT-1409 - Add Exact Post-Match Reward Matrix Configuration
 ----------------------------------------------------------------
 
 Description
-When a training day arrives the session is executed.
+Store the full match reward matrix from this epic as a reusable probability source.
 
-Steps:
-1. determine eligible players from the current squad
-2. check coach success chance
-3. check potential restriction
-4. apply sub-rating improvements
+Requirements
+- Implement the full reward matrix exactly as provided in this epic.
+- Preserve every row and value exactly.
+- Index/lookup should support:
+  - league
+  - form wins
+  - match result
+- The matrix should be reusable for reward generation logic.
 
 Acceptance Criteria
-- training runs automatically when the day occurs
+- The full reward matrix exists in code/config.
+- It can be queried correctly by league, form, and result.
+- All values match the supplied matrix exactly.
 
 ----------------------------------------------------------------
-FEAT-1411 - Implement Position Eligibility Logic
+FEAT-1410 - Build Card Reward Resolver from League, Form, and Match Result
 ----------------------------------------------------------------
 
 Description
-Determine which players participate in the session.
+Create the shared logic that resolves which card bucket to roll from after a match.
 
-Rules:
-- session contains "Positions" column
-- players in those positions participate
-
-Example:
-Positions: DF, MD
-
-Eligible players:
-2 defenders
-2 midfielders
+Requirements
+- Use these inputs:
+  - player's current league
+  - player's current form wins
+  - player's last match result
+- Look up the correct row from the reward matrix.
+- Resolve one card result using the percentage values in that row.
+- Result must include:
+  - card type
+  - rarity
+- This resolver should be reusable because the 3 offered cards are generated independently.
 
 Acceptance Criteria
-- only correct players participate
+- A single reward roll can be resolved from the exact matrix.
+- The correct reward row is used.
+- The result identifies the correct type/rarity bucket.
 
 ----------------------------------------------------------------
-FEAT-1412 - Implement Coach Success Chance
+FEAT-1411 - Generate 3 Independent Post-Match Card Offers
 ----------------------------------------------------------------
 
 Description
-Training success chance equals the coach rating for the session type.
+Create the 3-card post-match reward offer shown after every match.
 
-Example:
-DF training uses DF rating.
-
-Example:
-Coach DF rating = 52
-
-Each eligible player:
-52% success chance.
+Requirements
+- After every match, generate 3 offered cards.
+- Each of the 3 cards must be rolled independently using the same reward context.
+- There are no restrictions on duplicate types.
+- The 3 cards may be:
+  - all different
+  - 2 of the same type
+  - 3 of the same type
+- Once type/rarity is rolled, instantiate the actual card:
+  - Training from fixed definitions
+  - Scouting from fixed definitions
+  - Academy from fixed definitions
+  - Staff via the 50/50 subtype rule
 
 Acceptance Criteria
-- success rolled independently for each player
+- 3 cards are offered after each match.
+- Each card is generated independently.
+- Offered cards can legitimately duplicate by type or rarity.
 
 ----------------------------------------------------------------
-FEAT-1413 - Implement Potential Growth Limiter
+FEAT-1412 - Build Mandatory Post-Match Card Choice Screen
 ----------------------------------------------------------------
 
 Description
-Training success depends on player potential.
+Create the UI flow where the user chooses 1 of the 3 offered cards before returning to the calendar.
 
-Use:
-
-Potential - Current Rating
-
-Rules:
-
-<=0 → 0% success
-<=5 → 50% success
-<=10 → 80% success
->10 → 100% success
-
-User notifications required:
-- player not improving
-- player nearing learning limit
-- player slowing learning
+Requirements
+- Show the 3 generated cards clearly.
+- The user must choose exactly 1 before continuing.
+- The chosen card is added to the card library.
+- The flow blocks returning to the calendar until a choice is made or rerolled and then chosen.
 
 Acceptance Criteria
-- potential system limits training success
+- A post-match card choice screen exists.
+- The user chooses 1 of the 3 cards.
+- The chosen card is added to the library.
+- The user cannot skip the reward choice.
 
 ----------------------------------------------------------------
-FEAT-1414 - Implement Sub-Rating Growth System
+FEAT-1413 - Add Card Library Under Calendar
 ----------------------------------------------------------------
 
 Description
-Skill improvements accumulate as sub-rating points.
+Create the player's card library UI under the calendar.
 
-Rule:
-To increase rating from N to N+1 requires N points.
-
-Example:
-rating = 21
-
-needs:
-21 points to reach 22.
-
-Sub-points accumulate across sessions.
+Requirements
+- Place the card library under the calendar.
+- It must be the same width as the calendar.
+- It must scroll horizontally.
+- It must display all acquired cards from all types in one shared library.
+- The layout should remain usable even with a large number of cards.
 
 Acceptance Criteria
-- ratings increase only when threshold reached
-- excess points carry over
+- The card library appears under the calendar.
+- It uses the same width as the calendar.
+- Cards are visible in a horizontally scrolling library.
 
 ----------------------------------------------------------------
-FEAT-1415 - Apply Session Skill Improvements
+FEAT-1414 - Add Card Library Sorting and Filtering
 ----------------------------------------------------------------
 
 Description
-Training sessions contain skill improvement values.
+Allow the player to organise the card library.
 
-These values grant sub-rating points.
-
-Only applied if:
-- training success
-- potential check passed
+Requirements
+- Add sorting controls for at least:
+  - card type
+  - rarity
+  - name
+- Add filtering controls for at least:
+  - Training
+  - Scouting
+  - Academy
+  - Staff
+  - rarity
+- Keep sorting/filtering state predictable and easy to use.
 
 Acceptance Criteria
-- skill sub-points added correctly
+- The card library supports sorting.
+- The card library supports filtering.
+- The user can meaningfully organise and inspect their cards.
 
 ----------------------------------------------------------------
-FEAT-1416 - Training Result Summary Modal
+FEAT-1415 - Add Card Discarding from Library
 ----------------------------------------------------------------
 
 Description
-After a training session finishes show summary.
+Allow cards to be removed from the library.
 
-Include:
-- players involved
-- players improved
-- skill gains
-- players blocked by potential
+Requirements
+- The user must be able to discard cards from the library.
+- Discarded cards are removed completely from the card library.
+- This discard behaviour must later support rerolls in the same epic.
 
 Acceptance Criteria
-- summary modal appears after training day
+- Cards can be discarded from the library.
+- Discarded cards are removed from stored library state.
 
 ----------------------------------------------------------------
-FEAT-1417 - Remove Old Training Button
+FEAT-1416 - Add Reroll System Using Library Card Discard
 ----------------------------------------------------------------
 
 Description
-Remove the previous training button from the UI.
+Allow the user to reroll the 3 offered post-match cards by discarding 1 card from their library.
+
+Requirements
+- During the reward choice flow, the user may reroll the offered 3 cards.
+- To reroll, the user must discard exactly 1 card from their existing library.
+- 1 discarded card = 1 reroll.
+- Rerolling generates a fresh set of 3 cards using the same reward context.
+- The user must still choose 1 card from the rerolled set.
+- Keep the reroll flow clear and explicit.
 
 Acceptance Criteria
-- old training button removed
-- training now controlled via training bar
+- The user can discard 1 library card to reroll.
+- Reroll generates a fresh 3-card offer.
+- The chosen rerolled card is added to the library.
+- The discarded library card is removed permanently.
 
 ----------------------------------------------------------------
-EPIC COMPLETION CRITERIA
+FEAT-1417 - Add Debug Trigger for Manual Card Choice
 ----------------------------------------------------------------
+
+Description
+Add a debug button in the calendar debug area that manually triggers a card reward choice.
+
+Requirements
+- Add a debug button in the calendar debug section.
+- Clicking it should open the normal 3-card reward choice flow.
+- Choosing a card from this debug flow must still add the chosen card to the library.
+- Keep this debug route clearly separate from the normal post-match reward trigger.
+
+Acceptance Criteria
+- A debug button can manually trigger card choice.
+- Chosen debug reward cards are added to the library through the normal add flow.
+
+----------------------------------------------------------------
+FEAT-1418 - Persist Card Library in Career State
+----------------------------------------------------------------
+
+Description
+Store the card library in the active career state.
+
+Requirements
+- Persist the player's acquired cards in career state.
+- The library must survive navigation and ongoing play in the current career.
+- Store enough card data for the UI and future gameplay use.
+
+Acceptance Criteria
+- The card library persists in active career state.
+- Cards remain available after navigation and continued play.
+
+----------------------------------------------------------------
+FEAT-1419 - Keep All Card Effects Explicitly Out of Scope
+----------------------------------------------------------------
+
+Description
+Ensure this epic only builds the card foundation and reward loop, not their gameplay execution.
+
+Requirements
+- Do not implement the gameplay effects of:
+  - Training cards
+  - Scouting cards
+  - Academy cards
+  - Staff Member cards
+  - Staff Upgrade cards
+- Cards should currently only:
+  - be generated
+  - be offered
+  - be chosen
+  - be stored
+  - be displayed
+  - be sorted/filtered
+  - be discarded
+- Keep the architecture ready for later execution systems.
+
+Acceptance Criteria
+- Card effects are not executed in this epic.
+- The system is purely reward/library foundation for now.
+- The data structures are ready for future gameplay use.
+
+----------------------------------------------------------------
+FEAT-1420 - Add Card Reward and Library Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for validating the card reward system and library behaviour.
+
+Requirements
+- Add development-friendly visibility for:
+  - reward matrix lookup row
+  - rolled card type/rarity
+  - staff subtype resolution
+  - procedurally generated staff values
+  - library contents
+  - reroll usage
+- Keep this support lightweight and useful during balancing/implementation.
+
+Acceptance Criteria
+- Developers can inspect the key card reward generation values.
+- Library and reroll behaviour can be validated during testing.
+
+================================================================
+Epic Completion Criteria
+================================================================
 
 This epic is complete when:
 
-- training bar exists below calendar
-- sessions can be dragged onto calendar
-- sessions cannot be placed on match days
-- sessions cannot be placed on past or current days
-- coach hiring works
-- coaches have session limits
-- Monday coach planning works
-- sessions generate correctly
-- training executes on scheduled days
-- growth occurs using sub-rating system
-- potential caps player growth
-- training summary appears after sessions
+- The full reward matrix has been implemented exactly as provided.
+- Training, Scouting, Academy, and Staff card systems exist as card data/reward systems.
+- Training, Scouting, Academy, and Staff Upgrade card definition tables are stored exactly as provided.
+- Staff cards resolve 50/50 into Staff Member or Staff Upgrade cards.
+- Staff Member cards are procedurally generated using the exact rarity/role-preference table.
+- After every match, the player is offered 3 independently generated cards.
+- The player must choose 1 card before returning to the calendar.
+- The chosen card is added to the card library.
+- The player can reroll the 3-card offer by discarding 1 card from the library.
+- The card library appears under the calendar, matches the calendar width, and scrolls horizontally.
+- The library is sortable and filterable.
+- Cards can be discarded from the library.
+- A debug button exists to manually trigger a card choice.
+- The chosen debug reward also adds correctly to the card library.
+- Card effects themselves are not yet executed; only the card foundation and reward flow are implemented.

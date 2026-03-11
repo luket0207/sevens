@@ -1,0 +1,83 @@
+BUG-001 - Add debug inputs for card reward decision variables
+
+Repro steps
+1. Open `/career/home`.
+2. Expand the Calendar Debug section.
+3. Locate the `Debug Card Reward` button.
+4. Attempt to change reward decision context (league tier, form wins, match result) before triggering.
+
+Expected behaviour
+- The debug area provides inputs to control card reward decision variables before triggering the reward flow.
+- Triggering from debug uses those selected values.
+
+Actual behaviour
+- Debug trigger had no inputs.
+- Reward decision context was effectively fixed from current team league/form and hardcoded `Win`.
+
+Suspected cause
+- `triggerDebugCardReward` used internal derived values directly and no UI controls passed override inputs.
+
+Attempted fixes
+- Added debug controls in `CareerCalendarDebugPanel`:
+  - league tier selector (1-5)
+  - form wins selector (0-5)
+  - match result selector (Win/Draw/Lose)
+- Updated trigger callback to pass selected override values into `triggerDebugCardReward`.
+- Updated `triggerDebugCardReward` to sanitize and apply override context while keeping the existing reward generation path.
+- Stored `lastDebugInputContext` in card debug state for visibility.
+
+Final fix
+- Calendar debug menu now includes reward-context inputs next to the debug reward button.
+- Selected debug values are used by the normal card offer generation flow and route handling.
+
+Files changed
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/cards/state/cardState.js`
+
+Status: fixed
+
+
+BUG-002
+
+The card's layout looks really bad as the inconsistent heights are causing everything to be out of line. First of all, I want to give the cards a fixed height of 200px and the container should then handle that too. Then everything should be vertically aligned as flex-start to stop the weird resizing. 
+
+Repro steps
+1. Open `/career/card-reward` and inspect the offered cards row.
+2. Open `/career/home` and inspect Card Library horizontal list.
+3. Compare cards with short content vs long content text.
+
+Expected behaviour
+- Card tiles render at a fixed height of `200px`.
+- Card list containers handle fixed card height consistently.
+- Card rows align items with `flex-start` so cards do not stretch/misalign vertically.
+
+Actual behaviour
+- Card heights varied based on content, causing uneven rows and visual misalignment.
+- Container alignment allowed inconsistent vertical card positioning/stretch behavior.
+
+Suspected cause
+- `careerCardTile` used content-driven height with no fixed height.
+- Card row containers did not explicitly align items to `flex-start`.
+
+Attempted fixes
+- Updated base `careerCardTile` to fixed dimensions/behavior:
+  - `height: 200px`
+  - fixed width/flex basis for consistent row layout
+  - column layout with action section anchored to bottom.
+- Updated compact tile width/flex basis to remain consistent.
+- Added `align-items: flex-start` and `min-height: 200px` to card scrollers in reward and library views.
+- Added safe text clamping on card meta/effect text to prevent overflow-driven layout shifts.
+
+Final fix
+- Card tiles now render at fixed `200px` height.
+- Reward/library horizontal containers align cards from `flex-start` and maintain stable vertical layout.
+- Card rows no longer resize unevenly due to content length.
+
+Files changed
+- `src/game/cards/components/cardTile.scss`
+- `src/game/cards/components/cardLibraryBar.scss`
+- `src/game/cards/cardRewardChoice.scss`
+
+Status: fixed

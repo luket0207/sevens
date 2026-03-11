@@ -4,6 +4,7 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
+import { ensureCareerCardState } from "../cards";
 import {
   getContinueFlowLabel,
   resolveDayResultsContinueAction,
@@ -111,6 +112,7 @@ const CareerDayResults = () => {
   const seasons = Array.isArray(calendar?.seasons) ? calendar.seasons : [];
   const activeSeason = seasons.find((season) => season.id === calendar?.activeSeasonId) ?? seasons[0] ?? null;
   const pendingDayResults = calendar?.pendingDayResults ?? null;
+  const cardsState = ensureCareerCardState(gameState?.career?.cards);
   const [expandedLeagueId, setExpandedLeagueId] = useState(null);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
@@ -119,6 +121,10 @@ const CareerDayResults = () => {
 
   if (generationStatus !== "complete" || !calendar || !activeSeason) {
     return <Navigate to="/career/start" replace />;
+  }
+
+  if (cardsState?.pendingRewardChoice) {
+    return <Navigate to="/career/card-reward" replace />;
   }
 
   if (!pendingDayResults) {

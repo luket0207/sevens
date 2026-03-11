@@ -1,5 +1,5 @@
 EPIC OVERVIEW
-Last updated: 2026-03-09
+Last updated: 2026-03-10
 
 EPIC-001 - Core Career Shell (Status: done)
 This epic established the first playable career shell by replacing the original landing flow with a new Home page and wiring base career routes. It implemented the Career Start page structure with required setup state (team name, stadium, kit, players) and gating so career start remains disabled until required values are present.
@@ -37,11 +37,11 @@ This epic focused on UX polish for calendar and progression flow: context-aware 
 EPIC-012 - Career Start Wizard and Shared Team Setup Layout (Status: done)
 This epic converted `/career/start` into a 4-tab wizard (Name/Stadium, Kits, Players, Team Selection) with free tab navigation and globally accessible Start Career actions. It moved the initial required team arrangement/tactics setup into pre-career flow and introduced a shared top-strip + side-on pitch layout reused by both Career Start Team Selection and Team Management. The duplicate in-career day-1 team setup gate was removed, with pre-career setup now persisted into generated player-team state.
 
-EPIC-013 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+EPIC-013 - Player Traits (Status: done)
+This epic introduced a full player-traits foundation across generation, storage, and UI display. It added weighted trait assignment (0/1/2 trait distribution), influence-context rarity mapping (including goalkeeper-specific weighting), and trait persistence for both user and AI players. Traits are now shown in shared player skillset views while remaining data-only and explicitly excluded from overall/tactic calculations.
 
-EPIC-014 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+EPIC-014 - Roguelike Card Foundation (Status: done)
+This epic replaced the prior training-first direction with a complete card reward/library backbone for career mode. It delivered the unified card model, full definition tables, reward matrix + resolver, 3-card mandatory choice flow, reroll-by-discard logic, persistent card library (sort/filter/discard), and a dedicated reward route. Follow-up bug fixes added debug reward-input controls and stabilized card tile layout with fixed-height, aligned card rows.
 
 EPIC-015 - Placeholder (Status: not started)
 Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.

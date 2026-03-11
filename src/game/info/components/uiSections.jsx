@@ -134,6 +134,19 @@ const ThemeExamples = () => {
 const ButtonExamples = () => {
   const imageUrl = new URL("../../../assets/images/button_example.png", import.meta.url).href;
   const hoverUrl = new URL("../../../assets/images/button_hover_example.png", import.meta.url).href;
+  const stateColumns = [
+    { id: "default", label: "Default" },
+    { id: "hover", label: "Hover", className: "btn--preview-hover" },
+    { id: "active", label: "Active", className: "btn--preview-active" },
+    { id: "focus", label: "Focus", className: "btn--preview-focus" },
+    { id: "disabled", label: "Disabled", disabled: true },
+  ];
+
+  const variantRows = [
+    { id: "primary", label: "Primary", variant: BUTTON_VARIANT.PRIMARY },
+    { id: "secondary", label: "Secondary", variant: BUTTON_VARIANT.SECONDARY },
+    { id: "tertiary", label: "Tertiary", variant: BUTTON_VARIANT.TERTIARY },
+  ];
 
   return (
     <div className="info__examplesRow">
@@ -229,6 +242,44 @@ const ButtonExamples = () => {
             height={100}
             alt="Disabled example image button"
           />
+        </div>
+      </div>
+
+      <div className="info__example info__example--full">
+        <div className="info__exampleMeta">
+          <div className="info__exampleTitle">Variant State Review (debug)</div>
+          <div className="info__exampleDesc">
+            Side-by-side preview of primary/secondary/tertiary default, hover, active, focus, and
+            disabled states.
+          </div>
+        </div>
+
+        <div className="info__buttonStateTable">
+          <div className="info__buttonStateHead">
+            <div className="info__buttonStateLabel info__buttonStateLabel--head">Variant</div>
+            {stateColumns.map((state) => (
+              <div key={state.id} className="info__buttonStateLabel info__buttonStateLabel--head">
+                {state.label}
+              </div>
+            ))}
+          </div>
+
+          {variantRows.map((row) => (
+            <div key={row.id} className="info__buttonStateRow">
+              <div className="info__buttonStateLabel">{row.label}</div>
+              {stateColumns.map((state) => (
+                <div key={state.id} className="info__buttonStateCell">
+                  <Button
+                    variant={row.variant}
+                    className={state.className}
+                    disabled={state.disabled === true}
+                  >
+                    {row.label}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </div>

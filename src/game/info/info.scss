@@ -271,6 +271,51 @@
   flex-wrap: wrap;
 }
 
+.info__buttonStateTable {
+  overflow-x: auto;
+}
+
+.info__buttonStateHead,
+.info__buttonStateRow {
+  min-width: 860px;
+  display: grid;
+  grid-template-columns: 115px repeat(5, minmax(130px, 1fr));
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.info__buttonStateHead {
+  margin-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.info__buttonStateRow {
+  margin-top: 0.55rem;
+}
+
+.info__buttonStateLabel {
+  font-size: 0.86rem;
+  font-weight: 700;
+  opacity: 0.94;
+}
+
+.info__buttonStateLabel--head {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.82;
+}
+
+.info__buttonStateCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info__buttonStateCell .btn {
+  width: 100%;
+}
+
 .info__btnIcon {
   display: inline-flex;
   align-items: center;

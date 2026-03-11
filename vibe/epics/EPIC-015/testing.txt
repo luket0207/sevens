@@ -1,0 +1,333 @@
+EPIC-015 Testing Log
+Date: 2026-03-10
+
+FEAT-1501 - Coaches tab added, Players tab removed, wizard order updated
+Manual steps:
+1. Open `/career/start`.
+2. Verify top tabs are exactly:
+   - 1. Name and Stadium Name
+   - 2. Kits
+   - 3. Team Selection
+   - 4. Coaches
+3. Confirm there is no standalone Players tab.
+4. Switch between tabs and back again.
+Expected:
+- New wizard structure is present and tabs remain revisitable.
+
+FEAT-1502 - Generate 2 coach groups of 3 common staff member coaches
+Manual steps:
+1. Open the Coaches tab.
+2. Click `Generate Coach Choices`.
+3. Confirm exactly 2 groups render.
+4. Confirm each group has exactly 3 options.
+5. Confirm each offered option is a common staff member coach card.
+6. Click `Regenerate Coach Choices` and confirm a fresh set appears.
+Expected:
+- Two 3-choice groups are generated and remain stable until regenerated.
+- No staff upgrade cards appear.
+
+FEAT-1503 - Coach selection interaction and persistence
+Manual steps:
+1. In each coach group, select exactly one coach.
+2. Confirm progress updates to `2 / 2 selected`.
+3. Open debug section and verify coach completion/selected names reflect choices.
+4. Navigate to another tab and return to Coaches.
+Expected:
+- Exactly one coach is selected per group.
+- Two selected coaches persist in setup state.
+- Coaches tab validity becomes complete only after both choices are made.
+
+FEAT-1504 - Coach attributes via shared stat display approach
+Manual steps:
+1. Inspect each coach card in a generated group.
+2. Verify stat bars are shown for:
+   - Overall Rating
+   - Scouting
+   - Judgement
+   - Youth Training
+   - GK Training
+   - DF Training
+   - MD Training
+   - AT Training
+3. Compare three options in one group.
+Expected:
+- Coach attributes are clearly displayed and comparable.
+- Display uses shared stat bar approach.
+
+FEAT-1505 / FEAT-1506 - Team Selection merged flow with phase gating
+Manual steps:
+1. Open Team Selection tab.
+2. Confirm Phase 1 player selector is visible immediately.
+3. Before completing Phase 1, verify Phase 2 pitch arrangement is hidden/locked.
+4. Complete player selection (1 GK + 6 outfield).
+5. Confirm Phase 2 immediately becomes visible in the same tab.
+Expected:
+- Team Selection contains both phases.
+- Pitch placement is hidden until player selection is complete.
+
+FEAT-1507 - Random auto-place in Phase 2
+Manual steps:
+1. After Phase 2 unlocks, click `Random Auto-Place`.
+2. Verify all outfield slots fill with selected outfield players.
+3. Verify goalkeeper remains fixed as goalkeeper.
+4. Drag players manually after auto-place.
+Expected:
+- Auto-place creates a valid arrangement.
+- Manual rearrangement still works after auto-place.
+
+FEAT-1508 - Initial outfield generation range tightened to 20-22
+Manual steps:
+1. Generate multiple team selector pools in `/career/start`.
+2. Check generated outfield target overalls in debug output/state.
+Expected:
+- Outfield generation values only fall within 20, 21, 22.
+- Existing generation/influence flow remains intact.
+
+FEAT-1509 - Merged Team Selection validity integration
+Manual steps:
+1. Complete team identity and kits.
+2. Complete player selection only (leave placement incomplete).
+3. Verify Team Selection tab remains pending and Start Career is disabled.
+4. Complete pitch placement and tactics.
+5. Verify Team Selection tab becomes complete.
+Expected:
+- Team Selection is valid only when both player selection and team placement are complete.
+
+FEAT-1510 - Debug visibility for merged wizard flow
+Manual steps:
+1. Open `/career/start` and expand the debug details section.
+2. Verify visibility of:
+   - selected coach count/names
+   - coach selection complete
+   - player selection complete
+   - team placement complete
+   - merged Team Selection tab complete
+   - full wizard complete
+Expected:
+- Debug panel exposes key setup flow states for implementation validation.
+
+Epic completion flow check
+Manual steps:
+1. Fill Name/Stadium.
+2. Complete Kits.
+3. Complete Team Selection Phase 1 and Phase 2.
+4. Complete Coaches (2 selected).
+5. Confirm all tabs show complete and `Start Career` is enabled.
+6. Click `Start Career` and confirm route transitions to `/career/generating`.
+Expected:
+- Full wizard validity and transition flow behave correctly with merged Team Selection and Coaches tab.
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - Current lint failures are in unrelated existing files under `src/engine/ui/*` and `src/game/info/*` (prop-types and hook rule issues).
+
+Automated tests still needed:
+- Unit tests for coach selector generation constraints (2 groups, 3 options, common staff member only).
+- Unit tests for coach selector validation and setup completion gating.
+- Integration test for `/career/start` merged Team Selection two-phase unlock behavior.
+- Integration test for random auto-place producing valid slot assignments.
+
+Test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11)
+
+BUG-001 - Goalkeeper range 20-22
+Manual steps:
+1. Open `/career/start` and go to Team Selection.
+2. Let player choices auto-generate.
+3. Inspect goalkeeper options and debug payload for target overall.
+Expected:
+- Goalkeeper targets are limited to 20-22.
+
+BUG-002 - No default kits + preview removal
+Manual steps:
+1. Open `/career/start` -> Kits on a fresh setup state.
+2. Verify pattern/main/detail fields for home/away begin unselected.
+3. Verify goalkeeper kit begins unselected.
+4. Verify the "Saved Shirt Decoder Preview" section is absent.
+Expected:
+- User must explicitly select values or randomise; preview block no longer exists.
+
+BUG-003 - Goalkeeper selector uses shirt visuals
+Manual steps:
+1. In Kits tab, inspect goalkeeper options.
+Expected:
+- Each option displays a shirt preview card (not just a colour swatch).
+
+BUG-004 - Auto generation + no regeneration + phase-1 lock
+Manual steps:
+1. Open Team Selection tab with empty selector state.
+2. Verify player choices are generated automatically.
+3. Verify no generate/regenerate player button is visible.
+4. Complete all 7 player picks.
+5. Verify Phase 1 selector is hidden and locked message is shown while Phase 2 remains available.
+6. Open Coaches tab with empty coach selector state.
+7. Verify coach choices generate automatically and no generate/regenerate button is visible.
+Expected:
+- Both player and coach choices auto-generate.
+- User cannot regenerate first generated set in this setup flow.
+- Player selection UI hides after Phase 2 unlock.
+
+BUG-005 - One coach group at a time + light labels
+Manual steps:
+1. Open Coaches tab.
+2. Verify only the first coach group is visible.
+3. Select one coach from group 1.
+4. Verify group 2 appears afterwards.
+5. Check coach stat label colour readability.
+Expected:
+- Coach groups progress one-at-a-time.
+- Coach stat labels render with light text.
+
+Command checks run in bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015 lint errors were introduced in this pass.
+  - Direct targeted eslint invocation in this environment is currently blocked by local execution/permission constraints (`EPERM`/PowerShell policy).
+
+Bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 2)
+
+BUG-006 - Remove phase-1 wrapper/heading/helper copy
+Manual steps:
+1. Open `/career/start` -> Team Selection before player selection complete.
+2. Verify there is no `Phase 1: Player Selection` heading.
+3. Verify helper copy/progress copy (`Build your starting seven...`, `Progress: x / 7`) is not shown.
+Expected:
+- Team selector renders directly without phase-1 wrapper heading/copy.
+
+BUG-007 - Remove wizard debug UI
+Manual steps:
+1. Open all `/career/start` tabs and inspect bottom of each tab/action area.
+2. Verify no debug details panels are rendered in the wizard flow.
+Expected:
+- No wizard debug UI is visible.
+
+BUG-008 - Randomise Full Set includes goalkeeper kit
+Manual steps:
+1. Open Kits tab.
+2. Click `Randomise Full Set` multiple times.
+3. Observe goalkeeper kit selection changes between valid options.
+Expected:
+- Goalkeeper kit is randomised as part of full-set randomise.
+
+BUG-009 - Remove Type/Influence/Potential rows from player cards
+Manual steps:
+1. Open Team Selection and inspect player option cards.
+2. Confirm Type/Influence/Potential rows are absent.
+Expected:
+- Player cards no longer display Type, Influence, or Potential metadata rows.
+
+BUG-010 - Random Auto-Place under inspector
+Manual steps:
+1. Complete phase 1 so phase 2 is visible.
+2. Locate Player Skill Inspector column.
+3. Verify `Random Auto-Place` appears beneath the inspector panel.
+Expected:
+- Auto-place control is positioned under Player Skill Inspector.
+
+BUG-011 - Inspector alignment and natural height
+Manual steps:
+1. Open phase-2 team placement.
+2. Inspect vertical alignment of pitch + inspector.
+3. Verify inspector no longer stretches to match pitch height.
+4. Verify inspected player card appears centered within inspector.
+Expected:
+- Layout aligns from flex-start.
+- Inspector uses natural height.
+- Inspected player card is centered.
+
+BUG-012 - Next button becomes Start Career when valid
+Manual steps:
+1. Complete all tabs so setup is valid.
+2. Inspect top step-navigation forward button.
+3. Click it.
+Expected:
+- Label changes from `Next` to `Start Career`.
+- Click triggers career generation.
+
+BUG-013 - Simplified generation loading screen
+Manual steps:
+1. Trigger Start Career and open `/career/generating`.
+2. Inspect loading content.
+Expected:
+- Simple spinner animation + simple progress bar/percent only.
+- No competition/debug trace output lists.
+
+BUG-014 - Floating actions + start button width cap
+Manual steps:
+1. Open `/career/start`.
+2. Inspect action area around Start Career button.
+3. Resize viewport and verify button width behavior.
+Expected:
+- `careerStart__actions` appears unboxed (no section-like background/border).
+- Start Career button does not exceed 400px width.
+
+Command checks run in update-2 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-2 fixes.
+
+Update-2 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 3)
+
+BUG-015 - Start Career button centering + action padding
+Manual steps:
+1. Open `/career/start`.
+2. Inspect Start Career action area alignment.
+3. Verify button is centered within page action region.
+4. Verify extra top/bottom spacing around the action row.
+5. Resize viewport and confirm button still caps at 400px.
+Expected:
+- Start action appears centered with increased vertical breathing room.
+- Width cap behavior remains intact.
+
+Command checks run in update-3 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-3 fix.
+
+Update-3 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 4)
+
+BUG-016 - Shift shared button palette to yellow/orange
+Manual steps:
+1. Open `/info` and navigate to UI Components -> Buttons.
+2. Inspect primary/secondary/tertiary buttons in the normal examples.
+3. Inspect the "Variant State Review (debug)" matrix for default/hover/active/focus/disabled states.
+4. Compare button colours against page backgrounds and section cards.
+Expected:
+- Button variants render with yellow/orange-leaning palette (not teal/blue).
+- Variant hierarchy remains clear (primary strongest, tertiary lightest).
+- States remain readable and visually distinct while complementary to existing teal/beige backgrounds.
+
+Command checks run in update-4 bug-fix pass:
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-4 token changes.
+- `npm run build`: passed.
+
+Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 5)
+
+BUG-017 - Dull down warm button palette vibrancy
+Manual steps:
+1. Open `/info` and navigate to UI Components -> Buttons.
+2. Inspect primary/secondary/tertiary buttons in normal examples.
+3. Inspect the "Variant State Review (debug)" matrix for default/hover/active/focus/disabled states.
+4. Compare update-5 palette against the previous brighter yellow/orange treatment.
+Expected:
+- Warm yellow/orange direction is preserved.
+- Buttons appear less saturated/less vibrant than update-4.
+- Variant hierarchy and readability remain clear against existing teal/beige surfaces.
+
+Command checks run in update-5 bug-fix pass:
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-5 token changes.
+- `npm run build`: passed.
+
+Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

@@ -43,6 +43,8 @@ const calculateTeamOverallFromPlayers = (players) => {
 
 const buildPlayerTeamState = (careerSetup) => {
   const players = Array.isArray(careerSetup?.players) ? careerSetup.players : [];
+  const setupCoaches = Array.isArray(careerSetup?.coaches) ? careerSetup.coaches : [];
+  const selectedStartingCoaches = setupCoaches.filter((coach) => coach && typeof coach === "object").slice(0, 2);
   const goalkeeperId = players.find((player) => player?.playerType === "GK")?.id ?? null;
   const setupTeamManagement = careerSetup?.teamManagement ?? null;
   const hasSetupTeamManagement = isSavedTeamManagementComplete(setupTeamManagement);
@@ -84,6 +86,10 @@ const buildPlayerTeamState = (careerSetup) => {
     awayColour: careerSetup?.awayColour ?? "",
     goalkeeperKit: careerSetup?.goalkeeperKit ?? "",
     players,
+    coaches: selectedStartingCoaches,
+    staff: {
+      coaches: selectedStartingCoaches,
+    },
     teamOverall: calculateTeamOverallFromPlayers(players),
     form: [],
     teamManagement,

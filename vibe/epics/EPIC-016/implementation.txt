@@ -1,0 +1,70 @@
+EPIC-016 Implementation Log
+Date: 2026-03-11
+
+Scope implemented:
+- Refreshed shared button visuals for `primary`, `secondary`, and `tertiary` variants.
+- Added centralized button tokens in global UI colour tokens.
+- Added non-moving premium hover/active/focus/disabled state styling.
+- Added a lightweight button variant/state review surface in Info UI docs.
+
+Feature status:
+- FEAT-1601: done
+- FEAT-1602: done
+- FEAT-1603: done
+- FEAT-1604: done
+- FEAT-1605: done
+- FEAT-1606: done
+- FEAT-1607: done
+- FEAT-1608: done
+- FEAT-1609: done
+- FEAT-1610: done
+
+What was implemented:
+- Added shared button design tokens to `src/assets/scss/ui/colours.scss`:
+  - per-variant default/hover/active/focus/disabled colours and glow/ring tokens
+  - palette shifted to brighter teal/light-blue tones for clear contrast against existing backgrounds
+- Rebuilt `src/engine/ui/button/button.scss` into a reusable variant system:
+  - introduced a `@mixin button-variant(...)` token binding layer
+  - unified default/hover/active/focus/disabled states through shared CSS-variable-driven styles
+  - removed button movement-based interaction styling (no `translate`/scale on hover/active)
+  - added premium visual interactions (gradient transition, sheen sweep, border glow, refined shadow stack)
+  - preserved image-button behavior with isolated overrides
+  - added non-user-facing preview classes (`btn--preview-hover`, `btn--preview-active`, `btn--preview-focus`) for state inspection
+- Extended Info UI button docs in `src/game/info/components/uiSections.jsx`:
+  - added an "Variant State Review (debug)" matrix for all 3 variants
+  - matrix exposes default/hover/active/focus/disabled side-by-side
+- Added supporting layout styles for the state review matrix in `src/game/info/info.scss`.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `button` shared component + shared button SCSS system.
+
+Engine components not used (and why):
+- `gameContext` was not needed; no gameplay state changes were required.
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip` were not required; this epic is strictly button visual system work.
+- `makeDecision`, `rng`, `saveGame`, `timer` were not required; no random logic, persistence flow, or timed behavior changed.
+
+Files changed:
+- `src/assets/scss/ui/colours.scss`
+- `src/engine/ui/button/button.scss`
+- `src/game/info/components/uiSections.jsx`
+- `src/game/info/info.scss`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- The debug review matrix is currently placed in Info UI docs to support implementation verification; keep or hide later based on production documentation preference.
+- Existing repository lint baseline remains failing in unrelated files, so lint cannot currently be used as a clean EPIC-only gate.

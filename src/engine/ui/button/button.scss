@@ -1,147 +1,271 @@
 @use "../../../assets/scss/ui/import" as *;
 
+@mixin button-variant(
+  $bgTop,
+  $bgBottom,
+  $text,
+  $border,
+  $hoverTop,
+  $hoverBottom,
+  $hoverBorder,
+  $activeTop,
+  $activeBottom,
+  $focusRing,
+  $glow,
+  $disabledTop,
+  $disabledBottom,
+  $disabledText,
+  $disabledBorder
+) {
+  --btn-bg-top: #{$bgTop};
+  --btn-bg-bottom: #{$bgBottom};
+  --btn-text: #{$text};
+  --btn-border: #{$border};
+  --btn-hover-top: #{$hoverTop};
+  --btn-hover-bottom: #{$hoverBottom};
+  --btn-hover-border: #{$hoverBorder};
+  --btn-active-top: #{$activeTop};
+  --btn-active-bottom: #{$activeBottom};
+  --btn-focus-ring: #{$focusRing};
+  --btn-glow: #{$glow};
+  --btn-disabled-top: #{$disabledTop};
+  --btn-disabled-bottom: #{$disabledBottom};
+  --btn-disabled-text: #{$disabledText};
+  --btn-disabled-border: #{$disabledBorder};
+}
+
 .btn {
+  @include button-variant(
+    $buttonPrimaryBackgroundTop,
+    $buttonPrimaryBackgroundBottom,
+    $buttonPrimaryText,
+    $buttonPrimaryBorder,
+    $buttonPrimaryHoverTop,
+    $buttonPrimaryHoverBottom,
+    $buttonPrimaryHoverBorder,
+    $buttonPrimaryActiveTop,
+    $buttonPrimaryActiveBottom,
+    $buttonPrimaryFocusRing,
+    $buttonPrimaryGlow,
+    $buttonPrimaryDisabledTop,
+    $buttonPrimaryDisabledBottom,
+    $buttonPrimaryDisabledText,
+    $buttonPrimaryDisabledBorder
+  );
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.45rem;
 
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
+  padding: 0.65rem 1.3rem;
+  border-radius: 12px;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 700;
+  line-height: 1.2;
 
   cursor: pointer;
   user-select: none;
 
-  border: none;
+  border: 1px solid var(--btn-border);
+  color: var(--btn-text);
+  background-image: linear-gradient(142deg, var(--btn-bg-top) 0%, var(--btn-bg-bottom) 100%);
+  background-position: 0 0;
+  background-size: 200% 100%;
+
+  box-shadow:
+    0 8px 18px rgba(4, 28, 33, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+
   text-decoration: none;
 
-  /* Enhanced transitions for a more "premium" feel */
   transition:
-    transform 0.3s cubic-bezier(0.2, 0.9, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.2, 0.9, 0.2, 1),
-    opacity 0.4s ease,
-    filter 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+    background-position 0.32s ease,
+    background-image 0.25s ease,
+    box-shadow 0.32s cubic-bezier(0.2, 0.85, 0.2, 1),
+    border-color 0.25s ease,
+    opacity 0.2s ease,
+    filter 0.2s ease;
 
-  /* Needed for the hover highlight overlay */
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 
-  /* If this is a Link (<a>), prevent browser link styling. */
   &:visited,
   &:hover,
   &:active,
   &:focus {
+    color: var(--btn-text);
     text-decoration: none;
   }
 
-  &:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.65);
-    outline-offset: 2px;
+  &:focus {
+    outline: none;
   }
 
-  /* Elegant highlight overlay */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -36% -8%;
+    pointer-events: none;
+    background: linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.34) 48%,
+      rgba(255, 255, 255, 0.08) 63%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-130%);
+    opacity: 0;
+    transition:
+      transform 0.55s cubic-bezier(0.2, 0.85, 0.2, 1),
+      opacity 0.25s ease;
+    z-index: 0;
+  }
+
   &::after {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: 1px;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     pointer-events: none;
-
-    /* Soft diagonal shine */
-    background: linear-gradient(
-      120deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.14) 35%,
-      rgba(255, 255, 255, 0.06) 55%,
-      rgba(255, 255, 255, 0) 100%
-    );
-
-    opacity: 0;
-    transition: opacity 0.16s ease;
+    z-index: 0;
   }
 
-  /* More obvious, elegant hover effect */
-  &:hover {
-    transform: translateY(-2px);
-
-    /* Two-layer shadow: soft ambient + key shadow */
-    box-shadow:
-      0 10px 26px rgba(0, 0, 0, 0.18),
-      0 4px 10px rgba(0, 0, 0, 0.16);
-
-    filter: brightness(1.04);
+  > * {
+    position: relative;
+    z-index: 1;
   }
 
-  &:hover::after {
+  &:hover::before,
+  &.btn--preview-hover::before {
+    transform: translateX(96%);
     opacity: 1;
   }
 
-  &:active {
-    transform: translateY(-1px);
+  &:hover,
+  &.btn--preview-hover {
+    background-image: linear-gradient(142deg, var(--btn-hover-top) 0%, var(--btn-hover-bottom) 100%);
+    background-position: 100% 0;
+    border-color: var(--btn-hover-border);
     box-shadow:
-      0 6px 18px rgba(0, 0, 0, 0.18),
-      0 3px 8px rgba(0, 0, 0, 0.16);
-    filter: brightness(1.01);
+      0 12px 24px rgba(4, 28, 33, 0.3),
+      0 0 0 3px var(--btn-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.27),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+  }
+
+  &:active,
+  &.btn--preview-active {
+    background-image: linear-gradient(142deg, var(--btn-active-top) 0%, var(--btn-active-bottom) 100%);
+    border-color: var(--btn-hover-border);
+    box-shadow:
+      0 7px 14px rgba(4, 28, 33, 0.28),
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    filter: saturate(1.02);
+  }
+
+  &:focus-visible,
+  &.btn--preview-focus {
+    border-color: var(--btn-hover-border);
+    box-shadow:
+      0 0 0 3px var(--btn-focus-ring),
+      0 10px 20px rgba(4, 28, 33, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15);
   }
 
   &--primary {
-    background-color: $primaryBackground;
-    color: $primaryForeground;
-
-    /* Keep text colour stable across link pseudo-states */
-    &:visited,
-    &:hover,
-    &:active,
-    &:focus {
-      color: $primaryForeground;
-    }
+    @include button-variant(
+      $buttonPrimaryBackgroundTop,
+      $buttonPrimaryBackgroundBottom,
+      $buttonPrimaryText,
+      $buttonPrimaryBorder,
+      $buttonPrimaryHoverTop,
+      $buttonPrimaryHoverBottom,
+      $buttonPrimaryHoverBorder,
+      $buttonPrimaryActiveTop,
+      $buttonPrimaryActiveBottom,
+      $buttonPrimaryFocusRing,
+      $buttonPrimaryGlow,
+      $buttonPrimaryDisabledTop,
+      $buttonPrimaryDisabledBottom,
+      $buttonPrimaryDisabledText,
+      $buttonPrimaryDisabledBorder
+    );
   }
 
   &--secondary {
-    background-color: $secondaryBackground;
-    color: $secondaryForeground;
-
-    /* Keep text colour stable across link pseudo-states */
-    &:visited,
-    &:hover,
-    &:active,
-    &:focus {
-      color: $secondaryForeground;
-    }
+    @include button-variant(
+      $buttonSecondaryBackgroundTop,
+      $buttonSecondaryBackgroundBottom,
+      $buttonSecondaryText,
+      $buttonSecondaryBorder,
+      $buttonSecondaryHoverTop,
+      $buttonSecondaryHoverBottom,
+      $buttonSecondaryHoverBorder,
+      $buttonSecondaryActiveTop,
+      $buttonSecondaryActiveBottom,
+      $buttonSecondaryFocusRing,
+      $buttonSecondaryGlow,
+      $buttonSecondaryDisabledTop,
+      $buttonSecondaryDisabledBottom,
+      $buttonSecondaryDisabledText,
+      $buttonSecondaryDisabledBorder
+    );
   }
 
   &--tertiary {
-    background-color: $tertiaryBackground;
-    color: $tertiaryForeground;
-
-    /* Optional: a subtle border so it still reads as a button */
-    border: 1px solid rgba(0, 0, 0, 0.18);
-
-    /* Keep text colour stable across link pseudo-states */
-    &:visited,
-    &:hover,
-    &:active,
-    &:focus {
-      color: $tertiaryForeground;
-    }
+    @include button-variant(
+      $buttonTertiaryBackgroundTop,
+      $buttonTertiaryBackgroundBottom,
+      $buttonTertiaryText,
+      $buttonTertiaryBorder,
+      $buttonTertiaryHoverTop,
+      $buttonTertiaryHoverBottom,
+      $buttonTertiaryHoverBorder,
+      $buttonTertiaryActiveTop,
+      $buttonTertiaryActiveBottom,
+      $buttonTertiaryFocusRing,
+      $buttonTertiaryGlow,
+      $buttonTertiaryDisabledTop,
+      $buttonTertiaryDisabledBottom,
+      $buttonTertiaryDisabledText,
+      $buttonTertiaryDisabledBorder
+    );
   }
 
-  &--disabled {
-    opacity: 0.5;
+  &:is(.btn--disabled, :disabled, [aria-disabled="true"]) {
+    color: var(--btn-disabled-text);
+    border-color: var(--btn-disabled-border);
+    background-image: linear-gradient(
+      142deg,
+      var(--btn-disabled-top) 0%,
+      var(--btn-disabled-bottom) 100%
+    );
+
+    box-shadow:
+      0 4px 10px rgba(4, 28, 33, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    filter: saturate(0.55);
+    opacity: 0.95;
     cursor: not-allowed;
     pointer-events: none;
+  }
 
-    transform: none;
-    box-shadow: none;
-    filter: none;
+  &:is(.btn--disabled, :disabled, [aria-disabled="true"])::before {
+    display: none;
+  }
 
-    &::after {
-      opacity: 0;
-    }
+  &:is(.btn--disabled, :disabled, [aria-disabled="true"])::after {
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
-/* Anchor-specific hardening: ensure Link buttons never turn blue/purple */
 a.btn,
 a.btn:visited,
 a.btn:hover,
@@ -150,32 +274,52 @@ a.btn:focus {
   text-decoration: none;
 }
 
-/* Native button disabled state (non-Link buttons) */
-button.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .btn--image {
   padding: 0;
   line-height: 0;
+  border: none;
+  border-radius: 0;
   background: transparent;
+  box-shadow: none;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
 
-  &:hover {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
+  &::before,
   &::after {
     display: none;
   }
-}
 
+  &:hover,
+  &.btn--preview-hover,
+  &:active,
+  &.btn--preview-active {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    filter: none;
+  }
+
+  &:focus-visible,
+  &.btn--preview-focus {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+
+  &:is(.btn--disabled, :disabled, [aria-disabled="true"]) {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0.7;
+    filter: grayscale(0.25);
+  }
+}
 
 .btn--image img {
   display: block;
   max-width: 100%;
   max-height: 100%;
   user-select: none;
-  pointer-events: none; /* clicks go to the button/link */
+  pointer-events: none;
 }

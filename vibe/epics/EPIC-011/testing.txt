@@ -188,7 +188,41 @@ Bug Fix: BUG-008 (Tooltip-wrapped icon width consistency at 40px)
   - Visual regression check for 40x40 icon consistency across all event types.
 - Test status: passed (build + manual code-path verification).
 
+Bug Fix: BUG-009 (Move Career Start actions under tab nav and remove bottom step nav)
+- Steps:
+  1. Open `/career/start`.
+  2. Confirm the Start Career action block renders directly below the setup tabs.
+  3. Scroll through the wizard and confirm only the top step navigation is present.
+- Expected:
+  - `careerStart__actions` appears directly under tab navigation.
+  - Bottom `careerStart__stepNav--bottom` is not rendered.
+- Automated tests completed:
+  - `npm run build` passed after layout update.
+- Automated tests still needed:
+  - UI regression test to assert wizard action/step-nav ordering on `/career/start`.
+- Test status: passed (build + manual code-path verification).
+
+Bug Fix: BUG-010 (Remove checklist and show completion feedback in tabs)
+- Steps:
+  1. Open `/career/start`.
+  2. Verify the standalone checklist panel no longer appears.
+  3. Inspect each tab and verify it shows icon + `Complete`/`Pending` status.
+  4. Update setup values across steps and verify tab status feedback updates.
+- Expected:
+  - No `careerStart__setupChecklist` element is rendered.
+  - Setup feedback is visible in tab status indicators with tick/cross style icons.
+- Automated tests completed:
+  - `npm run build` passed after status UI refactor.
+- Automated tests still needed:
+  - Component test validating tab completion state rendering for each setup step.
+- Test status: passed (build + manual code-path verification).
+
+Latest automated checks (2026-03-10)
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide baseline issues outside EPIC-011 scope (engine/info prop-types and react-hooks/set-state-in-effect errors).
+
 Overall epic test status: in progress
 - Reason:
   - Feature-level manual verification is complete in code and build output.
   - Full UI playthrough regression remains to be executed end-to-end in-browser for final epic closeout.
+

@@ -1,0 +1,338 @@
+EPIC-015 Bug Log
+Date: 2026-03-11
+
+BUG-001 - Goalkeeper overall range still too high
+Repro steps:
+1. Open `/career/start`.
+2. Go to Team Selection and generate/inspect goalkeeper options.
+3. Observe occasional goalkeeper target overalls above 22.
+Expected:
+- Goalkeepers should be generated in the same tightened 20-22 range.
+Actual:
+- Goalkeepers were still generated with a 20-25 target range.
+Suspected cause:
+- Goalkeeper range constant in team selector generation was not updated when outfield rebalance was done.
+Attempted fixes:
+- Reviewed `teamSelectorGeneration` constants and pool creation logic.
+Final fix:
+- Updated `GOALKEEPER_TARGET_OVERALL_RANGE.max` from `25` to `22`.
+Status: fixed
+
+BUG-002 - Kits should start unselected and preview block removed
+Repro steps:
+1. Open `/career/start`.
+2. Go to Kits tab on a fresh setup.
+3. Observe prefilled home/away/goalkeeper kit values and saved preview block.
+Expected:
+- No kits pre-selected by default.
+- User must explicitly select kit values or randomise.
+- "Saved Shirt Decoder Preview" section should not be present.
+Actual:
+- Kit values were pre-populated and preview section was still shown.
+Suspected cause:
+- Career setup defaults were seeded with concrete kit values and preview UI was left in place.
+Attempted fixes:
+- Reviewed setup defaults in career start and game context.
+- Reviewed kit tab rendering in `careerStart.jsx`.
+Final fix:
+- Changed default kit state to empty values in:
+  - `src/game/careerStart/careerStart.jsx`
+  - `src/engine/gameContext/gameContext.jsx`
+- Updated `teamKitSelector` select fields with explicit "Select ..." placeholder options to support unselected state.
+- Removed the `Saved Shirt Decoder Preview` section from the Kits tab.
+Status: fixed
+
+BUG-003 - Goalkeeper kit colour chooser should use shirt visuals
+Repro steps:
+1. Open `/career/start` -> Kits.
+2. Inspect goalkeeper colour selection controls.
+Expected:
+- Goalkeeper options should use shirt visuals like the other kit selectors.
+Actual:
+- Options were shown as text pills with small colour swatches only.
+Suspected cause:
+- Goalkeeper controls used swatch-only button styling.
+Attempted fixes:
+- Reused existing `ShirtRenderer` in goalkeeper option cards.
+Final fix:
+- Replaced goalkeeper swatch-only buttons with shirt preview buttons in `teamKitSelector`.
+- Updated styles in `careerStart.scss` for goalkeeper preview card layout.
+Status: fixed
+
+BUG-004 - Player/coach generation should auto-run and lock first generated set
+Repro steps:
+1. Open `/career/start` Team Selection and Coaches tabs.
+2. Observe manual generate/regenerate buttons and ability to regenerate.
+3. Complete player selection and move to placement.
+Expected:
+- No manual generation button for players/coaches.
+- Choices auto-generate on first tab entry.
+- Player selection UI is hidden once team placement phase is active.
+- User cannot regenerate player choices after first generation.
+Actual:
+- Manual generation controls were visible and regeneration remained possible.
+- Player selection panel remained visible even after unlock of phase 2.
+Suspected cause:
+- Generation was only user-triggered via buttons; phase 1 renderer did not hide after completion.
+Attempted fixes:
+- Added first-render auto-generation effects for player and coach selectors.
+- Removed generate/regenerate control sections.
+- Added phase-1 hiding behavior after team selector completion.
+Final fix:
+- `CareerTeamSelector` now auto-generates pools when empty and no longer renders generate/regenerate controls.
+- `CareerStartCoachSelectionTab` now auto-generates coach groups when empty and no longer renders generate/regenerate controls.
+- `CareerStartTeamSelectionTab` now hides phase 1 selector after completion and displays locked message.
+Status: fixed
+
+BUG-005 - Coach flow should show one choice group at a time and use light stat labels
+Repro steps:
+1. Open `/career/start` -> Coaches.
+2. Observe both coach groups visible at once and dark stat labels.
+Expected:
+- Only one coach choice group shown at a time.
+- Group 2 appears only after Group 1 selection.
+- Coach stat labels use light text.
+Actual:
+- Both groups were shown together and labels were hard to read against dark card backgrounds.
+Suspected cause:
+- Coach tab mapped all groups at once; shared skill label colour defaulted to dark text.
+Attempted fixes:
+- Added active-group progression logic based on `selectedByGroup`.
+- Added coach-specific style override for skill labels.
+Final fix:
+- Coach tab now:
+  - shows only current active group
+  - reveals group 2 after group 1 is selected
+  - shows selected summary for completed groups
+- Added `.careerStart__coachSkillset .playerSkillsetBars__label` light text override in `careerStart.scss`.
+Status: fixed
+
+BUG-006 - Team selector should not sit inside phase block and remove phase-1 helper copy
+Repro steps:
+1. Open `/career/start` -> Team Selection before phase 1 completion.
+2. Observe `careerStart__teamSelector` wrapped in phase block with phase heading and helper progress copy.
+Expected:
+- Team selector should render directly without phase-block wrapper.
+- Remove:
+  - `Phase 1: Player Selection`
+  - `Build your starting seven by selecting 1 goalkeeper and 6 outfield players.`
+  - `Progress: 0 / 7 selected`
+Actual:
+- Team selector was inside a phase block and still showed the removed copy.
+Suspected cause:
+- Legacy phase wrapper + helper header remained from merged flow implementation.
+Attempted fixes:
+- Reviewed phase-1 render path in `careerStartTeamSelectionTab` and selector head content in `careerTeamSelector`.
+Final fix:
+- Rendered `CareerTeamSelector` directly (no phase-block wrapper).
+- Removed the phase-1 heading and helper/progress text from selector component.
+Status: fixed
+
+BUG-007 - Remove debug UI from career start wizard
+Repro steps:
+1. Open `/career/start` tabs and scroll to bottom.
+2. Observe wizard-level debug panels/details.
+Expected:
+- No debug panels in wizard tabs or action area.
+Actual:
+- Wizard-level debug details were still rendered.
+Suspected cause:
+- Debug UI from implementation pass was still present in tab/action render tree.
+Attempted fixes:
+- Reviewed `careerStart.jsx` and team selector rendering path.
+Final fix:
+- Removed wizard flow debug details block from `careerStart.jsx`.
+- Removed team selector debug panel usage from `careerTeamSelector`.
+Status: fixed
+
+BUG-008 - Full randomise should include goalkeeper kit
+Repro steps:
+1. Open `/career/start` -> Kits.
+2. Click `Randomise Full Set`.
+3. Observe goalkeeper kit value remains unchanged.
+Expected:
+- Full randomise should also randomise goalkeeper kit.
+Actual:
+- Home/away kits changed, goalkeeper kit did not.
+Suspected cause:
+- `randomiseFullKitSet` generated only home/away shirt values.
+Attempted fixes:
+- Reviewed randomiser utility outputs.
+Final fix:
+- Updated `randomiseFullKitSet()` to include random `goalkeeperKit` from `GOALKEEPER_KIT_OPTIONS`.
+Status: fixed
+
+BUG-009 - Remove type/influence/potential text from player choice cards
+Repro steps:
+1. Open `/career/start` -> Team Selection.
+2. Inspect player choice cards.
+Expected:
+- Remove these values from card meta:
+  - Type
+  - Influence
+  - Potential
+Actual:
+- All three values were still shown in player card metadata.
+Suspected cause:
+- Legacy metadata block remained in shared career player card component.
+Attempted fixes:
+- Reviewed `careerPlayerCard` metadata render section.
+Final fix:
+- Removed type/influence/potential metadata block from `careerPlayerCard`.
+Status: fixed
+
+BUG-010 - Random Auto-Place should sit under Player Skill Inspector
+Repro steps:
+1. Open Team Selection phase 2.
+2. Check position of `Random Auto-Place`.
+Expected:
+- Button should appear underneath Player Skill Inspector.
+Actual:
+- Button appeared in the phase header area above tactics/layout.
+Suspected cause:
+- Action button was positioned in phase header instead of inspector column.
+Attempted fixes:
+- Reviewed Team Selection phase-2 composition and shared layout structure.
+Final fix:
+- Added `inspectorFooter` slot to `TeamSetupLayout`.
+- Moved `Random Auto-Place` into inspector footer so it renders under Player Skill Inspector.
+Status: fixed
+
+BUG-011 - Player Skill Inspector alignment/height behavior
+Repro steps:
+1. Open Team Selection phase 2 with inspector visible.
+2. Compare inspector alignment and height with pitch.
+Expected:
+- Use flex-start vertical alignment.
+- Center inspected player card.
+- Remove forced matching height with pitch.
+Actual:
+- Inspector stretched to pitch height and card alignment looked vertically off.
+Suspected cause:
+- `align-items: stretch` + `min-height: 100%` and grid row sizing forced equal-height behavior.
+Attempted fixes:
+- Reviewed `teamSetupLayout.scss` body/inspector rules.
+Final fix:
+- Set layout body alignment to `flex-start`.
+- Added dedicated inspector column container.
+- Removed inspector and inspector-card forced min-height behavior.
+- Set inspector header alignment to flex-start and centered inspected player card via `margin-inline: auto`.
+Status: fixed
+
+BUG-012 - Next button should become Start Career when setup is valid
+Repro steps:
+1. Complete all wizard tabs until start-career validity is true.
+2. Observe top navigation `Next` button.
+Expected:
+- `Next` should change to `Start Career` and trigger generation.
+Actual:
+- Button stayed as `Next`/tab navigation behavior.
+Suspected cause:
+- Step nav button logic only considered tab adjacency.
+Attempted fixes:
+- Reviewed wizard step navigation renderer in `careerStart.jsx`.
+Final fix:
+- Updated step-nav forward button to:
+  - show `Start Career` when `canStartCareer` is true
+  - call `startCareerGeneration` instead of tab navigation in that state.
+Status: fixed
+
+BUG-013 - Remove generation debug output from loading screen
+Repro steps:
+1. Trigger career generation and open `/career/generating`.
+2. Observe loading UI sections listing competitions/events/debug traces.
+Expected:
+- Simple loading screen with animation and simple progress bar only.
+Actual:
+- Loading screen included detailed competition/debug output sections.
+Suspected cause:
+- Debug/trace UI from generation diagnostics remained in production loading screen.
+Attempted fixes:
+- Reviewed `careerGenerationLoading` render and callback wiring.
+Final fix:
+- Simplified generating screen to:
+  - spinner animation
+  - simple heading text
+  - progress bar
+  - percent text
+- Removed rendered competition/debug trace sections from the loading UI.
+Status: fixed
+
+BUG-014 - Make actions area floating and cap start button width
+Repro steps:
+1. Open `/career/start`.
+2. Inspect action area styling around Start Career button.
+Expected:
+- `careerStart__actions` should not have boxed background/border styling.
+- Start Career button max width should be 400px.
+Actual:
+- Actions area inherited section box styling and button width was unconstrained.
+Suspected cause:
+- Shared section style selector included `careerStart__actions`.
+Attempted fixes:
+- Reviewed `careerStart.scss` shared selectors and button class usage.
+Final fix:
+- Removed boxed styles from `careerStart__actions` by separating selectors.
+- Added `careerStart__startButton` class with width cap (`min(100%, 400px)`).
+- Applied class to Start Career button in `careerStart.jsx`.
+Status: fixed
+
+BUG-015 - Center Start Career action and increase vertical spacing
+Repro steps:
+1. Open `/career/start`.
+2. Inspect the Start Career action area.
+Expected:
+- Start Career button should be centered on the page.
+- Action area should have more top/bottom padding.
+Actual:
+- Start Career button sat left-aligned in the action area with tighter vertical spacing.
+Suspected cause:
+- `careerStart__actions` used start alignment and no dedicated vertical padding.
+Attempted fixes:
+- Reviewed action-area layout rules in `careerStart.scss`.
+Final fix:
+- Updated `careerStart__actions` to center contents and added extra vertical padding.
+- Added `margin-inline: auto` to `careerStart__startButton` while keeping max width cap.
+Status: fixed
+
+BUG-016 - Shift shared button palette from teal to yellow/orange
+Repro steps:
+1. Open any screen using shared `Button` variants (for example `/info` -> Buttons).
+2. Inspect primary/secondary/tertiary button colours.
+Expected:
+- Shared button variants should use a warm yellow/orange palette that complements:
+  - `$primaryBackground: #115752`
+  - `$secondaryBackground: #2e7d64`
+  - `$tertiaryBackground: #d5ceb5`
+Actual:
+- Shared button tokens were still teal/blue based from the previous visual refresh pass.
+Suspected cause:
+- Global button token block in `src/assets/scss/ui/colours.scss` still held the old teal values.
+Attempted fixes:
+- Replaced all shared button variant token values (primary/secondary/tertiary + hover/active/focus/disabled) with orange/yellow complementary values.
+Final fix:
+- Updated the full shared button token set in `src/assets/scss/ui/colours.scss` from teal/blue to warm yellow/orange tones while preserving the existing shared variant/state styling system in `button.scss`.
+Status: fixed
+
+BUG-017 - Reduce button palette vibrancy while keeping warm yellow/orange direction
+Repro steps:
+1. Open `/info` -> UI Components -> Buttons.
+2. Inspect primary/secondary/tertiary buttons in normal examples and state review matrix.
+Expected:
+- Buttons should keep the warm yellow/orange direction from BUG-016 but with a more muted, less saturated finish.
+Actual:
+- The previous orange/yellow token set looked too vibrant/bright for the surrounding UI.
+Suspected cause:
+- Shared button tokens used high-saturation amber/yellow values across default and hover states.
+Attempted fixes:
+- Retuned all button variant tokens to lower saturation and slightly darker, earthier values while preserving contrast and hierarchy.
+Final fix:
+- Updated `src/assets/scss/ui/colours.scss` shared button tokens (primary/secondary/tertiary + hover/active/focus/disabled) to a dulled warm palette.
+- Kept the existing shared `button.scss` behavior/state system unchanged (token-only adjustment).
+Status: fixed
+
+BUG-018
+
+I want to add a new font into the game.
+
+Can we make all text in the game, apart from p, ul, ol, li, a and span into the google font Tourney. This includes the button text.

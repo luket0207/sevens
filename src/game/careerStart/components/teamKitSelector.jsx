@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Button, { BUTTON_VARIANT } from "../../../engine/ui/button/button";
 import { GOALKEEPER_KIT_OPTIONS } from "../kit/goalkeeperKits";
 import { KIT_COLOURS } from "../kit/kitColours";
@@ -8,17 +8,33 @@ import { randomiseAwayKit, randomiseFullKitSet, randomiseHomeKit } from "../kit/
 import { SHIRT_PATTERNS } from "../kit/shirtPatterns";
 import ShirtRenderer from "./shirtRenderer";
 
+const EMPTY_SHIRT = Object.freeze({
+  pattern: "",
+  mainColour: "",
+  detailColour: "",
+});
+
+const GOALKEEPER_COLLAR_COLOUR = "#d5ceb5";
+
+const createGoalkeeperPreviewShirt = (goalkeeperKitOption) => ({
+  pattern: "solid",
+  mainColour: goalkeeperKitOption.colour,
+  detailColour: GOALKEEPER_COLLAR_COLOUR,
+});
+
 const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
   const [contrastNote, setContrastNote] = useState("");
+  const safeHomeKit = homeKit && typeof homeKit === "object" ? { ...EMPTY_SHIRT, ...homeKit } : EMPTY_SHIRT;
+  const safeAwayKit = awayKit && typeof awayKit === "object" ? { ...EMPTY_SHIRT, ...awayKit } : EMPTY_SHIRT;
+  const homeMainColour = safeHomeKit.mainColour;
 
-  const validAwayMainColours = useMemo(
-    () => getContrastingAwayColours(homeKit.mainColour),
-    [homeKit.mainColour]
-  );
+  const validAwayMainColours = homeMainColour
+    ? getContrastingAwayColours(homeMainColour)
+    : KIT_COLOURS.map((colour) => colour.value);
 
   const updateHomeKit = (patch) => {
     const nextHomeKit = {
-      ...homeKit,
+      ...safeHomeKit,
       ...patch,
     };
 
@@ -27,10 +43,14 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
       homeColour: nextHomeKit.mainColour,
     };
 
-    if (!hasGoodKitContrast(nextHomeKit.mainColour, awayKit.mainColour)) {
-      const safeAwayColour = getSafeAwayColour(nextHomeKit.mainColour, awayKit.mainColour);
+    if (
+      nextHomeKit.mainColour &&
+      safeAwayKit.mainColour &&
+      !hasGoodKitContrast(nextHomeKit.mainColour, safeAwayKit.mainColour)
+    ) {
+      const safeAwayColour = getSafeAwayColour(nextHomeKit.mainColour, safeAwayKit.mainColour);
       updates.awayKit = {
-        ...awayKit,
+        ...safeAwayKit,
         mainColour: safeAwayColour,
       };
       updates.awayColour = safeAwayColour;
@@ -42,12 +62,16 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
 
   const updateAwayKit = (patch) => {
     const nextAwayKit = {
-      ...awayKit,
+      ...safeAwayKit,
       ...patch,
     };
 
-    if (!hasGoodKitContrast(homeKit.mainColour, nextAwayKit.mainColour)) {
-      const safeAwayColour = getSafeAwayColour(homeKit.mainColour, nextAwayKit.mainColour);
+    if (
+      homeMainColour &&
+      nextAwayKit.mainColour &&
+      !hasGoodKitContrast(homeMainColour, nextAwayKit.mainColour)
+    ) {
+      const safeAwayColour = getSafeAwayColour(homeMainColour, nextAwayKit.mainColour);
       onUpdateKit({
         awayKit: {
           ...nextAwayKit,
@@ -68,12 +92,12 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
 
   const randomiseHome = () => {
     const homeResult = randomiseHomeKit();
-    const safeAwayColour = getSafeAwayColour(homeResult.homeKit.mainColour, awayKit.mainColour);
+    const safeAwayColour = getSafeAwayColour(homeResult.homeKit.mainColour, safeAwayKit.mainColour);
 
     onUpdateKit({
       ...homeResult,
       awayKit: {
-        ...awayKit,
+        ...safeAwayKit,
         mainColour: safeAwayColour,
       },
       awayColour: safeAwayColour,
@@ -82,7 +106,7 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
   };
 
   const randomiseAway = () => {
-    onUpdateKit(randomiseAwayKit(homeKit.mainColour));
+    onUpdateKit(randomiseAwayKit(safeHomeKit.mainColour));
     setContrastNote("");
   };
 
@@ -101,13 +125,14 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
           <span className="careerStart__label">Pattern</span>
           <select
             className="careerStart__select"
-            value={shirt.pattern}
+            value={shirt.pattern || ""}
             onChange={(event) =>
               isAway
                 ? updateAwayKit({ pattern: event.target.value })
                 : updateHomeKit({ pattern: event.target.value })
             }
           >
+            <option value="">Select pattern</option>
             {SHIRT_PATTERNS.map((pattern) => (
               <option key={pattern.id} value={pattern.id}>
                 {pattern.label}
@@ -120,18 +145,19 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
           <span className="careerStart__label">Main Colour</span>
           <select
             className="careerStart__select"
-            value={shirt.mainColour}
+            value={shirt.mainColour || ""}
             onChange={(event) =>
               isAway
                 ? updateAwayKit({ mainColour: event.target.value })
                 : updateHomeKit({ mainColour: event.target.value })
             }
           >
+            <option value="">Select main colour</option>
             {KIT_COLOURS.map((colour) => (
               <option
                 key={colour.value}
                 value={colour.value}
-                disabled={isAway && !validAwayMainColours.includes(colour.value)}
+                disabled={Boolean(isAway && homeMainColour && !validAwayMainColours.includes(colour.value))}
               >
                 {colour.label}
               </option>
@@ -143,13 +169,14 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
           <span className="careerStart__label">Detail Colour</span>
           <select
             className="careerStart__select"
-            value={shirt.detailColour}
+            value={shirt.detailColour || ""}
             onChange={(event) =>
               isAway
                 ? updateAwayKit({ detailColour: event.target.value })
                 : updateHomeKit({ detailColour: event.target.value })
             }
           >
+            <option value="">Select detail colour</option>
             {KIT_COLOURS.map((colour) => (
               <option key={colour.value} value={colour.value}>
                 {colour.label}
@@ -178,12 +205,15 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
       {contrastNote ? <p className="careerStart__contrastNote">{contrastNote}</p> : null}
 
       <div className="careerStart__kitGrid">
-        {renderShirtEditor({ title: "Home Shirt", shirt: homeKit, isAway: false })}
-        {renderShirtEditor({ title: "Away Shirt", shirt: awayKit, isAway: true })}
+        {renderShirtEditor({ title: "Home Shirt", shirt: safeHomeKit, isAway: false })}
+        {renderShirtEditor({ title: "Away Shirt", shirt: safeAwayKit, isAway: true })}
       </div>
 
       <div className="careerStart__goalkeeperWrap">
         <h3 className="careerStart__kitTitle">Goalkeeper Kit</h3>
+        {!goalkeeperKit ? (
+          <p className="careerStart__hint">Select a goalkeeper kit colour or use randomise.</p>
+        ) : null}
         <div className="careerStart__goalkeeperOptions">
           {GOALKEEPER_KIT_OPTIONS.map((option) => (
             <button
@@ -194,12 +224,12 @@ const TeamKitSelector = ({ homeKit, awayKit, goalkeeperKit, onUpdateKit }) => {
               }`}
               onClick={() => onUpdateKit({ goalkeeperKit: option.value })}
             >
-              <span
-                className="careerStart__goalkeeperSwatch"
-                style={{ backgroundColor: option.colour }}
-                aria-hidden="true"
+              <ShirtRenderer
+                shirt={createGoalkeeperPreviewShirt(option)}
+                size="small"
+                className="careerStart__goalkeeperPreviewShirt"
               />
-              {option.label}
+              <span>{option.label}</span>
             </button>
           ))}
         </div>

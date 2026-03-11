@@ -16,6 +16,7 @@ import Cups from "./game/cups/cups";
 import CareerLeagueStats from "./game/careerLeagueStats/careerLeagueStats";
 import CareerDayResults from "./game/careerDayResults/careerDayResults";
 import CareerSeasonSummary from "./game/careerSeasonSummary/careerSeasonSummary";
+import CardRewardChoice from "./game/cards/cardRewardChoice";
 
 const NotFound = () => <div>404</div>;
 
@@ -37,6 +38,7 @@ export default function AppRoutes() {
       <Route path="/career/cups" element={<Cups />} />
       <Route path="/career/league-stats" element={<CareerLeagueStats />} />
       <Route path="/career/day-results" element={<CareerDayResults />} />
+      <Route path="/career/card-reward" element={<CardRewardChoice />} />
       <Route path="/career/season-summary" element={<CareerSeasonSummary />} />
 
       <Route path="/404" element={<NotFound />} />

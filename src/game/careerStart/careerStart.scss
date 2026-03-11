@@ -1,7 +1,6 @@
 @use "../../assets/scss/ui/import" as *;
 
-.careerStart__section,
-.careerStart__actions {
+.careerStart__section {
   background: rgba($secondaryBackground, 0.9);
   color: $secondaryForeground;
   border: 1px solid rgba($lightText, 0.2);
@@ -9,6 +8,13 @@
   padding: clamp(1rem, 2vw, 1.5rem);
   display: grid;
   gap: 0.8rem;
+}
+
+.careerStart__actions {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: center;
+  padding-block: 1.1rem 1.3rem;
 }
 
 .careerStart__sectionTitle {
@@ -71,13 +77,34 @@
 }
 
 .careerStart__tabStatus {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: rgba($lightText, 0.7);
+  color: rgba($lightText, 0.78);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.careerStart__tabStatusIcon {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba($formResultLoss, 0.6);
+  color: $formResultLoss;
+  background: rgba($formResultLoss, 0.14);
 }
 
 .careerStart__tabStatus--done {
   color: rgba($lightText, 0.95);
+}
+
+.careerStart__tabStatus--done .careerStart__tabStatusIcon {
+  border-color: rgba($formResultWin, 0.7);
+  color: $formResultWin;
+  background: rgba($formResultWin, 0.16);
 }
 
 .careerStart__teamSelectionTab {
@@ -88,6 +115,94 @@
 .careerStart__teamSelectionHead {
   display: grid;
   gap: 0.25rem;
+}
+
+.careerStart__phaseBlock,
+.careerStart__phaseLocked {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.24);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.careerStart__phaseTitle {
+  font-size: 1rem;
+}
+
+.careerStart__phaseHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.careerStart__teamPlacementActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.careerStart__coachTab {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.careerStart__coachGroups {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.careerStart__coachGroup {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.2);
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.careerStart__coachGroupHead {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.careerStart__coachOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.careerStart__coachCard {
+  flex: 1 1 calc(33.333% - 0.5rem);
+  min-width: 260px;
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.82);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.careerStart__coachCard--selected {
+  border-color: rgba($formResultWin, 0.65);
+  box-shadow: 0 0 0 2px rgba($formResultWin, 0.2);
+}
+
+.careerStart__coachCardHead {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.careerStart__coachSkillset .playerSkillsetBars__traits {
+  display: none;
+}
+
+.careerStart__coachSkillset .playerSkillsetBars__label {
+  color: rgba($lightText, 0.92);
 }
 
 .careerStart__fieldGrid {
@@ -183,13 +298,14 @@
   border: 1px solid rgba($lightText, 0.25);
   background: rgba($siteBackground, 0.4);
   color: $lightText;
-  border-radius: 999px;
-  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  padding: 0.55rem;
   font-weight: 600;
-  display: inline-flex;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.4rem;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   cursor: pointer;
 }
 
@@ -198,11 +314,9 @@
   background: rgba($tertiaryBackground, 0.25);
 }
 
-.careerStart__goalkeeperSwatch {
-  width: 0.95rem;
-  height: 0.95rem;
-  border-radius: 999px;
-  border: 1px solid rgba($lightText, 0.5);
+.careerStart__goalkeeperPreviewShirt {
+  width: 56px;
+  height: 66px;
 }
 
 .careerStart__savedPreview {
@@ -415,40 +529,6 @@
   background: rgba($siteBackground, 0.2);
 }
 
-.careerStart__teamDebug {
-  border: 1px solid rgba($lightText, 0.2);
-  border-radius: 12px;
-  padding: 0.7rem 0.8rem;
-  background: rgba($siteBackground, 0.26);
-}
-
-.careerStart__teamDebugSummary {
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.careerStart__teamDebugContent {
-  margin-top: 0.7rem;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.careerStart__teamDebugJsonWrap {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.careerStart__teamDebugJson {
-  margin: 0;
-  border: 1px solid rgba($lightText, 0.2);
-  border-radius: 10px;
-  padding: 0.6rem;
-  background: rgba($siteBackground, 0.55);
-  max-height: 220px;
-  overflow: auto;
-  font-size: 0.75rem;
-}
-
 .careerStart__generatedList {
   display: grid;
   gap: 0.9rem;
@@ -557,92 +637,9 @@
   align-items: start;
 }
 
-.careerStart__setupChecklist {
-  width: 100%;
-  border: 1px solid rgba($lightText, 0.2);
-  border-radius: 12px;
-  background: rgba($siteBackground, 0.28);
-  padding: 0.8rem;
-  display: grid;
-  gap: 0.6rem;
-}
-
-.careerStart__setupChecklistTitle {
-  margin: 0;
-  color: rgba($lightText, 0.9);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.careerStart__setupChecklistList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.careerStart__setupChecklistItem {
-  width: 100%;
-  min-height: 2.25rem;
-  border: 1px solid rgba($lightText, 0.2);
-  border-radius: 10px;
-  background: rgba($siteBackground, 0.22);
-  padding: 0.45rem 0.55rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.careerStart__setupChecklistItem--complete {
-  border-color: rgba($formResultWin, 0.55);
-}
-
-.careerStart__setupChecklistItem--pending {
-  border-color: rgba($formResultLoss, 0.5);
-}
-
-.careerStart__setupChecklistIcon {
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.careerStart__setupChecklistIcon--complete {
-  background: rgba($formResultWin, 0.18);
-  border: 1px solid rgba($formResultWin, 0.7);
-  color: $formResultWin;
-}
-
-.careerStart__setupChecklistIcon--pending {
-  background: rgba($formResultLoss, 0.16);
-  border: 1px solid rgba($formResultLoss, 0.68);
-  color: $formResultLoss;
-}
-
-.careerStart__setupChecklistLabel {
-  font-size: 0.88rem;
-  color: rgba($lightText, 0.92);
-}
-
-.careerStart__setupChecklistState {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: rgba($lightText, 0.78);
-}
-
-.careerStart__setupChecklistItem--complete .careerStart__setupChecklistState {
-  color: rgba($formResultWin, 0.92);
-}
-
-.careerStart__setupChecklistItem--pending .careerStart__setupChecklistState {
-  color: rgba($formResultLoss, 0.88);
+.careerStart__startButton {
+  width: min(100%, 400px);
+  margin-inline: auto;
 }
 
 .careerStart .teamManagement__tacticBox {
@@ -745,17 +742,14 @@
     min-width: 0;
   }
 
+  .careerStart__coachCard {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
   .careerStart__stepNav {
     flex-wrap: wrap;
     justify-content: center;
-  }
-
-  .careerStart__setupChecklistItem {
-    grid-template-columns: auto 1fr;
-  }
-
-  .careerStart__setupChecklistState {
-    grid-column: 2 / 3;
   }
 }
 
@@ -764,3 +758,4 @@
     grid-template-columns: 1fr;
   }
 }
+

@@ -7,14 +7,16 @@ import {
   TEAM_MANAGEMENT_DEFAULT_TACTICS,
 } from "../teamManagement/constants/teamManagementConstants";
 import { createEmptyTeamManagementSlotAssignments, isSavedTeamManagementComplete } from "../teamManagement/utils/teamManagementState";
+import CareerStartCoachSelectionTab from "./components/careerStartCoachSelectionTab";
 import { isTeamSelectorComplete } from "./utils/teamSelectorValidation";
-import CareerTeamSelector from "./components/teamSelector/careerTeamSelector";
 import CareerStartTeamSelectionTab from "./components/careerStartTeamSelectionTab";
-import ShirtRenderer from "./components/shirtRenderer";
 import TeamIdentityFields from "./components/teamIdentityFields";
 import TeamKitSelector from "./components/teamKitSelector";
 import { createDefaultTeamSelectorState } from "./utils/teamSelectorState";
+import { createDefaultCoachSelectorState } from "./utils/coachSelectorState";
+import { getSelectedCoachesFromState, isCoachSelectorComplete } from "./utils/coachSelectorValidation";
 import { hasRequiredText, isCareerSetupComplete, isValidTeamKit } from "./utils/careerSetupValidation";
+import { createDefaultCareerCardState } from "../cards/state/cardState";
 import "./careerStart.scss";
 
 const createDefaultSetupTeamManagement = (players = []) => ({
@@ -34,20 +36,22 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
   teamName: "",
   teamStadium: "",
   homeKit: {
-    pattern: "solid",
-    mainColour: "#115752",
-    detailColour: "#d5ceb5",
+    pattern: "",
+    mainColour: "",
+    detailColour: "",
   },
   awayKit: {
-    pattern: "vertical-stripes",
-    mainColour: "#d5ceb5",
-    detailColour: "#115752",
+    pattern: "",
+    mainColour: "",
+    detailColour: "",
   },
-  homeColour: "#115752",
-  awayColour: "#d5ceb5",
-  goalkeeperKit: "orange",
+  homeColour: "",
+  awayColour: "",
+  goalkeeperKit: "",
   players: [],
   teamSelector: createDefaultTeamSelectorState(),
+  coaches: [],
+  coachSelector: createDefaultCoachSelectorState(),
   teamManagement: createDefaultSetupTeamManagement(),
 });
 
@@ -152,6 +156,8 @@ const DEFAULT_CAREER_CALENDAR_RESET = Object.freeze({
   },
 });
 
+const DEFAULT_CAREER_CARDS_RESET = Object.freeze(createDefaultCareerCardState());
+
 const CAREER_START_TABS = Object.freeze([
   Object.freeze({
     id: "identity",
@@ -162,12 +168,12 @@ const CAREER_START_TABS = Object.freeze([
     label: "2. Kits",
   }),
   Object.freeze({
-    id: "players",
-    label: "3. Players",
+    id: "teamSelection",
+    label: "3. Team Selection",
   }),
   Object.freeze({
-    id: "teamSelection",
-    label: "4. Team Selection",
+    id: "coaches",
+    label: "4. Coaches",
   }),
 ]);
 
@@ -188,6 +194,11 @@ const CareerStart = () => {
   const goalkeeperKit = setup.goalkeeperKit ?? DEFAULT_CAREER_SETUP.goalkeeperKit;
   const players = Array.isArray(setup.players) ? setup.players : DEFAULT_CAREER_SETUP.players;
   const teamSelector = setup.teamSelector ?? DEFAULT_CAREER_SETUP.teamSelector;
+  const coachSelector = setup.coachSelector ?? DEFAULT_CAREER_SETUP.coachSelector;
+  const selectedCoachesFromSelector = getSelectedCoachesFromState(coachSelector);
+  const coaches = Array.isArray(setup.coaches) && setup.coaches.length > 0
+    ? setup.coaches
+    : selectedCoachesFromSelector;
   const teamManagementSetup =
     setup.teamManagement && typeof setup.teamManagement === "object"
       ? setup.teamManagement
@@ -208,6 +219,7 @@ const CareerStart = () => {
       awayColour,
       goalkeeperKit,
       players,
+      coaches,
       teamManagement: teamManagementSetup,
     });
   }, [
@@ -217,6 +229,7 @@ const CareerStart = () => {
     homeColour,
     homeKit,
     players,
+    coaches,
     teamManagementSetup,
     teamName,
     teamStadium,
@@ -237,6 +250,7 @@ const CareerStart = () => {
     selectedOutfieldPlayers: teamSelector?.selectedOutfieldPlayers ?? [],
   });
   const teamSelectionComplete = isSavedTeamManagementComplete(teamManagementSetup);
+  const coachSelectionComplete = isCoachSelectorComplete(coachSelector);
   const kitSetupComplete = isValidTeamKit({
     homeKit,
     awayKit,
@@ -247,15 +261,9 @@ const CareerStart = () => {
   const tabCompletionById = {
     identity: teamNameValid && teamStadiumValid,
     kits: kitSetupComplete,
-    players: teamSelectorComplete,
-    teamSelection: teamSelectionComplete,
+    teamSelection: teamSelectorComplete && teamSelectionComplete,
+    coaches: coachSelectionComplete,
   };
-  const setupProgressItems = CAREER_START_TABS.map((tab) => ({
-    id: tab.id,
-    label: tab.label.replace(/^\d+\.\s*/, ""),
-    complete: Boolean(tabCompletionById[tab.id]),
-  }));
-  const incompleteSetupCount = setupProgressItems.filter((item) => !item.complete).length;
 
   const updateKitState = (patch) => {
     Object.entries(patch).forEach(([key, value]) => {
@@ -269,6 +277,11 @@ const CareerStart = () => {
   };
   const updateTeamManagement = (nextTeamManagement) => {
     setGameValue("career.setup.teamManagement", nextTeamManagement);
+  };
+  const updateCoachSelectorState = (nextCoachSelectorState) => {
+    const nextSelectedCoaches = getSelectedCoachesFromState(nextCoachSelectorState);
+    setGameValue("career.setup.coachSelector", nextCoachSelectorState);
+    setGameValue("career.setup.coaches", nextSelectedCoaches);
   };
   const hasPreviousTab = activeTabIndex > 0;
   const hasNextTab = activeTabIndex >= 0 && activeTabIndex < CAREER_START_TABS.length - 1;
@@ -305,6 +318,7 @@ const CareerStart = () => {
       updatedAt: new Date().toISOString(),
     });
     setGameValue("career.calendar", DEFAULT_CAREER_CALENDAR_RESET);
+    setGameValue("career.cards", DEFAULT_CAREER_CARDS_RESET);
 
     navigate("/career/generating");
   };
@@ -336,36 +350,21 @@ const CareerStart = () => {
             homeKit={homeKit}
             onUpdateKit={updateKitState}
           />
-
-          <div className="careerStart__savedPreview">
-            <h3 className="careerStart__kitTitle">Saved Shirt Decoder Preview</h3>
-            <p className="careerStart__hint">
-              These renders are built from saved state values only using the reusable shirt renderer.
-            </p>
-            <div className="careerStart__decodedGrid">
-              <div className="careerStart__decodedCard">
-                <span>Saved Home</span>
-                <ShirtRenderer shirt={homeKit} size="small" />
-              </div>
-              <div className="careerStart__decodedCard">
-                <span>Saved Away</span>
-                <ShirtRenderer shirt={awayKit} size="small" />
-              </div>
-            </div>
-          </div>
         </section>
       );
     }
 
-    if (activeTabId === "players") {
+    if (activeTabId === "teamSelection") {
       return (
         <section className="careerStart__section">
-          <h2 className="careerStart__sectionTitle">Players</h2>
-          <CareerTeamSelector
-            onUpdatePlayers={updatePlayers}
+          <CareerStartTeamSelectionTab
             onUpdateSelectorState={(nextSelectorState) => setGameValue("career.setup.teamSelector", nextSelectorState)}
+            onUpdatePlayers={updatePlayers}
+            onUpdateTeamManagement={updateTeamManagement}
+            players={players}
             selectorState={teamSelector}
             teamKit={selectorTeamKit}
+            teamManagementSetup={teamManagementSetup}
           />
         </section>
       );
@@ -373,11 +372,9 @@ const CareerStart = () => {
 
     return (
       <section className="careerStart__section">
-        <CareerStartTeamSelectionTab
-          onUpdateTeamManagement={updateTeamManagement}
-          players={players}
-          teamKit={selectorTeamKit}
-          teamManagementSetup={teamManagementSetup}
+        <CareerStartCoachSelectionTab
+          coachSelectorState={coachSelector}
+          onUpdateCoachSelectorState={updateCoachSelectorState}
         />
       </section>
     );
@@ -399,11 +396,11 @@ const CareerStart = () => {
         Step {activeStepNumber} of {CAREER_START_TABS.length}
       </p>
       <Button
-        variant={BUTTON_VARIANT.SECONDARY}
-        disabled={!hasNextTab}
-        onClick={() => goToAdjacentTab(1)}
+        variant={canStartCareer ? BUTTON_VARIANT.PRIMARY : BUTTON_VARIANT.SECONDARY}
+        disabled={isGenerationActive || (!canStartCareer && !hasNextTab)}
+        onClick={canStartCareer ? startCareerGeneration : () => goToAdjacentTab(1)}
       >
-        Next
+        {canStartCareer ? (isGenerationActive ? "Generating Career..." : "Start Career") : "Next"}
       </Button>
     </div>
   );
@@ -411,77 +408,52 @@ const CareerStart = () => {
   return (
     <PageLayout
       title="Career Setup"
-      subtitle="Create your club identity, configure kits, and select your starting seven players."
+      subtitle="Create your club identity, configure kits, select your team, and choose starting coaches."
     >
       <section className="careerStart__wizard">
         <nav aria-label="Career setup tabs" className="careerStart__tabNav">
-          {CAREER_START_TABS.map((tab) => (
-            <button
-              type="button"
-              className={`careerStart__tabBtn${
-                activeTabId === tab.id ? " careerStart__tabBtn--active" : ""
-              }`}
-              key={tab.id}
-              onClick={() => setActiveTabId(tab.id)}
-            >
-              <span className="careerStart__tabLabel">{tab.label}</span>
-              <span className={`careerStart__tabStatus${tabCompletionById[tab.id] ? " careerStart__tabStatus--done" : ""}`}>
-                {tabCompletionById[tab.id] ? "Done" : "Pending"}
-              </span>
-            </button>
-          ))}
+          {CAREER_START_TABS.map((tab) => {
+            const tabComplete = Boolean(tabCompletionById[tab.id]);
+
+            return (
+              <button
+                type="button"
+                className={`careerStart__tabBtn${
+                  activeTabId === tab.id ? " careerStart__tabBtn--active" : ""
+                }`}
+                key={tab.id}
+                onClick={() => setActiveTabId(tab.id)}
+              >
+                <span className="careerStart__tabLabel">{tab.label}</span>
+                <span className={`careerStart__tabStatus${tabComplete ? " careerStart__tabStatus--done" : ""}`}>
+                  <span aria-hidden="true" className="careerStart__tabStatusIcon">
+                    {tabComplete ? "\u2713" : "\u2715"}
+                  </span>
+                  <span>{tabComplete ? "Complete" : "Pending"}</span>
+                </span>
+              </button>
+            );
+          })}
         </nav>
+
+        <section className="careerStart__actions">
+          <Button
+            className="careerStart__startButton"
+            variant={BUTTON_VARIANT.PRIMARY}
+            onClick={startCareerGeneration}
+            disabled={!canStartCareer || isGenerationActive}
+          >
+            {isGenerationActive ? "Generating Career..." : "Start Career"}
+          </Button>
+        </section>
 
         {renderWizardStepNavigation("top")}
 
         {renderActiveTab()}
-
-        {renderWizardStepNavigation("bottom")}
-      </section>
-
-      <section className="careerStart__actions">
-        <div aria-live="polite" className="careerStart__setupChecklist">
-          <p className="careerStart__setupChecklistTitle">
-            {isGenerationActive
-              ? "Career generation is currently running."
-              : incompleteSetupCount === 0
-              ? "All setup steps are complete."
-              : `${incompleteSetupCount} setup step${incompleteSetupCount === 1 ? "" : "s"} still need completion.`}
-          </p>
-          <ul className="careerStart__setupChecklistList">
-            {setupProgressItems.map((item) => (
-              <li
-                className={`careerStart__setupChecklistItem${
-                  item.complete ? " careerStart__setupChecklistItem--complete" : " careerStart__setupChecklistItem--pending"
-                }`}
-                key={item.id}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`careerStart__setupChecklistIcon${
-                    item.complete
-                      ? " careerStart__setupChecklistIcon--complete"
-                      : " careerStart__setupChecklistIcon--pending"
-                  }`}
-                >
-                  {item.complete ? "✓" : "✕"}
-                </span>
-                <span className="careerStart__setupChecklistLabel">{item.label}</span>
-                <span className="careerStart__setupChecklistState">{item.complete ? "Complete" : "Pending"}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <Button
-          variant={BUTTON_VARIANT.PRIMARY}
-          onClick={startCareerGeneration}
-          disabled={!canStartCareer || isGenerationActive}
-        >
-          {isGenerationActive ? "Generating Career..." : "Start Career"}
-        </Button>
       </section>
     </PageLayout>
   );
 };
 
 export default CareerStart;
+

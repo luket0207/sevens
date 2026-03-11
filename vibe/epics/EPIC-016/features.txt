@@ -1,0 +1,406 @@
+EPIC-016 - Button System Visual Refresh
+
+Overview
+The goal of this epic is to refresh the button system across the game so buttons are much more visually distinct, more modern, and more clearly interactive.
+
+At the moment, buttons are blending too much into the surrounding UI because they share too much of the same colour language and general shape as the backgrounds.
+
+This epic will:
+- redesign the primary, secondary, and tertiary button styles
+- move buttons to their own complementary palette
+- improve their shape and borders
+- add a stronger modern/stylish visual identity
+- add a more impressive hover effect
+- preserve button size and position during hover
+
+This epic is about:
+- button styling system
+- shared reusable button variants
+- hover/focus/active visual polish
+- improving perceived affordance
+
+This epic is not about:
+- changing button behaviour logic
+- changing page flows
+- changing layout spacing
+- adding new button types beyond the current primary/secondary/tertiary set
+
+================================================================
+Design Intent
+================================================================
+
+Current background palette:
+- $primaryBackground: #115752
+- $secondaryBackground: #2e7d64
+- $tertiaryBackground: #d5ceb5
+
+The updated buttons should use a complementary palette built around:
+- teal
+- light blue
+- blue-teal
+- aqua/cyan leaning accents where appropriate
+
+Important visual goal:
+- buttons must stand out from the backgrounds
+- they must read clearly as buttons
+- they should feel modern and stylish
+- they should still fit the rest of the game's visual language
+
+================================================================
+Core Button Styling Rules
+================================================================
+
+Buttons to update:
+- Primary
+- Secondary
+- Tertiary
+
+Shared styling goals:
+- stronger visual separation from page backgrounds
+- clearer button silhouette
+- new shape treatment
+- visible border treatment
+- more modern finish
+- consistent variant hierarchy
+
+Hover rules:
+- impressive hover effect
+- no scaling on hover
+- no movement on hover
+- button width/height/position must remain fixed
+- hover should feel premium through colour, glow, sheen, border, shadow, inner highlight, or similar visual treatment
+
+Interaction states to consider:
+- default
+- hover
+- active/pressed
+- disabled
+- focus-visible
+
+Accessibility goal:
+- text contrast should remain strong and readable
+- the button should remain obviously clickable in all supported states
+
+================================================================
+Palette Direction
+================================================================
+
+The new button palette should complement the existing background palette without blending into it.
+
+Direction:
+- more teal/light-blue than the existing background palette
+- visually brighter and clearer than the background surfaces
+- hierarchy should still be obvious between primary, secondary, and tertiary
+
+Do not lock the implementation to exactly one hardcoded colour per variant yet if the system benefits from a small token set, but the result should clearly trend toward:
+- rich teal-blue for primary
+- lighter blue-teal for secondary
+- softer pale teal/light neutral for tertiary
+
+The final colours should be chosen to:
+- contrast with #115752
+- contrast with #2e7d64
+- still sit harmoniously beside #d5ceb5
+
+================================================================
+Shape and Border Direction
+================================================================
+
+Buttons should no longer feel like simple flat blocks that blend into panels.
+
+New shape goals:
+- more modern silhouette
+- more intentional border radius
+- more distinctive outline/border
+- premium UI feel
+
+Border goals:
+- every button should have a clear border or outline treatment
+- border should contribute to the button identity, not just be decorative noise
+- border can become more vivid or luminous on hover/focus if appropriate
+
+The styling should feel deliberate and polished rather than generic.
+
+================================================================
+Hover Effect Direction
+================================================================
+
+Hover effect should feel impressive without changing layout.
+
+Allowed hover ideas include:
+- animated gradient shift
+- sheen/gloss sweep
+- glow or edge-light effect
+- stronger border illumination
+- inner light/shadow change
+- subtle background transition
+- layered pseudo-element effects
+
+Not allowed:
+- scale change
+- translate/movement
+- layout shift
+- wobble or bounce
+- any effect that changes size or position
+
+The hover should make the button feel interactive and premium while remaining stable.
+
+================================================================
+System Requirements
+================================================================
+
+This should be implemented as a shared button styling system, not one-off per page.
+
+Requirements:
+- all primary buttons should share one consistent variant style
+- all secondary buttons should share one consistent variant style
+- all tertiary buttons should share one consistent variant style
+- keep the styling maintainable and reusable
+- use shared tokens/mixins/placeholders/utility structure where appropriate for the codebase
+
+The system should be easy to extend later if additional button variants are needed.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1601 - Define New Shared Button Variant Design Tokens
+----------------------------------------------------------------
+
+Description
+Create the shared design token foundation for the refreshed button system.
+
+Requirements
+- Define the shared visual tokens needed for:
+  - primary buttons
+  - secondary buttons
+  - tertiary buttons
+- Include at minimum:
+  - background colours
+  - text colours
+  - border colours
+  - hover-state colours/effects
+  - disabled-state styling
+  - focus-visible styling
+- Ensure the palette complements:
+  - #115752
+  - #2e7d64
+  - #d5ceb5
+- Keep the token structure centralised and reusable.
+
+Acceptance Criteria
+- A centralised token set exists for the 3 button variants.
+- The palette clearly complements the existing background colours.
+- Tokens are reusable across the UI.
+
+----------------------------------------------------------------
+FEAT-1602 - Redesign Primary Button Style
+----------------------------------------------------------------
+
+Description
+Create the new visual style for primary buttons.
+
+Requirements
+- Primary buttons should feel the most prominent and action-driving.
+- Use the new teal/light-blue complementary direction.
+- Update:
+  - fill/background treatment
+  - text treatment
+  - border treatment
+  - border radius/shape
+  - shadow/highlight treatment
+- Ensure primary buttons stand out clearly from the existing page backgrounds.
+- Keep the result modern and stylish.
+
+Acceptance Criteria
+- Primary buttons have a clearly refreshed style.
+- They visually stand apart from surrounding panels/backgrounds.
+- They are recognisable as the strongest call-to-action buttons.
+
+----------------------------------------------------------------
+FEAT-1603 - Redesign Secondary Button Style
+----------------------------------------------------------------
+
+Description
+Create the new visual style for secondary buttons.
+
+Requirements
+- Secondary buttons should remain clearly interactive but sit below primary in emphasis.
+- Use the same palette family and style system as primary, with a reduced emphasis hierarchy.
+- Update:
+  - fill/background treatment
+  - text treatment
+  - border treatment
+  - border radius/shape
+  - shadow/highlight treatment
+- Keep them clearly distinct from both background panels and primary buttons.
+
+Acceptance Criteria
+- Secondary buttons have a refreshed style.
+- They fit the same system as primary buttons.
+- Their emphasis level is clearly below primary but still strong and button-like.
+
+----------------------------------------------------------------
+FEAT-1604 - Redesign Tertiary Button Style
+----------------------------------------------------------------
+
+Description
+Create the new visual style for tertiary buttons.
+
+Requirements
+- Tertiary buttons should still look clearly like buttons, not plain text or passive UI.
+- They should fit the same design system while reading as the least prominent of the 3 variants.
+- Update:
+  - fill/background treatment
+  - text treatment
+  - border treatment
+  - border radius/shape
+  - shadow/highlight treatment
+- Ensure tertiary buttons still stand out from light backgrounds such as the beige tones in the UI.
+
+Acceptance Criteria
+- Tertiary buttons have a refreshed style.
+- They remain clearly clickable.
+- They fit the same button family while reading as the lightest-emphasis variant.
+
+----------------------------------------------------------------
+FEAT-1605 - Add Stable Premium Hover Effects to All Button Variants
+----------------------------------------------------------------
+
+Description
+Add a visually impressive hover effect to the button system without changing button size or position.
+
+Requirements
+- Add a premium hover effect to primary, secondary, and tertiary buttons.
+- The effect must not:
+  - scale the button
+  - move the button
+  - change its layout footprint
+- The hover should feel impressive using visual-only changes such as:
+  - gradient shift
+  - border glow
+  - sheen sweep
+  - shadow/highlight enhancement
+  - layered pseudo-element transition
+- Keep the hover treatment consistent across the system while allowing variant-specific tuning.
+
+Acceptance Criteria
+- All 3 button variants have a strong hover effect.
+- Hover produces no movement or scale change.
+- Buttons remain fixed in size and position while feeling more interactive.
+
+----------------------------------------------------------------
+FEAT-1606 - Add Focus-Visible and Active State Styling
+----------------------------------------------------------------
+
+Description
+Ensure the refreshed button system also feels polished in keyboard and pressed states.
+
+Requirements
+- Add clear focus-visible styling for accessibility and keyboard navigation.
+- Add active/pressed state styling that feels intentional and tactile.
+- Keep these states aligned with the new palette and hover language.
+- Active styling should not rely on movement/position shift.
+
+Acceptance Criteria
+- Buttons have a clear focus-visible state.
+- Buttons have a polished active/pressed state.
+- These states remain visually consistent with the rest of the redesign.
+
+----------------------------------------------------------------
+FEAT-1607 - Add Disabled State Styling That Still Reads Clearly
+----------------------------------------------------------------
+
+Description
+Ensure disabled buttons remain readable and clearly disabled under the new visual system.
+
+Requirements
+- Update disabled styling for primary, secondary, and tertiary buttons.
+- Disabled buttons should:
+  - remain readable
+  - clearly look inactive
+  - still fit the new design language
+- Avoid making disabled buttons blend back into the page background.
+
+Acceptance Criteria
+- Disabled buttons are clearly distinguishable from enabled buttons.
+- Disabled text remains readable.
+- Disabled styling still fits the new system.
+
+----------------------------------------------------------------
+FEAT-1608 - Refactor Shared Button Styling into Reusable System
+----------------------------------------------------------------
+
+Description
+Implement the refresh as a reusable button styling system rather than ad hoc per-page overrides.
+
+Requirements
+- Refactor button styling into shared reusable styles for:
+  - primary
+  - secondary
+  - tertiary
+- Keep the implementation maintainable and easy to extend.
+- Use the project’s preferred shared styling patterns where appropriate.
+- Avoid duplicating style logic across pages/components.
+
+Acceptance Criteria
+- The button redesign is implemented as a shared system.
+- Button styles are reusable and maintainable.
+- Variant logic is not duplicated unnecessarily.
+
+----------------------------------------------------------------
+FEAT-1609 - Apply New Button Styles Across Existing UI
+----------------------------------------------------------------
+
+Description
+Roll the new button variants into the existing interface where the current primary/secondary/tertiary buttons are used.
+
+Requirements
+- Replace the old visual button styling with the new system across existing screens using these button variants.
+- Preserve current button behaviour and layout.
+- Ensure the updated styles work cleanly against the current page backgrounds and panels.
+
+Acceptance Criteria
+- Existing primary/secondary/tertiary buttons use the new visual system.
+- Buttons now stand out more clearly as buttons.
+- Existing interactions still work as before.
+
+----------------------------------------------------------------
+FEAT-1610 - Add Visual Review / Debug Support for Button Variants
+----------------------------------------------------------------
+
+Description
+Provide a simple way to review all button variants and states together during implementation.
+
+Requirements
+- Add a lightweight development/demo surface or review area for:
+  - primary / secondary / tertiary
+  - default state
+  - hover state
+  - active state
+  - disabled state
+  - focus-visible state
+- This is only to help implementation/review and does not need to become a permanent user-facing page.
+
+Acceptance Criteria
+- Developers can inspect all 3 button variants and their key states in one place.
+- The new system is easier to validate before broad rollout.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- Primary, secondary, and tertiary buttons all use a refreshed visual system.
+- The new palette clearly complements:
+  - #115752
+  - #2e7d64
+  - #d5ceb5
+- Buttons visually stand out from surrounding backgrounds and panels.
+- Buttons use a more modern, stylish shape and clear border treatment.
+- All 3 variants have an impressive hover effect.
+- Hover does not change button size or position.
+- Focus-visible, active, and disabled states are also polished and clear.
+- The redesign is implemented as a reusable shared button system across the UI.

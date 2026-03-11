@@ -1,0 +1,173 @@
+EPIC-014 Testing Log
+Date: 2026-03-10
+
+FEAT-1401 / FEAT-1402 - Core model + type/colour config
+Manual steps:
+1. Open `src/game/cards/constants/cardConstants.js`.
+2. Verify 4 top-level card types and staff subtypes exist.
+3. Verify type-colour mapping exists and matches:
+   - Training blue
+   - Scouting yellow
+   - Academy orange
+   - Staff red
+Expected:
+- Shared card config is centralized and reusable.
+
+FEAT-1403 / FEAT-1404 / FEAT-1405 / FEAT-1406 - Fixed card tables
+Manual steps:
+1. Open card definition files:
+   - `trainingCardDefinitions.js`
+   - `scoutingCardDefinitions.js`
+   - `academyCardDefinitions.js`
+   - `staffUpgradeCardDefinitions.js`
+2. Verify required IDs/names/rarities/effects/value columns are present.
+Expected:
+- Fixed card tables are present in code and consumable by reward generation.
+
+FEAT-1407 / FEAT-1408 - Staff member generation + 50/50 subtype split
+Manual steps:
+1. Trigger repeated rewards via debug button in calendar debug panel.
+2. Inspect `Card Debug` panel and offered Staff cards.
+3. Confirm:
+   - staff cards split between staff_member and staff_upgrade over multiple samples
+   - rarity remains aligned with rolled staff rarity
+   - procedural staff cards include generated attribute payload and overall rating.
+Expected:
+- 50/50 subtype split appears over repeated samples.
+- Procedural staff payload follows rarity/role-preference-driven generation.
+
+FEAT-1409 / FEAT-1410 - Reward matrix + resolver
+Manual steps:
+1. Trigger card reward flow from:
+   - post-match path (`/match` resolve)
+   - debug button path.
+2. Check `Card Debug` panel:
+   - reward context
+   - matrix row used
+   - rolled bucket type/rarity data.
+Expected:
+- Resolver reads row by league/form/result and outputs weighted type+rarity rolls.
+
+FEAT-1411 / FEAT-1412 - 3-card offers + mandatory selection flow
+Manual steps:
+1. Complete a player match in `/match`.
+2. Confirm app navigates to `/career/card-reward`.
+3. Confirm exactly 3 offered cards are shown.
+4. Try to return to calendar routes before choosing.
+5. Choose one offered card.
+Expected:
+- Reward choice is mandatory before calendar return.
+- Exactly one chosen card is added to library.
+
+FEAT-1413 / FEAT-1414 / FEAT-1415 - Library under calendar + sort/filter/discard
+Manual steps:
+1. Return to `/career/home`.
+2. Verify Card Library appears under calendar area.
+3. Verify horizontal scrolling with enough cards.
+4. Test sorting:
+   - name
+   - type
+   - rarity
+5. Test filtering:
+   - by type
+   - by rarity
+6. Discard cards from library.
+Expected:
+- Library updates and persisted contents reflect sort/filter/discard actions.
+
+FEAT-1416 - Reroll via library discard
+Manual steps:
+1. Enter reward choice screen with at least one existing library card.
+2. In reroll section, click `Discard + Reroll` on a library card.
+3. Confirm:
+   - selected library card is removed
+   - fresh set of 3 offered cards appears
+   - user can still choose exactly one final reward card.
+Expected:
+- 1 discarded library card produces 1 reroll.
+
+FEAT-1417 / FEAT-1420 - Debug trigger + debug visibility
+Manual steps:
+1. On `/career/home`, open calendar debug section.
+2. Click `Debug Card Reward`.
+3. Choose a card and return.
+4. Inspect debug JSON blocks for:
+   - reward row/context
+   - roll outputs
+   - staff subtype debug
+   - reroll usage
+   - card library snapshot.
+Expected:
+- Debug trigger runs normal flow and chosen card is added to library.
+- Required debug data is visible.
+
+FEAT-1418 - Persistent state
+Manual steps:
+1. Add cards to library via match/debug reward flows.
+2. Navigate across pages (`/career/home`, `/cup-draw`, `/career/day-results`, `/team-management`) and back.
+Expected:
+- Library and pending reward state persist across navigation in current career.
+
+FEAT-1419 - Effects out of scope
+Manual steps:
+1. Acquire cards of each type and review flow behavior.
+Expected:
+- Cards are generated/stored/displayed/discarded only.
+- No gameplay effect execution is applied.
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing repository-wide lint baseline in engine/info files (outside this epic’s scope).
+
+Automated tests still needed:
+- Unit tests for reward matrix lookup and weighted bucket resolution.
+- Unit tests for staff subtype split and procedural band constraints.
+- Unit tests for reroll discard logic and mandatory choice gating.
+- Integration test for post-match -> reward choice -> continuation route flow.
+
+Test status: passed (manual/build), failed (lint baseline unchanged)
+
+Bug Fix: BUG-001 (Debug reward context inputs)
+Manual steps:
+1. Open `/career/home` and expand Calendar Debug.
+2. In debug reward controls, set:
+   - league tier
+   - form wins
+   - match result
+3. Click `Debug Card Reward`.
+4. In reward choice/debug output, verify generated reward context reflects selected values.
+5. Repeat with different combinations and confirm each trigger follows selected inputs.
+Expected:
+- Debug trigger uses the selected input values for reward matrix lookup and offer generation.
+- Chosen reward still follows normal add-to-library flow.
+
+Automated checks run for bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing repository-wide baseline issues outside EPIC-014 scope (engine/info prop-types and hook warnings/errors).
+
+Automated tests still needed for this bug:
+- Unit test for debug-trigger context override sanitization.
+- Integration test for `/career/home` debug controls -> `/career/card-reward` context propagation.
+
+Bug fix test status: passed (manual/build), failed (lint baseline unchanged)
+
+Bug Fix: BUG-002 (Card tile fixed height and flex-start alignment)
+Manual steps:
+1. Open `/career/card-reward`.
+2. Inspect the offered cards row with cards that have different text lengths.
+3. Verify each card tile has equal height and top alignment.
+4. Open `/career/home` and inspect Card Library horizontal scroller.
+5. Verify library cards also keep equal height and align from `flex-start`.
+Expected:
+- Card tiles are fixed at `200px` height.
+- Reward/library card rows keep consistent alignment and do not vertically resize based on content.
+
+Automated checks run for bug fix:
+- `npm run build`: passed.
+- `npm run lint`: failed due pre-existing repository-wide lint baseline issues outside EPIC-014 scope (engine/info prop-types and hook warnings/errors).
+
+Automated tests still needed for this bug:
+- Visual regression test for card tile fixed-height layout in reward and library scrollers.
+- Component-level style/layout assertion for `careerCardTile` fixed height and scroller alignment behavior.
+
+Bug fix test status: passed (manual/build), failed (lint baseline unchanged)

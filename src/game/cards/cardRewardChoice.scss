@@ -1,0 +1,34 @@
+@use "../../assets/scss/ui/import" as *;
+
+.cardRewardChoice {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cardRewardChoice__panel {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($secondaryBackground, 0.88);
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+
+  p {
+    margin: 0;
+    color: rgba($lightText, 0.9);
+  }
+}
+
+.cardRewardChoice__offers,
+.cardRewardChoice__library {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  min-height: 200px;
+}
+
+.cardRewardChoice__empty {
+  color: rgba($lightText, 0.82);
+}

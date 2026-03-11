@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import { createDefaultCareerCardState } from "../../game/cards/state/cardState";
 
 /*
 Usage:
@@ -16,9 +17,9 @@ console.log(gameState.ui.top);
 const GameContext = createContext(null);
 
 const DEFAULT_SHIRT = Object.freeze({
-  pattern: "solid",
-  mainColour: "#115752",
-  detailColour: "#d5ceb5",
+  pattern: "",
+  mainColour: "",
+  detailColour: "",
 });
 
 const DEFAULT_CAREER_SETUP = Object.freeze({
@@ -26,13 +27,13 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
   teamStadium: "",
   homeKit: DEFAULT_SHIRT,
   awayKit: {
-    pattern: "vertical-stripes",
-    mainColour: "#d5ceb5",
-    detailColour: "#115752",
+    pattern: "",
+    mainColour: "",
+    detailColour: "",
   },
-  homeColour: "#115752",
-  awayColour: "#d5ceb5",
-  goalkeeperKit: "orange",
+  homeColour: "",
+  awayColour: "",
+  goalkeeperKit: "",
   players: [],
   teamSelector: {
     generatedAt: "",
@@ -47,6 +48,14 @@ const DEFAULT_CAREER_SETUP = Object.freeze({
     },
     selectedGoalkeeper: null,
     selectedOutfieldPlayers: [],
+    isComplete: false,
+  },
+  coaches: [],
+  coachSelector: {
+    generatedAt: "",
+    sessionId: "",
+    choiceGroups: [],
+    selectedByGroup: {},
     isComplete: false,
   },
   teamManagement: {
@@ -233,6 +242,8 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
   },
 });
 
+const DEFAULT_CAREER_CARDS = Object.freeze(createDefaultCareerCardState());
+
 const DEFAULT_GAME_STATE = Object.freeze({
   player: {
     health: 100,
@@ -249,6 +260,7 @@ const DEFAULT_GAME_STATE = Object.freeze({
     generation: DEFAULT_CAREER_GENERATION,
     world: DEFAULT_CAREER_WORLD,
     calendar: DEFAULT_CAREER_CALENDAR,
+    cards: DEFAULT_CAREER_CARDS,
   },
 });
 

@@ -184,3 +184,22 @@ Bug Fix: BUG-007 + BUG-008 (Calendar tooltip-trigger border removal and 40px wid
   - `vibe/epics/EPIC-011/bugs.txt`
 - Tradeoffs/follow-up:
   - Override is intentionally scoped to calendar tooltip triggers; shared tooltip style remains unchanged for other areas.
+
+Bug Fix: BUG-009 + BUG-010 (Career Start actions placement and tab-level setup feedback)
+- What was implemented:
+  - Moved `careerStart__actions` so it now renders directly under `careerStart__tabNav` inside the wizard.
+  - Removed the bottom wizard step navigation render (`careerStart__stepNav--bottom`).
+  - Removed the standalone `careerStart__setupChecklist` block and checklist-only derived values.
+  - Moved completion feedback to tab headers by adding per-tab status icon + state text (`Complete`/`Pending`).
+  - Removed obsolete checklist styles and added tab status icon styles.
+- Engine checklist considered:
+  - `button`: reused existing engine `Button` for wizard navigation and Start Career action; no new control components required.
+  - `gameContext`: reused existing career setup state shape to derive tab completion status.
+  - `bars`, `modal`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer`: reviewed and not required for this layout/status presentation update.
+- Files changed:
+  - `src/game/careerStart/careerStart.jsx`
+  - `src/game/careerStart/careerStart.scss`
+  - `vibe/epics/EPIC-011/bugs.txt`
+- Tradeoffs/follow-up:
+  - Setup progress is now visible inline on tabs and no longer duplicated in a separate checklist panel.
+

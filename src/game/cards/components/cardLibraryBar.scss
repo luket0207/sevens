@@ -1,0 +1,62 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.cardLibraryBar {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 12px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.cardLibraryBar__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+
+  h3 {
+    margin: 0;
+  }
+
+  p {
+    margin: 0.12rem 0 0;
+    color: rgba($lightText, 0.84);
+  }
+}
+
+.cardLibraryBar__controls {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+
+  label {
+    display: grid;
+    gap: 0.18rem;
+    font-size: 0.75rem;
+    color: rgba($lightText, 0.84);
+  }
+
+  select {
+    min-width: 110px;
+    border-radius: 8px;
+    border: 1px solid rgba($lightText, 0.24);
+    background: rgba($siteBackground, 0.5);
+    color: $lightText;
+    padding: 0.3rem 0.4rem;
+  }
+}
+
+.cardLibraryBar__scroller {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  min-height: 200px;
+}
+
+.cardLibraryBar__empty {
+  color: rgba($lightText, 0.8);
+  margin: 0;
+}

@@ -1,0 +1,176 @@
+EPIC-014 Implementation Log
+Date: 2026-03-10
+
+Scope implemented:
+- Replaced the previous EPIC-014 training-first direction with the new roguelike card foundation from the updated feature file.
+
+Features implemented:
+- FEAT-1401 / FEAT-1402
+  - Added a unified card model and central card config:
+    - 4 top-level types (Training, Scouting, Academy, Staff)
+    - staff subtypes (Staff Member / Staff Upgrade)
+    - rarity model (Common / Uncommon / Rare)
+    - central card colour mapping by type.
+- FEAT-1403 / FEAT-1404 / FEAT-1405 / FEAT-1406
+  - Added fixed definition tables for:
+    - Training cards
+    - Scouting cards
+    - Academy cards
+    - Staff upgrade cards
+  - Definitions are stored as reusable card data and consumed by the reward system.
+- FEAT-1407 / FEAT-1408
+  - Implemented procedural staff member generator using rarity + role preference bands.
+  - Generator produces:
+    - role preference
+    - Youth set (Scouting/Judgement/Youth Training)
+    - Training set (GK/DF/MD/AT Training)
+    - overall rating computed from generated numeric attributes
+  - Implemented 50/50 staff split:
+    - Staff Member vs Staff Upgrade
+    - keeps the originally rolled staff rarity.
+- FEAT-1409 / FEAT-1410
+  - Added full reward matrix configuration and lookup by:
+    - league tier
+    - form wins bucket
+    - match result
+  - Added reward resolver that rolls one weighted type+rarity bucket per call.
+- FEAT-1411 / FEAT-1412
+  - Added 3 independent reward-roll generation and post-match mandatory choice flow.
+  - Added new reward route/page:
+    - `/career/card-reward`
+  - Match resolution now generates and stores pending 3-card offers, then routes to mandatory choice screen before returning to calendar flow.
+- FEAT-1413 / FEAT-1414 / FEAT-1415
+  - Added Card Library under the calendar (same calendar panel width).
+  - Library supports:
+    - horizontal scrolling
+    - sorting (name/type/rarity)
+    - filtering (type + rarity)
+    - discard/removal from library.
+- FEAT-1416
+  - Added reroll flow in reward-choice page:
+    - discard exactly 1 existing library card
+    - generate fresh 3-card offer with same reward context
+    - still choose exactly 1 resulting reward card.
+- FEAT-1417
+  - Added debug trigger in calendar debug panel:
+    - "Debug Card Reward" button
+    - opens normal 3-card reward flow
+    - chosen card still follows normal add-to-library path.
+- FEAT-1418
+  - Added persistent `career.cards` state in game context and career reset flow.
+- FEAT-1419
+  - Card gameplay effects are intentionally not executed; cards are generation/storage/display/discard/reward-only.
+- FEAT-1420
+  - Added lightweight debug visibility:
+    - reward context
+    - matrix row
+    - roll outputs
+    - staff subtype rolls
+    - procedural staff debug
+    - reroll count
+    - library JSON in debug panel.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for persistent card library + pending reward flow state.
+- `button` for reward selection, discard/reroll actions, and debug trigger.
+- `rng` for weighted reward rolls, fixed-definition picks, staff subtype 50/50 rolls, procedural staff generation.
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required for this card-foundation scope; direct route/page and inline controls were sufficient.
+
+Files changed:
+- `src/assets/scss/ui/colours.scss`
+- `src/engine/gameContext/gameContext.jsx`
+- `src/routes.jsx`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerHome/careerHome.scss`
+- `src/game/match/match.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+- `src/game/cards/constants/cardConstants.js`
+- `src/game/cards/state/cardState.js`
+- `src/game/cards/data/trainingCardDefinitions.js`
+- `src/game/cards/data/scoutingCardDefinitions.js`
+- `src/game/cards/data/academyCardDefinitions.js`
+- `src/game/cards/data/staffUpgradeCardDefinitions.js`
+- `src/game/cards/data/rewardMatrix.js`
+- `src/game/cards/utils/cardModel.js`
+- `src/game/cards/utils/weightedRoll.js`
+- `src/game/cards/utils/fixedDefinitionResolvers.js`
+- `src/game/cards/utils/staffMemberGenerator.js`
+- `src/game/cards/utils/cardRewardGenerator.js`
+- `src/game/cards/utils/cardLibrary.js`
+- `src/game/cards/components/cardTile.jsx`
+- `src/game/cards/components/cardTile.scss`
+- `src/game/cards/components/cardLibraryBar.jsx`
+- `src/game/cards/components/cardLibraryBar.scss`
+- `src/game/cards/cardRewardChoice.jsx`
+- `src/game/cards/cardRewardChoice.scss`
+- `src/game/cards/index.js`
+- `vibe/epics/EPIC-014/implementation.txt`
+- `vibe/epics/EPIC-014/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Training card table in this epic is stored as exact data values (`statValues` + raw text), but effect execution remains intentionally out of scope.
+- Reward flow currently triggers for the player match path (`/match` debug match resolution), which is the existing match flow in this codebase.
+- If desired later, reward choice UX can be moved into modal flow, but route-gated flow is clearer for mandatory selection and reroll interactions.
+
+Bug Fix: BUG-001 (Debug reward context inputs for card reward decision)
+- What was implemented:
+  - Added debug reward context controls in Calendar Debug panel so reward inputs can be manually changed before triggering:
+    - league tier
+    - form wins
+    - match result
+  - Wired selected values into the existing `triggerDebugCardReward` callback without changing the normal reward generation flow.
+  - Added value sanitization (league 1-5, form 0-5, valid match result enum) before generating offers.
+  - Added `lastDebugInputContext` to card debug state for easier verification in debug JSON output.
+- Engine checklist considered:
+  - `gameContext`: used existing `setGameState` flow for persisted debug metadata and pending reward choice state.
+  - `button`: reused existing engine button in debug panel for trigger action.
+  - `rng`: unchanged; existing reward generator rolls remain the source of randomness.
+  - `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`: reviewed and not required for this debug-control enhancement.
+- Files changed:
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+  - `src/game/careerHome/careerHome.jsx`
+  - `src/game/cards/state/cardState.js`
+  - `vibe/epics/EPIC-014/bugs.txt`
+- Tradeoffs/follow-up:
+  - Debug input controls initialize from current default context and are intended for manual override testing rather than gameplay UI.
+
+Bug Fix: BUG-002 (Fixed card tile height and flex-start row alignment)
+- What was implemented:
+  - Updated card tile layout to a fixed height of `200px` with consistent width/flex basis to prevent content-driven row size variance.
+  - Switched card tile internal layout to column flex and pinned action controls to the bottom for stable card structure.
+  - Added text clamping for card descriptive lines to avoid overflow affecting tile height.
+  - Updated reward/library horizontal scrollers to:
+    - align items at `flex-start`
+    - reserve `min-height: 200px` to match fixed tile height.
+- Engine checklist considered:
+  - `button`: existing engine button remained reused inside card action area; no new interaction components required.
+  - `gameContext`, `rng`: reviewed and unchanged (styling-only bug fix).
+  - `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer`: reviewed and not required for this visual layout correction.
+- Files changed:
+  - `src/game/cards/components/cardTile.scss`
+  - `src/game/cards/components/cardLibraryBar.scss`
+  - `src/game/cards/cardRewardChoice.scss`
+  - `vibe/epics/EPIC-014/bugs.txt`
+- Tradeoffs/follow-up:
+  - Long description text now truncates within fixed tile height; this is intentional to preserve row alignment in scrolling lists.

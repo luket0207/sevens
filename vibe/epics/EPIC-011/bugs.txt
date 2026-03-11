@@ -230,3 +230,67 @@ Files changed
 
 Status: fixed
 
+BUG-009 - Move career setup actions under tab nav and remove bottom step nav
+
+Repro steps
+1. Open `/career/start`.
+2. Inspect the order of elements at the top of the setup wizard.
+3. Scroll to the bottom of the wizard and inspect step navigation controls.
+
+Expected behaviour
+- The `careerStart__actions` block appears directly underneath `careerStart__tabNav`.
+- The bottom `careerStart__stepNav careerStart__stepNav--bottom` block is not rendered.
+
+Actual behaviour
+- `careerStart__actions` rendered below the wizard content.
+- A second/bottom step navigation bar was still rendered.
+
+Suspected cause
+- JSX render order placed actions outside the wizard section and rendered both top and bottom wizard nav controls.
+
+Attempted fixes
+- Moved `careerStart__actions` into `careerStart__wizard`, directly after `careerStart__tabNav`.
+- Removed bottom step-nav render call.
+
+Final fix
+- Actions now render directly below the tabs.
+- Only the top wizard step navigation is rendered.
+
+Files changed
+- `src/game/careerStart/careerStart.jsx`
+
+Status: fixed
+
+BUG-010 - Remove setup checklist and show completion feedback in tabs
+
+Repro steps
+1. Open `/career/start`.
+2. Inspect the `careerStart__setupChecklist` block and tab status indicators.
+
+Expected behaviour
+- `careerStart__setupChecklist` is removed.
+- Completion/pending feedback (including tick/cross indicator) is visible on each tab in `careerStart__tabNav`.
+
+Actual behaviour
+- Checklist block was still rendered separately.
+- Tabs only showed basic text status and did not carry over the checklist-style tick/cross feedback.
+
+Suspected cause
+- Checklist UI and tab status UI were implemented independently, with feedback logic tied to checklist markup.
+
+Attempted fixes
+- Removed checklist markup from `careerStart__actions`.
+- Removed checklist-only derived values from component state (`setupProgressItems`, `incompleteSetupCount`).
+- Updated tab status markup to include icon + text feedback (`Complete` / `Pending`) per tab.
+- Removed obsolete checklist SCSS and added tab-status icon styling.
+
+Final fix
+- Checklist element is fully removed.
+- Tabs now provide the setup progress feedback directly, including tick/cross visual indicators.
+
+Files changed
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+
+Status: fixed
+

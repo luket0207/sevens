@@ -18,6 +18,52 @@
   color: rgba($lightText, 0.86);
 }
 
+.careerCalendarDebug__line--label {
+  font-weight: 700;
+  color: rgba($lightText, 0.92);
+}
+
+.careerCalendarDebug__rewardDecision {
+  margin-top: 0.2rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.careerCalendarDebug__rewardFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.careerCalendarDebug__rewardField {
+  display: grid;
+  gap: 0.28rem;
+
+  span {
+    font-size: 0.76rem;
+    color: rgba($lightText, 0.85);
+  }
+
+  select {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba($lightText, 0.22);
+    background: rgba($siteBackground, 0.45);
+    color: $lightText;
+    padding: 0.42rem 0.48rem;
+    font-size: 0.82rem;
+
+    &:focus-visible {
+      outline: 2px solid rgba($tertiaryBackground, 0.72);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.careerCalendarDebug__actions {
+  margin-top: 0.2rem;
+}
+
 .careerCalendarDebug__jsonPanels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -50,6 +96,10 @@
 }
 
 @media (max-width: 920px) {
+  .careerCalendarDebug__rewardFieldGrid {
+    grid-template-columns: 1fr;
+  }
+
   .careerCalendarDebug__jsonPanels {
     grid-template-columns: 1fr;
   }

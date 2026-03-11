@@ -1,0 +1,75 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.careerCardTile {
+  border: 1px solid rgba($lightText, 0.22);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.34);
+  padding: 0.6rem;
+  min-width: 220px;
+  width: 220px;
+  height: 200px;
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  overflow: hidden;
+}
+
+.careerCardTile--compact {
+  min-width: 200px;
+  width: 200px;
+  flex-basis: 200px;
+}
+
+.careerCardTile--training {
+  border-color: rgba($cardTypeTraining, 0.75);
+}
+
+.careerCardTile--scouting {
+  border-color: rgba($cardTypeScouting, 0.75);
+}
+
+.careerCardTile--academy {
+  border-color: rgba($cardTypeAcademy, 0.75);
+}
+
+.careerCardTile--staff {
+  border-color: rgba($cardTypeStaff, 0.75);
+}
+
+.careerCardTile__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+}
+
+.careerCardTile__type,
+.careerCardTile__rarity {
+  border: 1px solid rgba($lightText, 0.25);
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  background: rgba($siteBackground, 0.42);
+}
+
+.careerCardTile__name {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.careerCardTile__meta,
+.careerCardTile__text {
+  margin: 0;
+  color: rgba($lightText, 0.84);
+  font-size: 0.82rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.careerCardTile__actions {
+  margin-top: auto;
+  width: 100%;
+}

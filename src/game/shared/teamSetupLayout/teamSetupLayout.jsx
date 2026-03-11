@@ -212,6 +212,7 @@ const TeamSetupLayout = ({
   onPitchPlayerDragEnd,
   onSlotDrop,
   onSlotDragOver,
+  inspectorFooter,
 }) => {
   const allPlayersById = useMemo(() => createPlayersById(players), [players]);
   const [inspectedPlayerId, setInspectedPlayerId] = useState("");
@@ -368,7 +369,10 @@ const TeamSetupLayout = ({
           </div>
         </section>
 
-        <PlayerSkillInspector player={inspectedPlayer} teamKit={teamKit} />
+        <section className="teamSetupLayout__inspectorColumn">
+          <PlayerSkillInspector player={inspectedPlayer} teamKit={teamKit} />
+          {inspectorFooter ? <div className="teamSetupLayout__inspectorFooter">{inspectorFooter}</div> : null}
+        </section>
       </section>
     </section>
   );
@@ -390,6 +394,7 @@ TeamSetupLayout.propTypes = {
   onPitchPlayerDragEnd: PropTypes.func,
   onSlotDrop: PropTypes.func,
   onSlotDragOver: PropTypes.func,
+  inspectorFooter: PropTypes.node,
 };
 
 TeamSetupLayout.defaultProps = {
@@ -408,6 +413,7 @@ TeamSetupLayout.defaultProps = {
   onPitchPlayerDragEnd: () => {},
   onSlotDrop: () => {},
   onSlotDragOver: (event) => event.preventDefault(),
+  inspectorFooter: null,
 };
 
 export default TeamSetupLayout;

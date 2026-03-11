@@ -3,9 +3,17 @@ import Bars from "../../../engine/ui/bars/bars";
 import "./playerSkillsetBars.scss";
 
 const PREFERRED_SKILL_ORDER = Object.freeze([
+  "Overall Rating",
   "Goalkeeping",
   "Shot Stopping",
   "Distribution",
+  "Scouting",
+  "Judgement",
+  "Youth Training",
+  "GK Training",
+  "DF Training",
+  "MD Training",
+  "AT Training",
   "Tackling",
   "Marking",
   "Passing",
@@ -78,11 +86,11 @@ const getTraitEntries = (traits) => {
     .filter(Boolean);
 };
 
-const PlayerSkillsetBars = ({ skills, traits, className }) => {
+const PlayerSkillsetBars = ({ skills, traits, className, hideTraits }) => {
   const entries = getNumericSkillEntries(skills);
   const traitEntries = getTraitEntries(traits);
 
-  if (entries.length === 0 && traitEntries.length === 0) {
+  if (entries.length === 0 && (hideTraits || traitEntries.length === 0)) {
     return null;
   }
 
@@ -101,20 +109,22 @@ const PlayerSkillsetBars = ({ skills, traits, className }) => {
         </div>
       ) : null}
 
-      <section className="playerSkillsetBars__traits">
-        <p className="playerSkillsetBars__traitsTitle">Traits</p>
-        {traitEntries.length > 0 ? (
-          <ul className="playerSkillsetBars__traitList">
-            {traitEntries.map((trait) => (
-              <li className="playerSkillsetBars__traitItem" key={trait.id}>
-                {trait.name}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="playerSkillsetBars__traitsEmpty">No traits</p>
-        )}
-      </section>
+      {!hideTraits ? (
+        <section className="playerSkillsetBars__traits">
+          <p className="playerSkillsetBars__traitsTitle">Traits</p>
+          {traitEntries.length > 0 ? (
+            <ul className="playerSkillsetBars__traitList">
+              {traitEntries.map((trait) => (
+                <li className="playerSkillsetBars__traitItem" key={trait.id}>
+                  {trait.name}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="playerSkillsetBars__traitsEmpty">No traits</p>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 };
@@ -131,12 +141,14 @@ PlayerSkillsetBars.propTypes = {
     ])
   ),
   className: PropTypes.string,
+  hideTraits: PropTypes.bool,
 };
 
 PlayerSkillsetBars.defaultProps = {
   skills: null,
   traits: [],
   className: "",
+  hideTraits: false,
 };
 
 export default PlayerSkillsetBars;

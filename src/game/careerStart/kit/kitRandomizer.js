@@ -1,6 +1,7 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import { KIT_COLOURS } from "./kitColours";
 import { getSafeAwayColour } from "./kitContrast";
+import { GOALKEEPER_KIT_OPTIONS } from "./goalkeeperKits";
 import { SHIRT_PATTERN_IDS } from "./shirtPatterns";
 
 const pickRandom = (items) => items[randomInt(0, items.length - 1)];
@@ -40,9 +41,11 @@ export const randomiseAwayKit = (homeMainColour) => {
 export const randomiseFullKitSet = () => {
   const homeResult = randomiseHomeKit();
   const awayResult = randomiseAwayKit(homeResult.homeKit.mainColour);
+  const goalkeeperKit = pickRandom(GOALKEEPER_KIT_OPTIONS)?.value ?? "";
 
   return {
     ...homeResult,
     ...awayResult,
+    goalkeeperKit,
   };
 };

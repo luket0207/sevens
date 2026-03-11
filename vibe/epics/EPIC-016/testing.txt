@@ -1,0 +1,74 @@
+EPIC-016 Testing Log
+Date: 2026-03-11
+
+FEAT-1601 - Shared button design tokens
+Manual steps:
+1. Open `src/assets/scss/ui/colours.scss`.
+2. Verify centralized token groups exist for primary/secondary/tertiary button variants.
+3. Verify each variant includes default, hover, active, focus, and disabled-related tokens.
+Expected:
+- Token set exists in one shared location and is reusable by the shared button stylesheet.
+
+FEAT-1602 / FEAT-1603 / FEAT-1604 - Primary/Secondary/Tertiary redesign
+Manual steps:
+1. Run app and open `/info`.
+2. Navigate to UI Components -> Buttons.
+3. Inspect primary/secondary/tertiary examples.
+Expected:
+- All three variants use refreshed teal/light-blue complementary styling.
+- Primary reads as highest-emphasis CTA, secondary as medium emphasis, tertiary as lowest emphasis while still clearly button-like.
+- Buttons visually separate from panel/background colours.
+
+FEAT-1605 - Premium hover effects with stable size/position
+Manual steps:
+1. In `/info` Buttons section, hover primary/secondary/tertiary buttons.
+2. Observe silhouette and layout footprint during hover.
+Expected:
+- Hover is visibly richer (sheen/glow/border/shadow/gradient transition).
+- No movement, no scaling, and no layout shift occurs.
+
+FEAT-1606 - Focus-visible and active state styling
+Manual steps:
+1. In `/info` Buttons section, tab-focus buttons via keyboard.
+2. Press and hold/click to view active state.
+3. Use "Variant State Review (debug)" row to inspect forced focus/active previews.
+Expected:
+- Focus-visible ring is obvious and accessible.
+- Active/pressed state is visually intentional without button movement.
+
+FEAT-1607 - Disabled state readability
+Manual steps:
+1. In `/info` Buttons section, inspect disabled primary/secondary/tertiary buttons.
+2. Compare against enabled versions.
+Expected:
+- Disabled buttons remain readable but clearly inactive.
+- Disabled variants still match the new design language.
+
+FEAT-1608 / FEAT-1609 - Shared reusable system applied globally
+Manual steps:
+1. Open `src/engine/ui/button/button.scss`.
+2. Confirm variant styling is tokenized via shared mixin/system (not page-level one-offs).
+3. Navigate through app screens that use `Button` and verify the refreshed styles appear.
+Expected:
+- Shared button system drives variant visuals across existing button usage.
+- Existing button behaviors/flows remain intact.
+
+FEAT-1610 - Visual review/debug support
+Manual steps:
+1. Open `/info` -> UI Components -> Buttons.
+2. Locate "Variant State Review (debug)" matrix.
+3. Verify rows for primary/secondary/tertiary and columns for default/hover/active/focus/disabled.
+Expected:
+- All key button states are inspectable in one place during implementation/review.
+
+Command checks run:
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope (prop-types and hook-rule errors in pre-existing files).
+- `npm run build`: passed.
+
+Automated tests completed:
+- None added for this styling-focused epic.
+
+Automated tests still needed (optional follow-up):
+- Visual regression snapshots for button variants/states to protect design system changes over time.
+
+Test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

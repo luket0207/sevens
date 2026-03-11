@@ -20,6 +20,16 @@ import {
   getSimulationFixtureById,
   simulateCareerDay,
 } from "../careerSimulation";
+import {
+  CardLibraryBar,
+  createDefaultCareerCardState,
+  discardCardFromLibrary,
+  ensureCareerCardState,
+  generateCardOfferSet,
+  resolveFormWinsBucket,
+  resolveLeagueTierFromCompetitionId,
+} from "../cards";
+import { CARD_REWARD_MATCH_RESULTS } from "../cards/constants/cardConstants";
 import "./careerHome.scss";
 
 const CALENDAR_STATUS_READY = "ready";
@@ -69,6 +79,7 @@ const CareerHome = () => {
 
     return lookup;
   }, [careerWorld, competitions]);
+  const cardsState = useMemo(() => ensureCareerCardState(gameState?.career?.cards), [gameState?.career?.cards]);
   const calendarState = useMemo(() => gameState?.career?.calendar ?? null, [gameState?.career?.calendar]);
   const simulationState = useMemo(() => calendarState?.simulation ?? null, [calendarState?.simulation]);
   const seasons = useMemo(
@@ -92,37 +103,46 @@ const CareerHome = () => {
       currentCalendarState?.simulation &&
       Array.isArray(currentCalendarState.seasons) &&
       currentCalendarState.seasons.length > 0;
+    const hasCardState =
+      gameState?.career?.cards &&
+      Array.isArray(gameState.career.cards.library) &&
+      Number.isInteger(gameState.career.cards.nextLibraryCardNumber);
 
-    if (hasCalendarForCurrentWorld) {
+    if (hasCalendarForCurrentWorld && hasCardState) {
       return;
     }
 
-    const nextCalendarState = buildCareerCalendarState({ careerWorld });
+    const nextCalendarState = hasCalendarForCurrentWorld ? null : buildCareerCalendarState({ careerWorld });
 
     setGameState((prev) => ({
       ...prev,
       career: {
         ...prev.career,
-        calendar: {
-          ...(prev.career?.calendar ?? {}),
-          status: CALENDAR_STATUS_READY,
-          sourceGeneratedAt: careerWorld?.generatedAt ?? "",
-          seasons: nextCalendarState.seasons,
-          activeSeasonId: nextCalendarState.activeSeasonId,
-          currentDayIndex: nextCalendarState.currentDayIndex,
-          visibleMonthIndex: nextCalendarState.visibleMonthIndex,
-          pendingFlashDayIndex: null,
-          pendingDayResults: nextCalendarState.pendingDayResults ?? null,
-          pendingCupDraw: nextCalendarState.pendingCupDraw ?? null,
-          seasonFixturesRevealed: Boolean(nextCalendarState.seasonFixturesRevealed),
-          lastAdvancedAt: "",
-          championsCupStructure: nextCalendarState.championsCupStructure,
-          simulation: nextCalendarState.simulation,
-          debug: nextCalendarState.debug,
-        },
+        calendar: hasCalendarForCurrentWorld
+          ? {
+              ...(prev.career?.calendar ?? {}),
+            }
+          : {
+              ...(prev.career?.calendar ?? {}),
+              status: CALENDAR_STATUS_READY,
+              sourceGeneratedAt: careerWorld?.generatedAt ?? "",
+              seasons: nextCalendarState?.seasons ?? [],
+              activeSeasonId: nextCalendarState?.activeSeasonId ?? "",
+              currentDayIndex: nextCalendarState?.currentDayIndex ?? 0,
+              visibleMonthIndex: nextCalendarState?.visibleMonthIndex ?? 0,
+              pendingFlashDayIndex: null,
+              pendingDayResults: nextCalendarState?.pendingDayResults ?? null,
+              pendingCupDraw: nextCalendarState?.pendingCupDraw ?? null,
+              seasonFixturesRevealed: Boolean(nextCalendarState?.seasonFixturesRevealed),
+              lastAdvancedAt: "",
+              championsCupStructure: nextCalendarState?.championsCupStructure ?? {},
+              simulation: nextCalendarState?.simulation ?? {},
+              debug: nextCalendarState?.debug ?? {},
+            },
+        cards: hasCardState ? prev.career?.cards : createDefaultCareerCardState(),
       },
     }));
-  }, [calendarState, careerWorld, competitions.length, generationStatus, setGameState]);
+  }, [calendarState, careerWorld, competitions.length, gameState?.career?.cards, generationStatus, setGameState]);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -143,6 +163,10 @@ const CareerHome = () => {
         </section>
       </PageLayout>
     );
+  }
+
+  if (cardsState?.pendingRewardChoice) {
+    return <Navigate to="/career/card-reward" replace />;
   }
 
   if (calendarState?.pendingCupDraw) {
@@ -194,12 +218,121 @@ const CareerHome = () => {
     seasonFixturesRevealed: Boolean(calendarState?.seasonFixturesRevealed),
   });
   const primaryButtonLabel = getContinueFlowLabel(primaryContinueAction);
+  const cardLibrary = Array.isArray(cardsState?.library) ? cardsState.library : [];
+  const defaultDebugCardRewardContext = {
+    leagueTier: resolveLeagueTierFromCompetitionId(careerWorld?.playerTeam?.competitionId),
+    formWins: resolveFormWinsBucket(
+      simulationState?.teamFormByTeamId?.[careerWorld?.playerTeam?.id ?? ""] ?? []
+    ),
+    matchResult: CARD_REWARD_MATCH_RESULTS.WIN,
+  };
 
   const updateVisibleMonth = (nextMonthIndex) => {
     setGameValue(
       "career.calendar.visibleMonthIndex",
       clampMonthIndex(nextMonthIndex, activeSeason.months.length)
     );
+  };
+
+  const discardLibraryCard = (cardId) => {
+    setGameState((prev) => {
+      const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+      const nextLibrary = discardCardFromLibrary({
+        library: currentCardsState.library,
+        cardId,
+      });
+      return {
+        ...prev,
+        career: {
+          ...prev.career,
+          cards: {
+            ...currentCardsState,
+            library: nextLibrary,
+            lastUpdatedAt: new Date().toISOString(),
+            debug: {
+              ...currentCardsState.debug,
+              lastDiscardedFromLibraryAt: new Date().toISOString(),
+              librarySize: nextLibrary.length,
+            },
+          },
+        },
+      };
+    });
+  };
+
+  const triggerDebugCardReward = (overrides = {}) => {
+    if (cardsState?.pendingRewardChoice) {
+      navigate("/career/card-reward");
+      return;
+    }
+
+    const leagueTier = Math.max(
+      1,
+      Math.min(
+        5,
+        Number(overrides?.leagueTier ?? defaultDebugCardRewardContext.leagueTier) ||
+          defaultDebugCardRewardContext.leagueTier
+      )
+    );
+    const formWins = Math.max(
+      0,
+      Math.min(
+        5,
+        Number(overrides?.formWins ?? defaultDebugCardRewardContext.formWins) || defaultDebugCardRewardContext.formWins
+      )
+    );
+    const matchResult =
+      overrides?.matchResult === CARD_REWARD_MATCH_RESULTS.DRAW
+        ? CARD_REWARD_MATCH_RESULTS.DRAW
+        : overrides?.matchResult === CARD_REWARD_MATCH_RESULTS.LOSE
+        ? CARD_REWARD_MATCH_RESULTS.LOSE
+        : CARD_REWARD_MATCH_RESULTS.WIN;
+    const debugRewardContext = {
+      leagueTier,
+      formWins,
+      matchResult,
+    };
+    const result = generateCardOfferSet({
+      context: debugRewardContext,
+      source: "debug",
+    });
+
+    setGameState((prev) => {
+      const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+      return {
+        ...prev,
+        career: {
+          ...prev.career,
+          cards: {
+            ...currentCardsState,
+            pendingRewardChoice: {
+              source: "debug",
+              context: result.context,
+              rewardMatrixRow: result.rewardMatrixRow,
+              offeredCards: result.offeredCards,
+              rollDebug: result.rollDebug,
+              staffSubtypeRolls: result.staffSubtypeRolls,
+              rerollCount: 0,
+              createdAt: new Date().toISOString(),
+            },
+            debug: {
+              ...currentCardsState.debug,
+              lastRewardContext: result.context,
+              lastDebugInputContext: debugRewardContext,
+              lastRewardMatrixRow: result.rewardMatrixRow,
+              lastRolls: result.rollDebug,
+              lastStaffSubtypeRolls: result.staffSubtypeRolls,
+              lastProceduralStaffCard: result.proceduralStaffCards[0] ?? null,
+              lastDebugTriggerAt: new Date().toISOString(),
+              librarySize: currentCardsState.library.length,
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          },
+        },
+      };
+    });
+
+    navigate("/career/card-reward");
   };
 
   const moveToNextDay = () => {
@@ -385,18 +518,22 @@ const CareerHome = () => {
       <section className="careerHome">
         <section className="careerHome__topRow">
           <article className="careerHome__panel careerHome__panel--calendar">
-            <SeasonCalendar
-              season={activeSeason}
-              visibleMonthIndex={visibleMonthIndex}
-              currentDayIndex={currentDayIndex}
-              simulationState={simulationState}
-              playerTeamId={careerWorld?.playerTeam?.id ?? ""}
-              playerTeamCompetitionId={careerWorld?.playerTeam?.competitionId ?? ""}
-              onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
-              onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
-              canGoPreviousMonth={visibleMonthIndex > 0}
-              canGoNextMonth={visibleMonthIndex < activeSeason.months.length - 1}
-            />
+            <div className="careerHome__calendarStack">
+              <SeasonCalendar
+                season={activeSeason}
+                visibleMonthIndex={visibleMonthIndex}
+                currentDayIndex={currentDayIndex}
+                simulationState={simulationState}
+                playerTeamId={careerWorld?.playerTeam?.id ?? ""}
+                playerTeamCompetitionId={careerWorld?.playerTeam?.competitionId ?? ""}
+                onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
+                onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
+                canGoPreviousMonth={visibleMonthIndex > 0}
+                canGoNextMonth={visibleMonthIndex < activeSeason.months.length - 1}
+              />
+
+              <CardLibraryBar library={cardLibrary} onDiscardCard={discardLibraryCard} />
+            </div>
           </article>
 
           <aside className="careerHome__panel careerHome__panel--controls">
@@ -438,6 +575,10 @@ const CareerHome = () => {
             isDayOneSetupGateActive={dayOneSetupGateState.isGateActive}
             continueAction={primaryContinueAction}
             continueActionLabel={primaryButtonLabel}
+            onTriggerCardReward={triggerDebugCardReward}
+            defaultCardRewardContext={defaultDebugCardRewardContext}
+            cardDebug={cardsState?.debug ?? {}}
+            cardLibrary={cardLibrary}
           />
         </section>
       </section>

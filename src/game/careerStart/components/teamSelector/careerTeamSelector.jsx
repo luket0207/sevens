@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import Button, { BUTTON_VARIANT } from "../../../../engine/ui/button/button";
+import { useEffect } from "react";
 import { PLAYER_GENERATION_TYPES, usePlayerGeneration } from "../../../playerGeneration";
 import { createCareerTeamSelectorPools } from "../../utils/teamSelectorGeneration";
 import {
@@ -8,7 +8,6 @@ import {
 } from "../../utils/teamSelectorValidation";
 import { normalizeTeamSelectorState } from "../../utils/teamSelectorState";
 import CareerPlayerCard from "./careerPlayerCard";
-import TeamSelectorDebugPanel from "./teamSelectorDebugPanel";
 
 const createChoiceLabel = (choiceIndex, playerType) => {
   if (playerType === PLAYER_GENERATION_TYPES.GOALKEEPER) {
@@ -43,15 +42,17 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
   const choiceGroups = safeSelectorState.choiceGroups;
   const currentChoice = choiceGroups[safeSelectorState.currentChoiceIndex] ?? null;
   const selectedSlots = createSelectedSlots(safeSelectorState);
-  const selectedCount =
-    (safeSelectorState.selectedGoalkeeper ? 1 : 0) + safeSelectorState.selectedOutfieldPlayers.length;
 
   const applySelectorState = (nextState) => {
     onUpdateSelectorState(nextState);
     onUpdatePlayers(buildCareerPlayersFromTeamSelector(nextState));
   };
 
-  const handleGenerateChoices = () => {
+  useEffect(() => {
+    if (choiceGroups.length > 0 || safeSelectorState.isComplete) {
+      return;
+    }
+
     const pools = createCareerTeamSelectorPools({
       generateGoalkeeperPlayer: ({ targetOverall }) => {
         return goalkeeperGeneration.generatePlayer(targetOverall);
@@ -61,7 +62,7 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
       },
     });
 
-    applySelectorState({
+    const nextState = {
       ...safeSelectorState,
       generatedAt: new Date().toISOString(),
       sessionId: pools.sessionId,
@@ -73,8 +74,19 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
       selectedGoalkeeper: null,
       selectedOutfieldPlayers: [],
       isComplete: false,
-    });
-  };
+    };
+
+    onUpdateSelectorState(nextState);
+    onUpdatePlayers(buildCareerPlayersFromTeamSelector(nextState));
+  }, [
+    choiceGroups.length,
+    goalkeeperGeneration,
+    onUpdatePlayers,
+    onUpdateSelectorState,
+    outfieldGeneration,
+    safeSelectorState,
+    safeSelectorState.isComplete,
+  ]);
 
   const handleSelectCurrentPlayer = (selectedPlayer) => {
     if (!currentChoice || safeSelectorState.isComplete) {
@@ -103,21 +115,6 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
 
   return (
     <div className="careerStart__teamSelector">
-      <div className="careerStart__teamSelectorHead">
-        <p className="careerStart__hint">
-          Build your starting seven by selecting 1 goalkeeper and 6 outfield players.
-        </p>
-        <p className="careerStart__hint">
-          <strong>Progress:</strong> {selectedCount} / 7 selected
-        </p>
-      </div>
-
-      <div className="careerStart__teamSelectorActions">
-        <Button variant={BUTTON_VARIANT.SECONDARY} onClick={handleGenerateChoices}>
-          {choiceGroups.length > 0 ? "Regenerate Choices" : "Generate Player Choices"}
-        </Button>
-      </div>
-
       <div className="careerStart__teamSelectorLayout">
         <section className="careerStart__teamSelectorCurrent">
           <h3 className="careerStart__kitTitle">Current Choice</h3>
@@ -144,7 +141,7 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
             <p className="careerStart__hint">
               {safeSelectorState.isComplete
                 ? "All seven players have been selected."
-                : "Generate player choices to begin the 7-step team selector."}
+                : "Preparing player choices..."}
             </p>
           )}
         </section>
@@ -171,8 +168,6 @@ const CareerTeamSelector = ({ selectorState, onUpdateSelectorState, onUpdatePlay
           </div>
         </section>
       </div>
-
-      <TeamSelectorDebugPanel selectorState={safeSelectorState} teamKit={teamKit} />
     </div>
   );
 };
