@@ -270,3 +270,30 @@ Command checks run in update-8 bug-fix pass:
   - No new EPIC-016-specific lint errors were introduced by update-8 sonar-pulse refinement.
 
 Update-8 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 9)
+
+BUG-010 - Restore hover clipping behavior
+Manual steps:
+1. Open `/career/home`.
+2. Hover the continue button and observe sheen/highlight behavior.
+3. Compare button edge rendering during hover against idle state.
+Expected:
+- Hover sheen is clipped cleanly to the button shape.
+- Hover visual treatment no longer appears visually broken at edges.
+
+BUG-011 - Cap sonar pulse travel at 12px
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue-button sonar pulse over several cycles.
+3. Check the furthest outward ring distance from button edge.
+Expected:
+- Sonar ring fades out by ~12px max from the button edge.
+- Pulse remains visible/readable but no longer overextends.
+
+Command checks run in update-9 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-9 hover/sonar refinements.
+
+Update-9 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
