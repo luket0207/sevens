@@ -38,45 +38,52 @@ const statEntryShape = PropTypes.shape({
   cleanSheets: PropTypes.number,
 });
 
-const PlayerStatTables = ({ tables, maxRows, emptyText }) => (
-  <section className="playerStatTables">
-    <div className="playerStatTables__grid">
-      {STAT_TABLES.map((tableConfig) => {
-        const rows = toDisplayRows(tables?.[tableConfig.id], maxRows);
+const PlayerStatTables = ({ tables, maxRows, emptyText, columns }) => {
+  const gridClassName =
+    Number(columns) === 3
+      ? "playerStatTables__grid playerStatTables__grid--threeColumn"
+      : "playerStatTables__grid";
 
-        return (
-          <article key={tableConfig.id} className="playerStatTables__card">
-            <h4>{tableConfig.title}</h4>
-            {rows.length === 0 ? (
-              <p className="playerStatTables__empty">{emptyText}</p>
-            ) : (
-              <table className="playerStatTables__table">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Player</th>
-                    <th scope="col">Team</th>
-                    <th scope="col">{tableConfig.statLabel}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((entry, index) => (
-                    <tr key={entry?.playerId ?? `${tableConfig.id}-${index}`}>
-                      <td>{index + 1}</td>
-                      <td>{entry?.playerName ?? "Unknown"}</td>
-                      <td>{entry?.teamName ?? "Unknown"}</td>
-                      <td>{Math.max(0, Number(entry?.[tableConfig.statKey]) || 0)}</td>
+  return (
+    <section className="playerStatTables">
+      <div className={gridClassName}>
+        {STAT_TABLES.map((tableConfig) => {
+          const rows = toDisplayRows(tables?.[tableConfig.id], maxRows);
+
+          return (
+            <article key={tableConfig.id} className="playerStatTables__card">
+              <h4>{tableConfig.title}</h4>
+              {rows.length === 0 ? (
+                <p className="playerStatTables__empty">{emptyText}</p>
+              ) : (
+                <table className="playerStatTables__table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Player</th>
+                      <th scope="col">Team</th>
+                      <th scope="col">{tableConfig.statLabel}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </article>
-        );
-      })}
-    </div>
-  </section>
-);
+                  </thead>
+                  <tbody>
+                    {rows.map((entry, index) => (
+                      <tr key={entry?.playerId ?? `${tableConfig.id}-${index}`}>
+                        <td>{index + 1}</td>
+                        <td>{entry?.playerName ?? "Unknown"}</td>
+                        <td>{entry?.teamName ?? "Unknown"}</td>
+                        <td>{Math.max(0, Number(entry?.[tableConfig.statKey]) || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
 
 PlayerStatTables.propTypes = {
   tables: PropTypes.shape({
@@ -86,12 +93,14 @@ PlayerStatTables.propTypes = {
   }),
   maxRows: PropTypes.number,
   emptyText: PropTypes.string,
+  columns: PropTypes.number,
 };
 
 PlayerStatTables.defaultProps = {
   tables: null,
   maxRows: 10,
   emptyText: "No stats recorded yet.",
+  columns: 0,
 };
 
 export default PlayerStatTables;

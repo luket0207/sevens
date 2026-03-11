@@ -404,3 +404,101 @@ This epic is complete when:
 - Hover does not change button size or position.
 - Focus-visible, active, and disabled states are also polished and clear.
 - The redesign is implemented as a reusable shared button system across the UI.
+
+----------------------------------------------------------------
+FEAT-1611 - Create Bespoke Context-Aware Continue Button for Career Calendar
+----------------------------------------------------------------
+
+Description
+Replace the current standard button used for the Continue action next to the career calendar with a bespoke Continue button component designed specifically for the calendar flow.
+
+Right now the Continue button only updates its text to reflect what action it will take next.
+
+This feature should keep that behaviour, but expand it so the button is:
+- more scannable
+- more informative
+- more visually tied to the event it is about to trigger
+- more distinctive than a normal shared button
+
+This bespoke button should no longer use the normal shared button component.
+
+Requirements
+- Create a dedicated Continue button component specifically for the career calendar flow.
+- This bespoke component should replace the existing standard button currently used next to the calendar.
+- It must still display the action text describing what it will take the user to next.
+- The component should be designed for the continue/calendar context only and does not need to behave like a general-purpose button.
+
+Context-aware text
+- Keep the existing behaviour where the button text reflects the next action.
+- The text should continue to describe what the button will do next, for example:
+  - Continue to Match
+  - Continue to League Cup Draw
+  - Continue to Champions Cup Match
+  - Continue to Fixture Generation
+  - Continue to Next Day
+- Preserve the current logic that determines this text, but move it into or connect it cleanly to the new bespoke component.
+
+Event-based styling
+- The button should change its background/style colours depending on the event it will start.
+- The colour treatment should align with the existing event colour language already used elsewhere in the calendar system.
+- Examples:
+  - normal league match -> match yellow
+  - Champions Cup match -> purple
+  - draw event -> corresponding draw colour
+- Use the same event palette logic where practical so the button feels connected to the calendar event system.
+- Keep the styling centralised and reusable rather than hardcoding colours in the component body.
+
+Event-based icons
+- The button must always show an icon.
+- If the next action/event already has an associated icon, use that icon in the button.
+- Examples:
+  - draw -> box-open
+  - cup match -> trophy
+  - other event-specific icons already defined in the calendar/event system
+- If there is no specific event icon available, show a generic Font Awesome arrow icon.
+- The fallback arrow icon should be styled so it feels visually consistent with the rest of the icon system used in the calendar.
+
+Height and layout
+- The new Continue button should be 100px tall.
+- Keep the width/layout suitable for its existing position next to the calendar.
+- The icon and text should be arranged clearly and be easy to scan at a glance.
+- The button should feel like a major action panel rather than a small standard button.
+
+Hover behaviour
+- The bespoke Continue button should still have a hover effect.
+- That hover effect should fit in with the current hover language introduced for the button refresh epic.
+- It should not:
+  - change scale
+  - move position
+  - cause layout shift
+- It should feel premium and interactive while remaining fixed in size and position.
+
+Design intent
+- This button should look more like a contextual action card/button hybrid than a standard UI button.
+- The user should be able to understand:
+  - what happens next
+  - what type of event it is
+  - how important it is
+with a quick glance.
+
+Implementation notes
+- Do not reuse the generic button component for this one.
+- Create a dedicated component and dedicated styling for this Continue button.
+- Reuse existing calendar event metadata where sensible:
+  - icon mappings
+  - colour mappings
+  - action label logic
+- Keep the component integrated with the calendar progression flow.
+
+Acceptance Criteria
+- The Continue button next to the calendar is replaced with a bespoke component.
+- The bespoke Continue button no longer uses the shared generic button component.
+- It still displays the correct context-aware action text.
+- The button always displays an icon.
+- If the next action has an event icon, that icon is shown.
+- If no event icon exists, a generic Font Awesome arrow is shown.
+- The button changes visual style/colour depending on the event it will trigger.
+- The button is 100px tall.
+- It has a hover effect that matches the current premium button hover language.
+- The hover effect does not change the button’s size or position.
+- The result is more scannable, more informative, and more visually tied to the next calendar action.

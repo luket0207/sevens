@@ -1,0 +1,291 @@
+@use "../../../assets/scss/ui/import" as *;
+@use "sass:color";
+
+@keyframes careerCalendarContinueAmbientPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 11px 22px rgba(0, 0, 0, 0.25),
+      0 0 0 2px var(--continue-ambient-glow),
+      0 0 10px 2px var(--continue-ambient-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.17),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  }
+
+  50% {
+    box-shadow:
+      0 13px 26px rgba(0, 0, 0, 0.27),
+      0 0 0 2px var(--continue-ambient-glow),
+      0 0 20px 5px var(--continue-ambient-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.17),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  }
+}
+
+@keyframes careerCalendarContinueSonarPulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--continue-ambient-glow);
+    opacity: 0.46;
+  }
+
+  70% {
+    opacity: 0.14;
+  }
+
+  100% {
+    box-shadow: 0 0 0 12px transparent;
+    opacity: 0;
+  }
+}
+
+.careerCalendarContinueButtonShell,
+.careerCalendarContinueButton {
+  --continue-bg-top: #{color.mix($calendarEventLeagueMatchTile, $siteBackground, 52%)};
+  --continue-bg-bottom: #{color.mix($calendarEventLeagueMatchTile, $siteBackground, 36%)};
+  --continue-border: #{rgba($calendarEventLeagueMatchTile, 0.72)};
+  --continue-glow: #{rgba($calendarEventLeagueMatchTile, 0.24)};
+  --continue-ambient-glow: #{rgba($calendarEventLeagueMatchTile, 0.68)};
+  --continue-focus: #{rgba($calendarEventLeagueMatchTile, 0.34)};
+  --continue-icon: #{$calendarEventLeagueMatchIcon};
+  --continue-text: #{$lightText};
+}
+
+.careerCalendarContinueButtonShell {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  display: block;
+  width: calc(100% - 1.25rem);
+  height: 125px;
+  margin: 0.55rem auto;
+  border-radius: 14px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    border: 2px solid var(--continue-ambient-glow);
+    box-shadow: 0 0 0 0 var(--continue-ambient-glow);
+    opacity: 0;
+    animation: careerCalendarContinueSonarPulse 2.8s cubic-bezier(0.16, 0.58, 0.22, 1) infinite;
+    z-index: 0;
+  }
+
+  &:focus-within::after,
+  &:has(.careerCalendarContinueButton:active)::after,
+  &:is(.careerCalendarContinueButton--disabled)::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.careerCalendarContinueButton {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--continue-border);
+  background-image: linear-gradient(146deg, var(--continue-bg-top) 0%, var(--continue-bg-bottom) 100%);
+  background-size: 170% 100%;
+  background-position: 0 0;
+  color: var(--continue-text);
+  text-align: left;
+  cursor: pointer;
+
+  box-shadow:
+    0 11px 22px rgba(0, 0, 0, 0.25),
+    0 0 0 2px var(--continue-ambient-glow),
+    0 0 10px 2px var(--continue-ambient-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  animation: careerCalendarContinueAmbientPulse 3s ease-in-out infinite;
+
+  transition:
+    background-position 0.3s ease,
+    border-color 0.22s ease,
+    box-shadow 0.3s cubic-bezier(0.2, 0.85, 0.2, 1),
+    filter 0.2s ease,
+    opacity 0.2s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -35% -8%;
+    pointer-events: none;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 48%,
+      rgba(255, 255, 255, 0.06) 64%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-125%);
+    opacity: 0;
+    transition:
+      transform 0.55s cubic-bezier(0.2, 0.85, 0.2, 1),
+      opacity 0.24s ease;
+    z-index: 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    animation: none;
+    border-color: rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 0 0 3px var(--continue-focus),
+      0 10px 20px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+  }
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.54);
+    background-position: 100% 0;
+    box-shadow:
+      0 13px 26px rgba(0, 0, 0, 0.29),
+      0 0 0 3px var(--continue-glow),
+      0 0 0 2px var(--continue-ambient-glow),
+      0 0 14px 3px var(--continue-ambient-glow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  }
+
+  &:hover::before {
+    transform: translateX(95%);
+    opacity: 1;
+  }
+
+  &:active {
+    animation: none;
+    box-shadow:
+      0 7px 14px rgba(0, 0, 0, 0.28),
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    filter: saturate(1.02);
+  }
+
+  &:is(.careerCalendarContinueButton--disabled, :disabled) {
+    animation: none;
+    cursor: not-allowed;
+    opacity: 0.85;
+    filter: saturate(0.62);
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  &:is(.careerCalendarContinueButton--disabled, :disabled)::before {
+    display: none;
+  }
+}
+
+.careerCalendarContinueButton__iconWrap,
+.careerCalendarContinueButton__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.careerCalendarContinueButton__iconWrap {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba($calendarEventIconBackground, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--continue-icon);
+  font-size: 1.2rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.careerCalendarContinueButton__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 0.24rem;
+}
+
+.careerCalendarContinueButton__label {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--continue-text);
+}
+
+.careerCalendarContinueButton--leagueMatch,
+.careerCalendarContinueButton--playoff {
+  --continue-bg-top: #{color.mix($calendarEventLeagueMatchTile, $siteBackground, 52%)};
+  --continue-bg-bottom: #{color.mix($calendarEventLeagueMatchTile, $siteBackground, 36%)};
+  --continue-border: #{rgba($calendarEventLeagueMatchTile, 0.76)};
+  --continue-glow: #{rgba($calendarEventLeagueMatchTile, 0.24)};
+  --continue-ambient-glow: #{rgba($calendarEventLeagueMatchTile, 0.7)};
+  --continue-focus: #{rgba($calendarEventLeagueMatchTile, 0.35)};
+  --continue-icon: #{$calendarEventLeagueMatchIcon};
+}
+
+.careerCalendarContinueButton--leagueCupMatch,
+.careerCalendarContinueButton--leagueCupFinal {
+  --continue-bg-top: #{color.mix($calendarEventLeagueCupMatchTile, $siteBackground, 58%)};
+  --continue-bg-bottom: #{color.mix($calendarEventLeagueCupMatchTile, $siteBackground, 40%)};
+  --continue-border: #{rgba($calendarEventLeagueCupMatchTile, 0.78)};
+  --continue-glow: #{rgba($calendarEventLeagueCupMatchTile, 0.24)};
+  --continue-ambient-glow: #{rgba($calendarEventLeagueCupMatchTile, 0.7)};
+  --continue-focus: #{rgba($calendarEventLeagueCupMatchTile, 0.35)};
+  --continue-icon: #{$calendarEventLeagueCupMatchIcon};
+}
+
+.careerCalendarContinueButton--championsCupMatch,
+.careerCalendarContinueButton--championsCupFinal {
+  --continue-bg-top: #{color.mix($calendarEventChampionsCupMatchTile, $siteBackground, 58%)};
+  --continue-bg-bottom: #{color.mix($calendarEventChampionsCupMatchTile, $siteBackground, 40%)};
+  --continue-border: #{rgba($calendarEventChampionsCupMatchTile, 0.78)};
+  --continue-glow: #{rgba($calendarEventChampionsCupMatchTile, 0.26)};
+  --continue-ambient-glow: #{rgba($calendarEventChampionsCupMatchTile, 0.72)};
+  --continue-focus: #{rgba($calendarEventChampionsCupMatchTile, 0.36)};
+  --continue-icon: #{$calendarEventChampionsCupMatchIcon};
+}
+
+.careerCalendarContinueButton--leagueCupDraw {
+  --continue-bg-top: #{color.mix($calendarEventLeagueCupDrawTile, $siteBackground, 56%)};
+  --continue-bg-bottom: #{color.mix($calendarEventLeagueCupDrawTile, $siteBackground, 40%)};
+  --continue-border: #{rgba($calendarEventLeagueCupDrawTile, 0.78)};
+  --continue-glow: #{rgba($calendarEventLeagueCupDrawTile, 0.24)};
+  --continue-ambient-glow: #{rgba($calendarEventLeagueCupDrawTile, 0.72)};
+  --continue-focus: #{rgba($calendarEventLeagueCupDrawTile, 0.36)};
+  --continue-icon: #{$calendarEventLeagueCupDrawIcon};
+}
+
+.careerCalendarContinueButton--championsCupDraw {
+  --continue-bg-top: #{color.mix($calendarEventChampionsCupDrawTile, $siteBackground, 58%)};
+  --continue-bg-bottom: #{color.mix($calendarEventChampionsCupDrawTile, $siteBackground, 40%)};
+  --continue-border: #{rgba($calendarEventChampionsCupDrawTile, 0.78)};
+  --continue-glow: #{rgba($calendarEventChampionsCupDrawTile, 0.25)};
+  --continue-ambient-glow: #{rgba($calendarEventChampionsCupDrawTile, 0.74)};
+  --continue-focus: #{rgba($calendarEventChampionsCupDrawTile, 0.36)};
+  --continue-icon: #{$calendarEventChampionsCupDrawIcon};
+}
+
+.careerCalendarContinueButton--fallback {
+  --continue-bg-top: #{rgba($secondaryBackground, 0.8)};
+  --continue-bg-bottom: #{rgba($primaryBackground, 0.8)};
+  --continue-border: #{rgba($lightText, 0.42)};
+  --continue-glow: #{rgba($lightText, 0.15)};
+  --continue-ambient-glow: #{rgba($lightText, 0.52)};
+  --continue-focus: #{rgba($lightText, 0.24)};
+  --continue-icon: #{$lightText};
+}

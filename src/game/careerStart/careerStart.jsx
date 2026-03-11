@@ -161,19 +161,19 @@ const DEFAULT_CAREER_CARDS_RESET = Object.freeze(createDefaultCareerCardState())
 const CAREER_START_TABS = Object.freeze([
   Object.freeze({
     id: "identity",
-    label: "1. Name and Stadium Name",
+    label: "Name and Stadium Name",
   }),
   Object.freeze({
     id: "kits",
-    label: "2. Kits",
+    label: "Kits",
   }),
   Object.freeze({
     id: "teamSelection",
-    label: "3. Team Selection",
+    label: "Team Selection",
   }),
   Object.freeze({
     id: "coaches",
-    label: "4. Coaches",
+    label: "Coaches",
   }),
 ]);
 
@@ -390,7 +390,8 @@ const CareerStart = () => {
         disabled={!hasPreviousTab}
         onClick={() => goToAdjacentTab(-1)}
       >
-        Back
+        <span aria-hidden="true" className="pi pi-chevron-left" />
+        <span>Back</span>
       </Button>
       <p className="careerStart__stepMeta">
         Step {activeStepNumber} of {CAREER_START_TABS.length}
@@ -400,7 +401,14 @@ const CareerStart = () => {
         disabled={isGenerationActive || (!canStartCareer && !hasNextTab)}
         onClick={canStartCareer ? startCareerGeneration : () => goToAdjacentTab(1)}
       >
-        {canStartCareer ? (isGenerationActive ? "Generating Career..." : "Start Career") : "Next"}
+        {canStartCareer ? (
+          isGenerationActive ? "Generating Career..." : "Start Career"
+        ) : (
+          <>
+            <span>Next</span>
+            <span aria-hidden="true" className="pi pi-chevron-right" />
+          </>
+        )}
       </Button>
     </div>
   );

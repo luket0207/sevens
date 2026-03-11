@@ -1,0 +1,319 @@
+EPIC-017 - League Table Layout Split and League Stats Page Tabs
+
+Overview
+The goal of this epic is to simplify the league table presentation on the Career Home page and move the fuller league-detail experience onto the dedicated League Stats page.
+
+This epic introduces:
+- two versions of the league table component
+- a compact summary league table for Career Home
+- a more structured League Stats page with league tabs
+- a clearer layout for league standings and player stat tables
+
+This epic is about:
+- league table layout changes
+- component variants
+- page structure improvements
+- making the Career Home controls panel cleaner
+- improving access to detailed league information
+
+This epic is not about:
+- changing how league standings are calculated
+- changing top scorers/assists/clean sheets logic
+- changing squad modal behaviour beyond preserving it in the detailed table
+- changing match simulation
+
+================================================================
+Core Goals
+================================================================
+
+The main goals of this epic are:
+
+1. Split the league table component into two versions
+- compact version
+- full detailed version
+
+2. Move the compact version into the Career Home controls panel
+- specifically inside careerHome__panel careerHome__panel--controls
+- below the navigation panel
+
+3. Make the compact version a single large link
+- clicking anywhere in the compact component takes the user to the League Stats page
+
+4. Rework the League Stats page
+- leagues should be displayed in tabs
+- only one league visible at a time
+- the selected league shows:
+  - the full detailed league table
+  - top scorers table
+  - top assists table
+  - clean sheets table
+
+================================================================
+Compact League Table Requirements
+================================================================
+
+The compact league table should only show:
+
+- Pos
+- Team
+- Pts
+
+This version should be:
+- narrow/thin enough to fit inside the Career Home controls panel
+- visually compact and easy to scan
+- focused on quickly checking the player's league standings position
+
+Interaction rules:
+- the whole compact league table element should act as one link
+- clicking it should navigate to the League Stats page
+- it should feel like a summary card leading into detailed stats
+
+This compact version is not intended to support:
+- clicking individual teams
+- detailed stat columns
+- inline squad inspection
+
+================================================================
+Detailed League Stats Page Requirements
+================================================================
+
+The League Stats page should be updated to show leagues in tabs.
+
+Requirements:
+- one tab per league
+- only one league visible at a time
+- switching tabs changes the visible league data
+
+For the selected league:
+- the top section of the page should show the full detailed league table
+- keep current league-table functionality intact, including:
+  - full stat columns
+  - clickable teams
+  - squad modal access
+
+Below the detailed league table:
+- show the player stat tables in a 3-column layout:
+  - Top Scorers
+  - Top Assists
+  - Clean Sheets
+
+This layout should make it easy to inspect:
+- team standings
+- squad details
+- leading player stats
+for one league at a time
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1701 - Split League Table into Compact and Detailed Variants
+----------------------------------------------------------------
+
+Description
+Create two variants of the league table component:
+- compact summary version
+- detailed full version
+
+Requirements
+- Refactor the league table component so it supports two display modes/variants.
+- The compact version should support only:
+  - Pos
+  - Team
+  - Pts
+- The detailed version should preserve the current full league-table behaviour and data richness.
+- Keep shared logic centralised where sensible so standings rendering is not duplicated unnecessarily.
+
+Acceptance Criteria
+- The league table supports separate compact and detailed variants.
+- The compact version only shows Pos, Team, and Pts.
+- The detailed version preserves the existing fuller functionality.
+
+----------------------------------------------------------------
+FEAT-1702 - Add Compact League Table to Career Home Controls Panel
+----------------------------------------------------------------
+
+Description
+Place the compact league table inside the Career Home controls panel.
+
+Requirements
+- Move/add the compact league table into:
+  - careerHome__panel careerHome__panel--controls
+- Position it below the navigation panel.
+- Ensure the compact layout is thin enough to fit naturally in that panel without overwhelming it.
+- Keep the panel readable and balanced.
+
+Acceptance Criteria
+- The compact league table appears in the Career Home controls panel.
+- It is positioned below the navigation section.
+- It fits cleanly within the controls panel layout.
+
+----------------------------------------------------------------
+FEAT-1703 - Make Compact League Table a Single Clickable Link to League Stats
+----------------------------------------------------------------
+
+Description
+Turn the compact league table into a summary link card.
+
+Requirements
+- The whole compact league table element should be clickable.
+- Clicking anywhere on it should navigate to the League Stats page.
+- Do not require clicking a tiny inner text link.
+- The compact version should behave as one unified link target.
+
+Acceptance Criteria
+- The entire compact league table is clickable.
+- Clicking it takes the user to the League Stats page.
+- The interaction feels like a summary card linking to detailed stats.
+
+----------------------------------------------------------------
+FEAT-1704 - Rework League Stats Page to Use League Tabs
+----------------------------------------------------------------
+
+Description
+Change the League Stats page so leagues are displayed in tabs rather than all at once.
+
+Requirements
+- Add league tabs to the League Stats page.
+- Include one tab per league.
+- Only one league should be visible at a time.
+- Changing tab should switch the visible league data.
+- Keep the interaction simple and easy to scan.
+
+Acceptance Criteria
+- The League Stats page uses tabs for league selection.
+- Only one league is shown at a time.
+- Switching tabs updates the visible league correctly.
+
+----------------------------------------------------------------
+FEAT-1705 - Show Detailed League Table at Top of Selected League Tab
+----------------------------------------------------------------
+
+Description
+Display the full detailed league table at the top of the active league tab.
+
+Requirements
+- At the top of the selected league tab, show the detailed league table.
+- Preserve the current functionality of the detailed table, including:
+  - all detailed standings values
+  - clickable teams
+  - team squad modal access
+- Ensure the table remains readable inside the new tabbed page structure.
+
+Acceptance Criteria
+- The selected league tab shows the detailed league table at the top.
+- Current detailed-table functionality still works.
+- Teams can still be clicked to inspect squads.
+
+----------------------------------------------------------------
+FEAT-1706 - Add 3-Column Player Stat Tables Below Detailed League Table
+----------------------------------------------------------------
+
+Description
+Show league player stat tables below the detailed league table.
+
+Requirements
+- Under the detailed league table, display:
+  - Top Scorers
+  - Top Assists
+  - Clean Sheets
+- Arrange these 3 tables in a 3-column layout.
+- Keep the layout readable and balanced.
+- Use the currently available stat data already generated by the simulation systems.
+
+Acceptance Criteria
+- Top Scorers, Top Assists, and Clean Sheets tables appear below the detailed league table.
+- The 3 tables are arranged in a 3-column layout.
+- The tables update for the currently selected league.
+
+----------------------------------------------------------------
+FEAT-1707 - Keep Team Squad Modal Functionality Working in Detailed League Table
+----------------------------------------------------------------
+
+Description
+Preserve the current team-inspection behaviour in the detailed league table.
+
+Requirements
+- Ensure teams remain clickable in the detailed league table.
+- Clicking a team should still open the squad modal.
+- Keep the existing squad detail behaviour and scrolling behaviour intact unless layout changes require small adjustments.
+
+Acceptance Criteria
+- Teams in the detailed league table are still clickable.
+- Squad modals still open correctly from the detailed league table.
+- Existing team inspection behaviour continues to work.
+
+----------------------------------------------------------------
+FEAT-1708 - Add Layout and Styling Support for Compact vs Detailed League Stats Views
+----------------------------------------------------------------
+
+Description
+Adjust layout/styling so the compact Career Home version and detailed League Stats version both feel intentional.
+
+Requirements
+- Style the compact version as a clear summary block suitable for the controls panel.
+- Style the detailed version to work naturally inside the League Stats tab layout.
+- Ensure both variants remain consistent with the wider UI.
+- Keep spacing, readability, and hierarchy clear between:
+  - tabs
+  - detailed league table
+  - stat tables
+
+Acceptance Criteria
+- The compact summary version feels appropriate for Career Home.
+- The detailed page layout feels structured and readable.
+- The two variants feel like intentional parts of one system rather than awkward duplicates.
+
+----------------------------------------------------------------
+FEAT-1709 - Add Debug/Test Support for League Table Variants and Tabbed League Stats
+----------------------------------------------------------------
+
+Description
+Provide lightweight validation support for the new split layout.
+
+Requirements
+- Add development-friendly support for checking:
+  - compact table rendering
+  - detailed table rendering
+  - tab switching
+  - selected league state
+  - correct stat-table updates per tab
+- Keep this lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can verify the compact and detailed variants separately.
+- Tabbed league switching and league-specific stat displays are easier to validate.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The league table component has both compact and detailed variants.
+- The compact variant shows only:
+  - Pos
+  - Team
+  - Pts
+- The compact variant is placed inside careerHome__panel careerHome__panel--controls below the navigation panel.
+- The entire compact variant acts as a link to the League Stats page.
+- The League Stats page uses tabs so only one league is visible at a time.
+- The selected league shows the detailed league table at the top.
+- The detailed league table keeps current functionality, including clickable teams and squad modal access.
+- Below the detailed league table, the Top Scorers, Top Assists, and Clean Sheets tables are shown in a 3-column layout.
+- The overall result is a cleaner Career Home page and a more focused League Stats page.
+
+================================================================
+Implementation Status (2026-03-11)
+================================================================
+
+- FEAT-1701: done
+- FEAT-1702: done
+- FEAT-1703: done
+- FEAT-1704: done
+- FEAT-1705: done
+- FEAT-1706: done
+- FEAT-1707: done
+- FEAT-1708: done
+- FEAT-1709: done

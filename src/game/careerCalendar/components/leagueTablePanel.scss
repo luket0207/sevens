@@ -9,6 +9,32 @@
   padding: 0.7rem;
 }
 
+.leagueTablePanel--link {
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+
+  &,
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+  }
+
+  & * {
+    text-decoration: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba($tertiaryBackground, 0.55);
+    box-shadow: 0 0 0 2px rgba($tertiaryBackground, 0.2);
+    background: rgba($siteBackground, 0.32);
+  }
+}
+
 .leagueTablePanel__header {
   display: flex;
   align-items: center;
@@ -19,6 +45,17 @@
     font-size: 1rem;
     margin-right: auto;
   }
+}
+
+.leagueTablePanel__compactLeagueName {
+  font-size: 0.8rem;
+  color: rgba($lightText, 0.84);
+}
+
+.leagueTablePanel__compactHint {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: rgba($lightText, 0.78);
 }
 
 .leagueTablePanel__selectorLabel {
@@ -36,6 +73,11 @@
 
 .leagueTablePanel__tableWrap {
   overflow-x: auto;
+}
+
+.leagueTablePanel__tableWrap--compact {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .leagueTablePanel__table {
@@ -57,6 +99,40 @@
   }
 }
 
+.leagueTablePanel__table--compact {
+  min-width: 0;
+  table-layout: fixed;
+
+  th,
+  td {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.34rem;
+  }
+
+  th:first-child,
+  td:first-child,
+  th:last-child,
+  td:last-child {
+    width: 2.6rem;
+    text-align: center;
+  }
+}
+
+.leagueTablePanel__table--compact .leagueTablePanel__teamCell {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.leagueTablePanel__table--compact .leagueTablePanel__teamName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .leagueTablePanel__row--player {
   background: rgba($tertiaryBackground, 0.22);
 }
@@ -67,6 +143,10 @@
 
 .leagueTablePanel__formCell {
   min-width: 4.7rem;
+}
+
+.leagueTablePanel__pointsCell {
+  font-weight: 700;
 }
 
 .leagueTablePanel__form {

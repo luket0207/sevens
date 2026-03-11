@@ -1,0 +1,116 @@
+EPIC-017 Implementation Log
+Date: 2026-03-11
+
+Scope implemented:
+- Split league table UI into compact and detailed variants.
+- Moved compact league snapshot into Career Home controls panel as a single clickable card to League Stats.
+- Reworked League Stats page into one-league-at-a-time tabs with detailed standings first and 3-column player stat tables below.
+- Added lightweight debug visibility for selected tab state and per-tab table/stat row counts.
+
+Feature status:
+- FEAT-1701: done
+- FEAT-1702: done
+- FEAT-1703: done
+- FEAT-1704: done
+- FEAT-1705: done
+- FEAT-1706: done
+- FEAT-1707: done
+- FEAT-1708: done
+- FEAT-1709: done
+
+What was implemented:
+- Refactored `LeagueTablePanel` into explicit variants:
+  - `detailed`: preserves full standings columns, form dots, team click -> squad modal
+  - `compact`: shows only `Pos`, `Team`, `Pts` and supports full-card link mode
+- Added controlled competition support to `LeagueTablePanel` so League Stats tabs can drive which league table is displayed.
+- Added compact panel link treatment and compact-table sizing for controls-panel use.
+- Updated Career Home flow:
+  - removed standalone full-width league-table panel
+  - inserted compact snapshot inside `CareerControlPanel` below navigation
+  - wired snapshot to player league by default and linked entire card to `/career/league-stats`
+- Updated League Stats page:
+  - added one tab per domestic league
+  - only selected league is rendered at a time
+  - top section shows detailed `LeagueTablePanel`
+  - player stat tables shown directly below in forced 3-column layout
+- Updated shared player-stat table component to support optional fixed 3-column grid mode.
+- Added developer-focused debug block in League Stats (dev mode) for selected league + row-count visibility.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for career/simulation state access in `careerHome` and `careerLeagueStats`.
+- `button` shared component for navigation/back actions.
+- `modalContext` (existing `openModal`) retained for detailed league-table team squad inspection.
+
+Engine components not used (and why):
+- `bars`, `modal` (direct component), `slidePanel`, `toast`, `tooltip` were not required for this layout/navigation refactor.
+- `makeDecision`, `rng`, `saveGame`, `timer` were not required because no simulation logic, persistence behavior, or timed system changed.
+
+Files changed:
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.scss`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.scss`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerHome/careerHome.scss`
+- `src/game/careerLeagueStats/careerLeagueStats.jsx`
+- `src/game/careerLeagueStats/careerLeagueStats.scss`
+- `src/game/careerStats/components/playerStatTables.jsx`
+- `src/game/careerStats/components/playerStatTables.scss`
+- `vibe/epics/EPIC-017/features.txt`
+- `vibe/epics/EPIC-017/implementation.txt`
+- `vibe/epics/EPIC-017/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Compact snapshot currently keeps full league rows in a constrained-height scroll area to retain full context while staying panel-friendly.
+- Dev-only debug support is lightweight text output; if needed later, this can be replaced by a richer dedicated debug panel.
+
+Bug fix pass (2026-03-11, update 1):
+- Implemented BUG-001 to BUG-004 from updated `EPIC-017/bugs.txt`.
+- Key updates:
+  - Removed extra `League Snapshot` wrapper section/title around compact league card.
+  - Removed compact-mode horizontal scrolling and added team-name truncation via ellipsis.
+  - Preserved compact hover card behavior while preventing text underlines on hover/focus.
+  - Removed redundant `League Stats` button from controls navigation.
+
+Engine components considered for update-1 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-1 bug fix:
+- `button` shared component for remaining controls navigation buttons.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because the fix scope was local JSX/SCSS presentation and navigation cleanup.
+
+Additional files changed in update-1 bug-fix pass:
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.scss`
+- `src/game/careerCalendar/components/leagueTablePanel.jsx`
+- `src/game/careerCalendar/components/leagueTablePanel.scss`
+- `vibe/epics/EPIC-017/bugs.txt`
+- `vibe/epics/EPIC-017/implementation.txt`
+- `vibe/epics/EPIC-017/testing.txt`

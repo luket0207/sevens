@@ -1,0 +1,127 @@
+EPIC-017 Testing Log
+Date: 2026-03-11
+
+FEAT-1701 - Split League Table into Compact and Detailed Variants
+Manual steps:
+1. Open `/career/home`.
+2. In the controls panel, locate the compact league snapshot.
+3. Confirm compact table columns are only `Pos`, `Team`, `Pts`.
+4. Open `/career/league-stats`.
+5. Confirm detailed table includes full standings columns and form dots.
+Expected:
+- Compact and detailed variants both render correctly.
+- Compact shows only `Pos`, `Team`, `Pts`.
+- Detailed preserves full standings behavior.
+
+FEAT-1702 / FEAT-1703 - Compact League Table in Controls Panel and Clickable as One Link
+Manual steps:
+1. Open `/career/home`.
+2. Confirm compact league snapshot appears inside `Career Controls` panel below navigation section.
+3. Click multiple areas of the compact snapshot card (header, middle rows, lower rows).
+Expected:
+- Compact league snapshot is positioned below navigation in controls panel.
+- Entire snapshot acts as one link target and routes to `/career/league-stats`.
+
+FEAT-1704 / FEAT-1705 - League Tabs with Detailed Table on Active Tab
+Manual steps:
+1. Open `/career/league-stats`.
+2. Verify a tab button exists for each domestic league.
+3. Click each tab and observe content switch.
+4. For each selected tab, confirm detailed standings table appears at top.
+Expected:
+- Only one league is visible at a time.
+- Tab changes update the selected league correctly.
+- Detailed standings table is always at top of active tab content.
+
+FEAT-1706 - 3-Column Player Stat Tables Under Detailed Table
+Manual steps:
+1. Open `/career/league-stats`.
+2. Select any league tab.
+3. Verify `Top Scorers`, `Top Assists`, and `Clean Sheets` appear below detailed table.
+4. On desktop width, verify three tables align in 3-column layout.
+Expected:
+- Three player stat tables render under the standings table.
+- Desktop layout is 3-column.
+- Data updates according to selected league tab.
+
+FEAT-1707 - Team Squad Modal Preserved in Detailed Table
+Manual steps:
+1. Open `/career/league-stats`.
+2. In active league detailed table, click several team names.
+3. Confirm squad modal opens with team details and can be closed.
+Expected:
+- Team names remain clickable in detailed mode.
+- Existing squad modal behavior still works.
+
+FEAT-1708 - Layout and Styling for Compact vs Detailed Views
+Manual steps:
+1. Compare compact snapshot in `/career/home` with detailed view in `/career/league-stats`.
+2. Confirm compact card remains readable inside controls panel without overwhelming layout.
+3. Confirm league-stats page hierarchy is clear: tabs -> detailed table -> stat tables.
+Expected:
+- Compact and detailed views feel intentionally different but visually consistent.
+- League Stats page structure is clear and readable.
+
+FEAT-1709 - Debug/Test Support for Variants and Tab State
+Manual steps:
+1. In development mode, open `/career/league-stats`.
+2. Switch league tabs.
+3. Observe debug block values for selected league id and row/stat counts.
+Expected:
+- Debug block updates with selected tab state.
+- Developers can quickly verify league-specific table/stat switching behavior.
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-017 scope.
+  - No new EPIC-017-specific lint failures remain after implementation adjustments.
+
+Automated tests completed:
+- None added for this UI/layout epic.
+
+Automated tests still needed (optional follow-up):
+- Add targeted integration tests for league-tab switching and league-specific stat table rendering.
+- Add visual regression snapshots for compact vs detailed league table variants.
+
+Test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 1)
+
+BUG-001 - Remove extra compact snapshot wrapper/title
+Manual steps:
+1. Open `/career/home`.
+2. Inspect the controls panel structure after the Navigation section.
+Expected:
+- Compact league card appears directly in the controls stack with no extra `League Snapshot` section/title container.
+
+BUG-002 - Compact table no horizontal scroll + truncated names
+Manual steps:
+1. Open `/career/home`.
+2. Inspect compact league card width and attempt horizontal scrolling.
+3. Check rows with long team names.
+Expected:
+- No horizontal scroll appears in compact mode.
+- Team names truncate with ellipsis when too long.
+
+BUG-003 - No text underline on compact hover
+Manual steps:
+1. Open `/career/home`.
+2. Hover and focus the compact league card.
+Expected:
+- Hover/focus visual treatment remains.
+- Text is not underlined while hovering/focusing compact card.
+
+BUG-004 - Remove League Stats navigation button
+Manual steps:
+1. Open `/career/home`.
+2. Inspect controls -> Navigation button list.
+Expected:
+- `League Stats` button is removed from navigation list.
+- League Stats remains accessible via compact league card click.
+
+Command checks run in update-1 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-017 scope.
+  - No new EPIC-017-specific lint errors were introduced by this bug-fix pass.
+
+Update-1 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

@@ -1,0 +1,73 @@
+@use "../../assets/scss/ui/import" as *;
+
+.staffPage {
+  display: grid;
+  gap: 1rem;
+}
+
+.staffPage__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.staffPage__empty {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba($secondaryBackground, 0.5);
+  background: rgba($primaryBackground, 0.34);
+}
+
+.staffPage__title {
+  color: $lightText;
+}
+
+.staffPage__hint {
+  color: rgba($lightText, 0.86);
+}
+
+.staffPage__coachGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.staffPage__coachCard {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba($secondaryBackground, 0.56);
+  background: linear-gradient(
+    160deg,
+    rgba($secondaryBackground, 0.44) 0%,
+    rgba($primaryBackground, 0.64) 100%
+  );
+  box-shadow:
+    0 8px 18px rgba($darkText, 0.2),
+    inset 0 1px 0 rgba($lightText, 0.12);
+}
+
+.staffPage__coachHead {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.staffPage__coachName {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: $lightText;
+}
+
+.staffPage__coachMeta {
+  font-size: 0.85rem;
+  color: rgba($lightText, 0.86);
+}
+
+.staffPage__coachSkillset .playerSkillsetBars__label,
+.staffPage__coachSkillset .playerSkillsetBars__traitsTitle,
+.staffPage__coachSkillset .playerSkillsetBars__traitItem,
+.staffPage__coachSkillset .playerSkillsetBars__traitsEmpty {
+  color: rgba($lightText, 0.9);
+}

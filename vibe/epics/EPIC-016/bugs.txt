@@ -1,0 +1,234 @@
+BUG-001 - Continue button should have subtle animated colour-matched glow
+Repro steps:
+1. Open `/career/home`.
+2. Observe the bespoke continue button in the career control panel in idle state.
+3. Advance context between league/cup/draw continue states and compare button background colour to glow treatment.
+Expected:
+- Continue button has a subtle always-on animated ambient glow.
+- Glow colour matches the button context colour (league/cup/draw/fallback state).
+Actual:
+- Continue button had static shadow/glow treatment with no continuous ambient animation.
+Suspected cause:
+- Continue button style used fixed shadow values only, with glow changes limited to interaction states (hover/focus).
+Attempted fixes:
+- Reused existing per-context `--continue-glow` token.
+- Added ambient pulse keyframes on base button shadow to avoid extra DOM complexity.
+- Disabled ambient animation during hover/focus/active/disabled states to preserve interaction feedback clarity.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - added `careerCalendarContinueAmbientPulse` keyframes
+  - added subtle animated glow layer in base box-shadow using `--continue-glow`
+  - applied animation on default state
+  - paused animation for hover/focus/active/disabled states.
+Status: fixed
+
+BUG-002 - Ambient continue-button glow still not visibly readable at edges
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue button idle state for several seconds.
+3. Compare edge glow visibility against dark page background.
+Expected:
+- Animated glow should be clearly visible around button edges while remaining subtle.
+Actual:
+- Ambient animation existed but edge glow remained too faint to notice in normal view.
+Suspected cause:
+- Initial ambient glow alpha/radius were too low and merged into base shadow.
+Attempted fixes:
+- Added dedicated `--continue-ambient-glow` token separate from interaction glow.
+- Increased animated edge-glow radius/intensity slightly while keeping subtle pulse timing.
+- Mapped ambient glow token per visual context (league/cup/draw/fallback) to preserve colour matching.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - strengthened ambient pulse keyframes with explicit edge-ring + outer glow layers
+  - introduced per-context `--continue-ambient-glow` values
+  - updated base shadow stack to include visible ambient edge glow in idle state.
+Status: fixed
+
+BUG-003 - Continue button glow should be stronger and remain visible on hover
+Repro steps:
+1. Open `/career/home`.
+2. Observe the bespoke continue button in idle state.
+3. Hover the continue button.
+Expected:
+- Ambient glow is clearly readable while still polished/subtle.
+- Ambient glow remains present while hovering.
+Actual:
+- Glow was visible but too subtle in idle state.
+- Glow disappeared on hover.
+Suspected cause:
+- Ambient glow alpha/radius were still conservative.
+- Hover state shadow stack did not include ambient glow layers and animation had previously been suppressed.
+Attempted fixes:
+- Increased idle ambient glow intensity/radius in pulse keyframes and base box-shadow.
+- Increased per-context ambient glow token strength.
+- Kept animation active on hover and added ambient glow layers directly to hover box-shadow.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - strengthened ambient keyframe glow values (`22px/5px` to `32px/8px` pulse range)
+  - increased context ambient glow token alphas
+  - ensured hover state includes ambient glow layers so glow remains visible while hovering.
+Status: fixed
+BUG-004 - Continue button glow should be stronger with more container breathing room
+Repro steps:
+1. Open `/career/home`.
+2. Observe the bespoke continue button idle animation for several seconds.
+3. Compare glow spill against the parent controls panel boundary.
+Expected:
+- Glow animation is clearly noticeable.
+- Button has enough surrounding space that glow does not feel excessively overflowing.
+- Continue button height is 125px.
+Actual:
+- Glow was still too subtle.
+- Glow spill felt too close to panel edges.
+- Continue button height remained 100px.
+Suspected cause:
+- Ambient glow shadow radii/intensity were not high enough for clear visibility.
+- Button occupied full panel width with limited surrounding margin.
+Attempted fixes:
+- Increased ambient pulse shadow intensity/radius and slightly increased pulse cadence.
+- Increased context ambient-glow token alpha values.
+- Reduced button width and added external margins to create breathing room for glow.
+- Increased continue button height to 125px.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - strengthened ambient pulse shadow layers and hover ambient shadow visibility
+  - increased per-context `--continue-ambient-glow` values
+  - changed button sizing to `height: 125px`, `width: calc(100% - 0.85rem)`, and `margin: 0.35rem auto`.
+Status: fixed
+BUG-005 - Continue button glow should be more concentrated with extra container gap
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue button idle and hover glow shape.
+3. Check spacing between button edges and controls-panel container boundaries.
+Expected:
+- Glow appears tighter/more concentrated around button edges (less wide spread).
+- There is more visible gap between the button and container edges.
+Actual:
+- Glow spread was too broad/diffuse.
+- Spacing to container still felt too tight.
+Suspected cause:
+- Outer glow blur/spread values were too large.
+- Width/margin adjustments were still conservative for container breathing room.
+Attempted fixes:
+- Reduced ambient outer glow radius/spread in idle/pulse/hover shadow stacks.
+- Increased external spacing by reducing button width and increasing vertical margin.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - tightened ambient pulse glow from broad (`30/10`, `44/14`, `42/12`) to more concentrated values (`22/6`, `30/9`, `30/9`)
+  - increased spacing to container via `width: calc(100% - 1.25rem)` and `margin: 0.55rem auto`.
+Status: fixed
+BUG-006 - Continue button glow should be near hard-line with only slight fade
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue button idle glow and hover glow edge profile.
+Expected:
+- Glow reads closer to a crisp edge line.
+- Only a slight fade exists around the edge (not wide spread).
+Actual:
+- Glow still appeared too spread/diffuse.
+Suspected cause:
+- Outer blur/spread layers remained too wide in idle/pulse/hover states.
+Attempted fixes:
+- Tightened ambient outer blur/spread values substantially while keeping edge ring layers.
+- Kept slight outer fade so glow does not appear fully hard/flat.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - reduced ambient outer glow from broad values to tighter values (`10/2` idle, `14/3` pulse/hover)
+  - retained ring layers for crisp edge readability.
+Status: fixed
+
+BUG-007 - Remove "Next Action" text from continue button
+Repro steps:
+1. Open `/career/home`.
+2. Inspect continue button text content.
+Expected:
+- Button shows action label only, without "Next Action".
+Actual:
+- "Next Action" eyebrow text was still displayed above the label.
+Suspected cause:
+- Static eyebrow element remained in continue-button JSX markup.
+Attempted fixes:
+- Removed eyebrow text node from button copy block.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`:
+  - removed `careerCalendarContinueButton__eyebrow` "Next Action" element.
+Status: fixed
+BUG-008 - Continue-button glow animation should travel further out from the edge
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue button glow pulse cycle in idle state.
+Expected:
+- Pulse animation expands further out from button edge at peak phase.
+- Base state remains tighter while pulse visibly travels outward.
+Actual:
+- Pulse distance felt too constrained; outward travel was not pronounced enough.
+Suspected cause:
+- Peak keyframe outer glow radius/spread values were too close to base state.
+Attempted fixes:
+- Increased only the pulse peak outer glow radius/spread while keeping base state tighter.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - increased ambient pulse peak outer glow from `14px 3px` to `20px 5px` at 50% keyframe.
+Status: fixed
+BUG-009 - Continue-button glow should feel like a sonar pulse
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue-button glow animation cycle in idle state.
+Expected:
+- Glow animation feels like a sonar pulse travelling outward from the button edge.
+- Pulse should be clearly directional/expanding rather than just subtle breathing.
+Actual:
+- Existing animation looked more like intensity breathing and did not read as sonar-like outward pulse.
+Suspected cause:
+- Animation was primarily shadow-strength/radius modulation on the button itself, with no explicit expanding ring wave.
+Attempted fixes:
+- Added dedicated outward ring-wave animation layer on the button using a pseudo-element.
+- Kept existing context-colour tokens so pulse remains colour-matched.
+- Disabled the sonar ring for focus-visible/active/disabled states to preserve interaction clarity.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - added `careerCalendarContinueSonarPulse` keyframes
+  - added animated `::after` ring layer that scales outward and fades (sonar pulse effect)
+  - changed button overflow to visible so pulse can travel past edge
+  - increased peak ambient pulse distance in keyframes for stronger outward travel.
+Status: fixed
+
+BUG-010 - Continue button hover sheen/hover treatment appears broken
+Repro steps:
+1. Open `/career/home`.
+2. Hover the bespoke continue button in the career controls panel.
+Expected:
+- Hover sheen and hover visual treatment stay contained to the button shape.
+Actual:
+- Hover effect looked visually broken/unclean, as if clipping was lost.
+Suspected cause:
+- `overflow: hidden` was removed from the button element during sonar-pulse work, so hover sheen rendering was no longer clipped to the button boundary.
+Attempted fixes:
+- Restored clipping on the interactive button surface.
+- Moved sonar pulse rendering to an outer wrapper layer so pulse can still animate outside button bounds.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`:
+  - wrapped button in `careerCalendarContinueButtonShell` container.
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - restored `overflow: hidden` on `.careerCalendarContinueButton`
+  - moved sonar pulse pseudo-element from button to shell wrapper.
+Status: fixed
+
+BUG-011 - Sonar pulse should disappear by 12px max outward travel
+Repro steps:
+1. Open `/career/home`.
+2. Observe continue-button sonar pulse animation over several cycles.
+Expected:
+- Pulse fades out by the time it reaches at most 12px away from button edge.
+Actual:
+- Pulse travelled too far away from the button.
+Suspected cause:
+- Pulse used scale-based expansion (`transform: scale(...)`) tied to button size, causing excessive travel on larger button dimensions.
+Attempted fixes:
+- Replaced scale-based ring growth with fixed pixel-spread animation.
+- Capped peak ring spread at exactly `12px`.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerCalendarContinueButton.scss`:
+  - rewrote `careerCalendarContinueSonarPulse` keyframes to animate box-shadow spread from `0` to `12px`
+  - retained fade-out timing while enforcing fixed maximum travel distance.
+Status: fixed

@@ -1,0 +1,76 @@
+BUG-001 - Remove extra league snapshot section wrapper/title in Career controls
+Repro steps:
+1. Open `/career/home`.
+2. Inspect the right-side career controls panel.
+3. Locate compact league table.
+Expected:
+- Compact league snapshot renders directly in the controls stack without extra titled container.
+Actual:
+- Compact league snapshot was wrapped in `careerControlPanel__section careerControlPanel__section--leagueSnapshot` with an extra "League Snapshot" title.
+Suspected cause:
+- Initial implementation reused section container pattern for consistency but added redundant structure.
+Attempted fixes:
+- Removed wrapper section and heading around compact `LeagueTablePanel`.
+- Kept panel spacing by applying direct child style on `careerControlPanel`.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerControlPanel.jsx` and `careerControlPanel.scss`:
+  - removed `careerControlPanel__section--leagueSnapshot` container/title
+  - rendered compact league table directly under navigation section.
+Status: fixed
+
+BUG-002 - Remove horizontal scroll in compact league table and truncate team names
+Repro steps:
+1. Open `/career/home`.
+2. Inspect compact league table with longer team names.
+Expected:
+- Compact table fits available width without horizontal scrolling.
+- Long team names truncate with ellipsis.
+Actual:
+- Compact table could produce horizontal scroll.
+Suspected cause:
+- Compact table retained minimum width and inherited horizontal overflow from base table wrapper.
+Attempted fixes:
+- Disabled horizontal overflow for compact table wrapper.
+- Switched compact table to fixed layout with no minimum width.
+- Added team-name truncation class and ellipsis styling.
+Final fix:
+- Updated `src/game/careerCalendar/components/leagueTablePanel.jsx` and `leagueTablePanel.scss`:
+  - compact wrapper now uses `overflow-x: hidden`
+  - compact table uses `min-width: 0` and `table-layout: fixed`
+  - team-name element uses ellipsis truncation in compact mode.
+Status: fixed
+
+BUG-003 - Keep compact hover effect but remove text underline
+Repro steps:
+1. Open `/career/home`.
+2. Hover the compact league table card.
+Expected:
+- Card hover treatment remains.
+- No text underline appears on hover/focus.
+Actual:
+- Text could appear underlined while hovering/focusing compact link card.
+Suspected cause:
+- Anchor link hover state allowed text-decoration behavior to affect compact card text.
+Attempted fixes:
+- Explicitly disabled text-decoration for compact link in default/hover/focus states and descendants.
+Final fix:
+- Updated `src/game/careerCalendar/components/leagueTablePanel.scss`:
+  - enforced no text underline for compact link card and child text on hover/focus.
+Status: fixed
+
+BUG-004 - Remove redundant League Stats navigation button from controls
+Repro steps:
+1. Open `/career/home`.
+2. Inspect navigation buttons inside Career controls.
+Expected:
+- No separate "League Stats" button is shown.
+Actual:
+- "League Stats" button still appeared in navigation while compact league card already linked to League Stats.
+Suspected cause:
+- Navigation list not cleaned up after compact card link behavior was added.
+Attempted fixes:
+- Removed `League Stats` button from controls navigation list.
+Final fix:
+- Updated `src/game/careerCalendar/components/careerControlPanel.jsx`:
+  - removed secondary `Button` to `/career/league-stats`.
+Status: fixed

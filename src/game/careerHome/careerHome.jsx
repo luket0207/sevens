@@ -8,7 +8,6 @@ import {
   buildDayTransitionLabel,
   CareerCalendarDebugPanel,
   CareerControlPanel,
-  LeagueTablePanel,
   SeasonCalendar,
 } from "../careerCalendar";
 import { clampMonthIndex, getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
@@ -205,6 +204,14 @@ const CareerHome = () => {
       return fixture.homeTeamId === careerWorld?.playerTeam?.id || fixture.awayTeamId === careerWorld?.playerTeam?.id;
     });
   const pendingPlayerFixtureId = simulationState?.pendingPlayerFixtureId ?? "";
+  const pendingPlayerFixture = pendingPlayerFixtureId
+    ? getSimulationFixtureById({
+        simulationState,
+        fixtureId: pendingPlayerFixtureId,
+      })
+    : null;
+  const primaryContinueCompetitionId =
+    currentDayPlayerFixture?.competitionId ?? pendingPlayerFixture?.competitionId ?? "";
   const dayOneSetupGateState = resolveDayOneSetupGateState({
     currentDay,
     playerTeam: careerWorld?.playerTeam ?? null,
@@ -540,7 +547,14 @@ const CareerHome = () => {
             <CareerControlPanel
               currentDayLabel={buildDayTransitionLabel(currentDay)}
               isSimulatingDay={isSimulatingDay}
-              primaryButtonLabel={primaryButtonLabel}
+              primaryContinueAction={primaryContinueAction}
+              currentDay={currentDay}
+              playerFixtureCompetitionId={primaryContinueCompetitionId}
+              leagueTablesByCompetition={simulationState?.league?.tablesByCompetition ?? {}}
+              playerTeamCompetitionId={careerWorld?.playerTeam?.competitionId ?? "league-5"}
+              playerTeamId={careerWorld?.playerTeam?.id ?? ""}
+              teamLookupById={teamLookupById}
+              teamFormByTeamId={simulationState?.teamFormByTeamId ?? {}}
               onAdvanceDay={moveToNextDay}
             />
           </aside>
@@ -551,16 +565,6 @@ const CareerHome = () => {
             <p className="careerHome__hint">Simulating fixtures and updating standings...</p>
           </section>
         ) : null}
-
-        <section className="careerHome__panel careerHome__panel--leagueTable">
-          <LeagueTablePanel
-            tablesByCompetition={simulationState?.league?.tablesByCompetition ?? {}}
-            defaultCompetitionId={careerWorld?.playerTeam?.competitionId ?? "league-5"}
-            playerTeamId={careerWorld?.playerTeam?.id ?? ""}
-            teamLookupById={teamLookupById}
-            teamFormByTeamId={simulationState?.teamFormByTeamId ?? {}}
-          />
-        </section>
 
         <section className="careerHome__panel careerHome__panel--debug">
           <CareerCalendarDebugPanel

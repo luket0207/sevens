@@ -310,3 +310,292 @@ Additional files changed in update-5 bug-fix pass:
 - `vibe/epics/EPIC-015/bugs.txt`
 - `vibe/epics/EPIC-015/implementation.txt`
 - `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 6):
+- Implemented BUG-018 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Added Google font `Tourney` to global font loading in `index.html`.
+  - Split typography into display font (`$fontDisplay`) and body/copy font (`$fontPrimary`) in `typography.scss`.
+  - Applied requested exclusions so `p`, `ul`, `ol`, `li`, `a`, and `span` remain on body/copy font.
+  - Ensured all button text uses `Tourney`, including link buttons, by setting `.btn` font family explicitly in shared button styling.
+
+Engine components considered for update-6 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-6 bug fix:
+- `button` shared UI component styling (`button.scss`) to enforce Tourney on button text.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a global typography/font-system adjustment.
+
+Additional files changed in update-6 bug-fix pass:
+- `index.html`
+- `src/assets/scss/ui/typography.scss`
+- `src/engine/ui/button/button.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 7):
+- Implemented BUG-019 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Shifted typography to Tourney for all text by aligning body/copy token with display token.
+  - Updated code/debug text to use Tourney to satisfy all-text requirement.
+  - Simplified Google Fonts import to Tourney-only.
+
+Engine components considered for update-7 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-7 bug fix:
+- `button` shared styles remained compatible; no behavior changes required.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this global typography token/import adjustment.
+
+Additional files changed in update-7 bug-fix pass:
+- `index.html`
+- `src/assets/scss/ui/typography.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 8):
+- Implemented BUG-020 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Reverted global font import from Tourney back to Geom in `index.html`.
+  - Reverted typography token/setup changes introduced in BUG-018/019:
+    - removed Tourney display/body split
+    - restored single Geom-based primary typography flow
+    - restored monospace code/pre font stack.
+  - Removed explicit button font override so shared button text follows baseline typography again.
+
+Engine components considered for update-8 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-8 bug fix:
+- `button` shared styling layer (`button.scss`) to remove Tourney-specific font override added in BUG-018.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a typography/import rollback only.
+
+Additional files changed in update-8 bug-fix pass:
+- `index.html`
+- `src/assets/scss/ui/typography.scss`
+- `src/engine/ui/button/button.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 9):
+- Implemented BUG-021 and BUG-022 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Continue-button day-1 icon alignment:
+    - Added day-aware visual resolution for `LEAGUE_FIXTURE_GENERATION` so day 1 resolves to cup-draw visuals (Champions Cup draw when present on the day).
+    - Reordered continue-button content so icon renders on the right of the label text.
+    - Updated continue-button copy container sizing to keep text left with icon right-aligned.
+  - Staff screen implementation:
+    - Replaced placeholder `/staff` page with real career staff UI.
+    - Displayed selected starting coaches from `career.world.playerTeam.coaches` with fallback to `career.setup.coaches`.
+    - Reused `PlayerSkillsetBars` to present coach attributes.
+    - Added back button from `/staff` to `/career/home`.
+
+Engine components considered for update-9 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-9 bug fixes:
+- `gameContext` for reading persisted selected coaches on `/staff`.
+- `button` for back navigation action on `/staff`.
+- `bars` via `PlayerSkillsetBars` for coach stat display.
+
+Engine components not used (and why):
+- `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this UI mapping and display scope.
+
+Additional files changed in update-9 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `src/game/staff/staff.jsx`
+- `src/game/staff/staff.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 10):
+- Implemented BUG-023 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Removed numeric prefixes from career-start tab labels.
+  - Reworked tab button layout to a two-row stack:
+    - full-width tab name on top
+    - centered completion status beneath.
+  - Tuned tab button shape/spacing to better fit stacked content.
+
+Engine components considered for update-10 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-10 bug fix:
+- `button` (indirectly) via existing tab/button interaction system; no engine component logic changes required.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a local career-start UI/text layout adjustment.
+
+Additional files changed in update-10 bug-fix pass:
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 11):
+- Implemented BUG-024 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Added tertiary-themed pill treatment for career-start tab status feedback.
+  - Tuned status text/icon colour contrast for both pending and complete states.
+  - Kept existing tab completion logic unchanged; this pass is visual styling only.
+
+Engine components considered for update-11 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-11 bug fix:
+- None directly; existing UI rendering logic remained intact.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a local SCSS style refinement on an existing view.
+
+Additional files changed in update-11 bug-fix pass:
+- `src/game/careerStart/careerStart.scss`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 12):
+- Implemented BUG-025 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Added directional arrows to career-start step navigation labels:
+    - `← Back`
+    - `Next →`
+  - Preserved generation-state forward labels (`Start Career` / `Generating Career...`) and existing behavior.
+
+Engine components considered for update-12 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-12 bug fix:
+- `button` component usage in career-start step navigation; no shared engine component code changes required.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a local label/UI adjustment only.
+
+Additional files changed in update-12 bug-fix pass:
+- `src/game/careerStart/careerStart.jsx`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`
+
+Bug fix pass (2026-03-11, update 13):
+- Implemented BUG-026 from updated `EPIC-015/bugs.txt`.
+- Key updates:
+  - Replaced text-arrow labels in step navigation with chevron icons.
+  - Back now renders left chevron icon then text.
+  - Next now renders text then right chevron icon in next-tab navigation state.
+  - Start-career generation labels remained unchanged.
+
+Engine components considered for update-13 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-13 bug fix:
+- `button` existing component consumption in step navigation.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a local button-label/icon presentation update.
+
+Additional files changed in update-13 bug-fix pass:
+- `src/game/careerStart/careerStart.jsx`
+- `vibe/epics/EPIC-015/bugs.txt`
+- `vibe/epics/EPIC-015/implementation.txt`
+- `vibe/epics/EPIC-015/testing.txt`

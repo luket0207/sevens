@@ -331,8 +331,213 @@ Final fix:
 - Kept the existing shared `button.scss` behavior/state system unchanged (token-only adjustment).
 Status: fixed
 
-BUG-018
+BUG-018 - Add Tourney font for global UI/display text with body-copy exclusions
+Repro steps:
+1. Open any screen in the app and inspect typography across headings, labels, buttons, body copy, and links.
+2. Compare typography for:
+  - excluded copy elements (`p`, `ul`, `ol`, `li`, `a`, `span`)
+  - all other UI/display text (including button text).
+Expected:
+- Google font `Tourney` should be used broadly for UI/display text.
+- `p`, `ul`, `ol`, `li`, `a`, and `span` should stay on the body/copy font stack.
+- Button text should use `Tourney` (including link-styled buttons).
+Actual:
+- Project typography used the existing global font stack and did not apply `Tourney` under the requested split.
+Suspected cause:
+- Global typography system had a single primary font definition and no display-vs-body split.
+- Link-based buttons (`<a class="btn">`) would also inherit link typography unless explicitly overridden.
+Attempted fixes:
+- Added `Tourney` to Google Fonts import in `index.html`.
+- Split typography tokens into body/copy (`$fontPrimary`) and display/UI (`$fontDisplay`) in `typography.scss`.
+- Applied exclusions for `p`, `ul`, `ol`, `li`, `a`, and `span` to keep body/copy font.
+- Set `.btn` to use `$fontDisplay` so all button text uses `Tourney`, including link buttons.
+Final fix:
+- Updated:
+  - `index.html` (Google Fonts includes `Tourney`)
+  - `src/assets/scss/ui/typography.scss` (display/body font split + exclusion selectors)
+  - `src/engine/ui/button/button.scss` (explicit button font to `Tourney`)
+Status: fixed
 
-I want to add a new font into the game.
 
-Can we make all text in the game, apart from p, ul, ol, li, a and span into the google font Tourney. This includes the button text.
+BUG-019 - Apply Tourney to all game text
+Repro steps:
+1. Open app screens with mixed text types (`/info` is sufficient).
+2. Inspect headings, body text, lists, links, spans, button text, and inline code/debug text.
+Expected:
+- All text in the game should render in Google font `Tourney`.
+Actual:
+- After BUG-018, only display text used `Tourney`; body-copy selectors (`p`, `ul`, `ol`, `li`, `a`, `span`) still used the previous copy font.
+Suspected cause:
+- Typography split introduced in BUG-018 intentionally preserved a separate body/copy font token.
+Attempted fixes:
+- Mapped body/copy token to Tourney and removed remaining alternate font usage paths.
+- Simplified Google Fonts import to Tourney only.
+Final fix:
+- Updated `src/assets/scss/ui/typography.scss` so both display and body/copy tokens resolve to `Tourney`.
+- Updated `code/pre` font family to Tourney so debug/code text also follows the all-text requirement.
+- Updated `index.html` Google Fonts import to load Tourney only.
+Status: fixed
+
+
+BUG-020 - Revert global Tourney typography changes from BUG-018 and BUG-019
+Repro steps:
+1. Open `/info` and inspect headings/body text/links/button labels.
+2. Compare typography against pre-BUG-018 baseline.
+Expected:
+- Global typography should be reverted to the prior Geom-based setup.
+- No Tourney-specific display/body split should remain.
+- Shared button component should no longer force Tourney.
+Actual:
+- Tourney-based global typography changes from BUG-018/019 were still active.
+Suspected cause:
+- Font import and typography token changes were intentionally applied in BUG-018/019 and had not yet been rolled back.
+Attempted fixes:
+- Compared current working files against git baseline for:
+  - `index.html`
+  - `src/assets/scss/ui/typography.scss`
+  - `src/engine/ui/button/button.scss`
+Final fix:
+- Reverted `index.html` Google Fonts link from Tourney back to Geom.
+- Reverted `typography.scss` to single Geom-based primary font setup (removed Tourney display/body split and Tourney code/pre mapping).
+- Removed explicit button-level font override from `button.scss` so buttons follow the baseline typography setup.
+Status: fixed
+
+
+BUG-021 - First-day continue button icon should match Champions Cup draw and icon should be right-aligned
+Repro steps:
+1. Open `/career/home` on day 1 of a season.
+2. Compare the calendar event for day 1 with the continue button icon.
+3. Observe icon position inside the continue button.
+Expected:
+- On day 1, the continue button should use the Champions Cup draw icon (matching the calendar day event).
+- Continue button icon should appear to the right of the text.
+Actual:
+- Continue button showed a league-match icon for day 1.
+- Icon was rendered on the left side of the text.
+Suspected cause:
+- `LEAGUE_FIXTURE_GENERATION` action was mapped to league-match visuals regardless of day-1 draw context.
+- Continue button JSX rendered icon markup before text content.
+Attempted fixes:
+- Added day-aware visual override for `LEAGUE_FIXTURE_GENERATION` in the continue-button visual resolver.
+- Added day event cup-draw detection with Champions Cup priority.
+- Reordered continue button markup and adjusted layout styles.
+Final fix:
+- Updated `careerCalendarContinueButton` so day-1 `LEAGUE_FIXTURE_GENERATION` resolves to a cup-draw visual (preferring Champions Cup draw when present).
+- Reordered continue button content so icon renders after copy.
+- Updated continue button copy container styles to grow and keep icon on the right.
+Status: fixed
+
+BUG-022 - Staff screen should show selected coaches and include back navigation
+Repro steps:
+1. Select coaches in `/career/start`.
+2. Start a career and open `/staff`.
+Expected:
+- `/staff` should display the selected coaches from career setup.
+- `/staff` should include a back button to return to career flow.
+Actual:
+- `/staff` was still a placeholder page with no coach list and no back button.
+Suspected cause:
+- Staff route used `PlaceholderPage` and did not read coach data from game state.
+Attempted fixes:
+- Replaced placeholder route content with a dedicated staff page implementation.
+- Read coaches from `career.world.playerTeam.coaches` with fallback to `career.setup.coaches`.
+- Reused shared stat-bar component for coach attributes.
+Final fix:
+- Implemented staff page UI in `src/game/staff/staff.jsx` with:
+  - selected coach cards
+  - coach stat bars
+  - back button to `/career/home`
+  - empty-state message when no coaches exist.
+- Added `src/game/staff/staff.scss` for staff page layout and coach card styling.
+Status: fixed
+
+BUG-023 - Improve career-start tab visual layout
+Repro steps:
+1. Open `/career/start`.
+2. Inspect the top tab row labels and status layout.
+Expected:
+- Tab labels should not include numeric prefixes.
+- Tab name text should span full button width.
+- Status row should be centered underneath the tab name text.
+Actual:
+- Labels included leading numbers (`1.`, `2.`, etc).
+- Tab content used a single-row layout with label and status side-by-side.
+Suspected cause:
+- Tab labels were hardcoded with numeric prefixes in `CAREER_START_TABS`.
+- Tab button styling used horizontal flex alignment.
+Attempted fixes:
+- Updated tab label source values to remove numbering.
+- Refactored tab button styling to stacked layout.
+Final fix:
+- Updated `src/game/careerStart/careerStart.jsx` tab labels to:
+  - `Name and Stadium Name`
+  - `Kits`
+  - `Team Selection`
+  - `Coaches`
+- Updated `src/game/careerStart/careerStart.scss`:
+  - `careerStart__tabBtn` to two-row grid layout
+  - full-width `careerStart__tabLabel`
+  - centered `careerStart__tabStatus` beneath the label.
+Status: fixed
+
+BUG-024 - Tab status feedback should render as tertiary pill
+Repro steps:
+1. Open `/career/start`.
+2. Inspect the status row in each setup tab (`Pending` / `Complete`).
+Expected:
+- Status feedback should render inside a pill.
+- Pill styling should use the tertiary background palette.
+- Status text/icon colours should remain readable and appropriate for pending vs complete.
+Actual:
+- Status was plain inline text/icon with no dedicated pill container styling.
+Suspected cause:
+- `careerStart__tabStatus` had no background/border/pill treatment.
+Attempted fixes:
+- Updated tab status class styling in `careerStart.scss` to add pill treatment using tertiary tokens.
+- Tuned pending/done text and icon colours for contrast and semantic state readability.
+Final fix:
+- Updated `src/game/careerStart/careerStart.scss`:
+  - `careerStart__tabStatus` now has rounded pill container, tertiary background, and border.
+  - `careerStart__tabStatus--done` uses completed-state colour treatment while staying readable on tertiary background.
+  - status icon sizing/contrast adjusted for the new pill presentation.
+Status: fixed
+
+BUG-025 - Add directional arrows to career-start step navigation buttons
+Repro steps:
+1. Open `/career/start`.
+2. Inspect the step navigation row containing Back/Next controls.
+Expected:
+- Back button shows a left arrow to the left of the text.
+- Next button shows a right arrow to the right of the text.
+Actual:
+- Back/Next labels displayed plain text without directional arrows.
+Suspected cause:
+- Step-nav button labels in `careerStart.jsx` were static text values.
+Attempted fixes:
+- Updated step-nav label strings to include directional arrow glyphs with explicit placement.
+Final fix:
+- Updated `src/game/careerStart/careerStart.jsx`:
+  - Back label to `← Back`
+  - Next label to `Next →` (for the forward tab-navigation state)
+- Kept existing `Start Career` and `Generating Career...` labels unchanged for generation states.
+Status: fixed
+
+BUG-026 - Use chevron icons instead of text arrows in step navigation
+Repro steps:
+1. Open `/career/start`.
+2. Inspect the Back and Next controls in the step navigation row.
+Expected:
+- Back should use a left chevron icon before the text.
+- Next should use a right chevron icon after the text.
+Actual:
+- Back/Next used text arrows (`←`, `→`) instead of chevron icons.
+Suspected cause:
+- Step-nav labels were string literals with arrow glyphs.
+Attempted fixes:
+- Switched Back/Next button children to include icon elements using existing PrimeIcons classes.
+Final fix:
+- Updated `src/game/careerStart/careerStart.jsx`:
+  - Back control now renders `pi pi-chevron-left` icon before `Back`.
+  - Next control now renders `Next` followed by `pi pi-chevron-right` icon (only in next-tab navigation state).
+- Preserved existing `Start Career` / `Generating Career...` labels for generation states.
+Status: fixed

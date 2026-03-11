@@ -72,3 +72,201 @@ Automated tests still needed (optional follow-up):
 - Visual regression snapshots for button variants/states to protect design system changes over time.
 
 Test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+FEAT-1611 - Bespoke context-aware Continue button for Career Calendar
+Manual steps:
+1. Open `/career/home`.
+2. Inspect the Continue action panel in the right-side Career Controls section.
+3. Verify the continue action is no longer rendered as the shared generic `Button` style and instead appears as a bespoke 100px action-card style control.
+4. Verify label text still reflects continue-flow context (examples: Match, Cup Draw, Fixture Generation, Next Day).
+5. Verify icon behavior:
+   - draw actions show draw icon (box-open)
+   - cup/match contexts show event icon from calendar visual system
+   - non-event actions (for example Next Day / Team Setup) show fallback arrow icon.
+6. Verify event-based colour treatment updates according to action context (league/cup/draw/fallback style families).
+7. Hover/focus/press the bespoke continue button and verify:
+   - premium visual response is present
+   - no scale, no movement, and no layout shift occurs
+   - control remains fixed at 100px height.
+8. Trigger continue flow from each major branch (match day, cup draw day, normal next-day flow) and confirm routing/behavior remains unchanged.
+Expected:
+- Continue action next to the calendar uses bespoke component and not shared button.
+- Context-aware label logic remains correct.
+- Icon and styling are visibly tied to the upcoming event type.
+- Fallback arrow icon appears when no specific event icon applies.
+- Hover/active/focus behavior matches premium language without changing size/position.
+
+Command checks run for FEAT-1611:
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors introduced by FEAT-1611 changes.
+- `npm run build`: passed.
+
+FEAT-1611 test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 1)
+
+BUG-001 - Continue button subtle animated ambient glow
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button in idle state for a few seconds.
+3. Move through contexts that change continue-button colour theme (league/cup/draw/fallback).
+4. Hover/focus/press the continue button, then return to idle state.
+Expected:
+- Idle button shows subtle continuous glow animation.
+- Glow colour follows active button context colour.
+- Hover/focus/active states remain clear and are not overwhelmed by ambient animation.
+- Disabled state has no ambient animation.
+
+Command checks run in update-1 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by this glow animation update.
+
+Update-1 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 2)
+
+BUG-002 - Increase visible animated edge glow
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle state and focus on outer button edges.
+3. Compare glow readability across continue-button context colours (league/cup/draw/fallback).
+4. Hover/focus/active the button and verify interaction states still read clearly.
+Expected:
+- Edge glow is visibly readable in idle state.
+- Glow remains colour-matched to current button context.
+- Interaction states still override/clarify presentation without excessive glow.
+
+Command checks run in update-2 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-2 glow visibility adjustments.
+
+Update-2 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 3)
+
+BUG-003 - Stronger glow that remains on hover
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle state and confirm edge glow readability.
+3. Hover the continue button and keep pointer steady.
+4. Check multiple continue contexts (league/cup/draw/fallback) where available.
+Expected:
+- Ambient glow is stronger and clearly readable in idle state.
+- Ambient glow remains visible during hover.
+- Glow remains colour-matched to current context and interaction states still read clearly.
+
+Command checks run in update-3 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-3 glow/hover refinements.
+
+Update-3 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 4)
+
+BUG-004 - Stronger glow with more breathing room and 125px height
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle animation and compare glow visibility to previous iteration.
+3. Confirm the button has additional margin around it inside the controls panel.
+4. Confirm button height now renders at 125px and width is slightly reduced from full panel width.
+5. Hover the button and verify glow remains visible and readable.
+Expected:
+- Glow animation is more noticeable in idle state.
+- Hover state retains strong visible glow.
+- Button has more surrounding space so glow is less cramped against panel edges.
+- Continue button height is 125px.
+
+Command checks run in update-4 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-4 glow/sizing adjustments.
+
+Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 5)
+
+BUG-005 - Concentrated glow + increased container gap
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle glow and compare spread around edges.
+3. Hover the continue button and inspect glow spread.
+4. Verify spacing between button boundary and controls-panel container edges.
+Expected:
+- Glow is visually tighter/more concentrated, with less wide diffuse spill.
+- Hover glow remains visible but not overly spread out.
+- Button has more surrounding gap from the container.
+
+Command checks run in update-5 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-5 glow concentration/spacing refinements.
+
+Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 6)
+
+BUG-006 - Glow closer to hard-line with slight fade
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle glow edge profile.
+3. Hover the continue button and compare glow spread to idle.
+Expected:
+- Glow reads as a tighter edge line with only slight fade.
+- Hover glow remains visible without broad diffuse spread.
+
+BUG-007 - Remove "Next Action" text
+Manual steps:
+1. Open `/career/home`.
+2. Inspect continue button text content.
+Expected:
+- "Next Action" text is not displayed.
+- Action label remains visible and unchanged.
+
+Command checks run in update-6 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-6 glow/text refinements.
+
+Update-6 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 7)
+
+BUG-008 - Glow pulse travels further out from edge
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button pulse from base state to peak.
+3. Compare peak glow reach against the tighter base glow ring.
+Expected:
+- Peak phase visibly travels further outward from edge than base state.
+- Base state remains concentrated while animation shows clear outward movement.
+
+Command checks run in update-7 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-7 pulse-distance refinement.
+
+Update-7 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 8)
+
+BUG-009 - Sonar-style outward pulse
+Manual steps:
+1. Open `/career/home`.
+2. Observe continue button idle glow animation for multiple cycles.
+3. Verify animation reads as an outward travelling ring pulse from the button edge.
+4. Hover the button and ensure pulse remains readable.
+5. Focus/active/disabled the button and ensure interaction states remain clear.
+Expected:
+- Animation reads like a sonar pulse wave expanding from button edge.
+- Pulse remains colour-matched to current button context.
+- Interaction states stay readable and are not visually overwhelmed.
+
+Command checks run in update-8 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-016 scope.
+  - No new EPIC-016-specific lint errors were introduced by update-8 sonar-pulse refinement.
+
+Update-8 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

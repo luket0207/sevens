@@ -331,3 +331,165 @@ Command checks run in update-5 bug-fix pass:
 - `npm run build`: passed.
 
 Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 6)
+
+BUG-018 - Add Tourney display font with body-copy exclusions
+Manual steps:
+1. Open `/info` and inspect headings, section labels, button text, paragraph text, list text, links, and inline spans.
+2. Verify font behavior by element type:
+   - `p`, `ul`, `ol`, `li`, `a`, `span` should remain on body/copy font.
+   - Other UI/display text should use `Tourney`.
+3. Inspect primary/secondary/tertiary buttons, including link buttons, and verify button text renders in `Tourney`.
+Expected:
+- Display/UI text uses `Tourney`.
+- Excluded body-copy element set remains on existing body/copy font.
+- Button text consistently uses `Tourney`.
+
+Command checks run in update-6 bug-fix pass:
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-6 typography/font changes.
+- `npm run build`: passed.
+
+Update-6 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 7)
+
+BUG-019 - Make all game text Tourney
+Manual steps:
+1. Open `/info` and inspect headings, paragraphs, lists, links, spans, button text, and code/debug snippets.
+2. Verify all text styles render in Tourney.
+Expected:
+- All text in the game uses Tourney (no remaining Geom/body-copy fallback styles in UI typography selectors).
+
+Command checks run in update-7 bug-fix pass:
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors introduced by update-7 typography/font changes.
+- `npm run build`: passed.
+
+Update-7 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 8)
+
+BUG-020 - Revert BUG-018/019 font changes
+Manual steps:
+1. Open `/info` and inspect headings, paragraphs, lists, links, spans, button text, and code/debug snippets.
+2. Verify typography matches the pre-BUG-018 baseline:
+   - global primary font resolves to Geom
+   - no Tourney-specific display/body split behavior
+   - shared button text no longer has a Tourney-only override.
+Expected:
+- Font system is reverted to the Geom-based baseline.
+- Buttons follow shared baseline typography behavior.
+
+Command checks run in update-8 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-8 typography rollback.
+
+Update-8 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 9)
+
+BUG-021 - Day-1 continue icon + right-side icon placement
+Manual steps:
+1. Open `/career/home` on day 1.
+2. Check the day tile/event list and identify the day-1 cup draw event.
+3. Inspect the continue button visual.
+4. Verify icon position relative to text.
+Expected:
+- Day-1 continue button uses a cup-draw visual (Champions Cup draw when present).
+- Continue-button icon renders to the right of the text.
+
+BUG-022 - Staff screen shows selected coaches + back button
+Manual steps:
+1. Complete coach selection in `/career/start` and start a career.
+2. Open `/staff`.
+3. Verify selected coaches are listed as cards with their key coach stats.
+4. Click the back button.
+Expected:
+- Staff page displays selected coaches from career state.
+- Back button returns to `/career/home`.
+
+Command checks run in update-9 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-9 changes.
+- Targeted eslint invocation for changed files could not be executed in this shell due local PowerShell execution-policy restrictions on `npx`/`npm exec`.
+
+Update-9 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 10)
+
+BUG-023 - Career-start tabs visual layout refresh
+Manual steps:
+1. Open `/career/start`.
+2. Inspect each tab label text.
+3. Verify tab content alignment inside each tab button.
+Expected:
+- No leading numbers in tab names.
+- Tab name text spans full button width.
+- Status row is centered below the tab name.
+
+Command checks run in update-10 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-10 tab layout changes.
+
+Update-10 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 11)
+
+BUG-024 - Tab status tertiary pill styling
+Manual steps:
+1. Open `/career/start`.
+2. Inspect each tab status indicator for both pending and complete states.
+3. Verify status appears as a pill beneath the tab label.
+Expected:
+- Tab status feedback renders in a rounded pill.
+- Pill uses tertiary-background styling.
+- Text/icon remains readable with clear pending/complete distinction.
+
+Command checks run in update-11 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-11 tab status styling changes.
+
+Update-11 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 12)
+
+BUG-025 - Add arrows to Back/Next step navigation controls
+Manual steps:
+1. Open `/career/start`.
+2. Inspect the step navigation row.
+3. Verify arrow placement in button labels.
+Expected:
+- Back button reads `← Back` (left arrow before text).
+- Next button reads `Next →` (right arrow after text) when navigating tabs.
+- `Start Career` / `Generating Career...` states remain unchanged.
+
+Command checks run in update-12 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-12 label changes.
+
+Update-12 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-11, update 13)
+
+BUG-026 - Replace text arrows with chevron icons
+Manual steps:
+1. Open `/career/start`.
+2. Inspect Back and Next controls in the step navigation row.
+Expected:
+- Back shows a chevron-left icon before `Back`.
+- Next shows `Next` followed by a chevron-right icon in next-tab navigation state.
+- `Start Career` / `Generating Career...` labels remain unchanged.
+
+Command checks run in update-13 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-015 scope.
+  - No new EPIC-015-specific lint errors were introduced by update-13 icon-label changes.
+
+Update-13 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

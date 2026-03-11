@@ -11,6 +11,10 @@
   gap: 0.55rem;
 }
 
+.playerStatTables__grid--threeColumn {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .playerStatTables__card {
   border: 1px solid rgba($lightText, 0.18);
   border-radius: 10px;
@@ -44,5 +48,17 @@
 
   tbody tr:last-child td {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .playerStatTables__grid--threeColumn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .playerStatTables__grid--threeColumn {
+    grid-template-columns: 1fr;
   }
 }

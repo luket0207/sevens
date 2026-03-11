@@ -56,18 +56,23 @@
   border-radius: 999px;
   background: rgba($secondaryBackground, 0.72);
   color: $lightText;
-  padding: 0.42rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.58rem;
   width: 100%;
-  min-height: 2.45rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
+  min-height: 3.35rem;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 0.24rem;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
 }
 
 .careerStart__tabLabel {
+  display: block;
+  width: 100%;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
   min-width: 0;
 }
 
@@ -79,32 +84,42 @@
 .careerStart__tabStatus {
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba($lightText, 0.78);
-  display: inline-flex;
+  color: rgba($tertiaryForeground, 0.88);
+  width: 100%;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
+  justify-self: center;
+  max-width: fit-content;
+  padding: 0.12rem 0.56rem;
+  border-radius: 999px;
+  border: 1px solid rgba($tertiaryForeground, 0.28);
+  background: rgba($tertiaryBackground, 0.96);
 }
 
 .careerStart__tabStatusIcon {
-  width: 1rem;
-  height: 1rem;
+  width: 0.96rem;
+  height: 0.96rem;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba($formResultLoss, 0.6);
+  border: 1px solid rgba($formResultLoss, 0.78);
   color: $formResultLoss;
-  background: rgba($formResultLoss, 0.14);
+  background: rgba($formResultLoss, 0.16);
+  font-size: 0.62rem;
+  line-height: 1;
 }
 
 .careerStart__tabStatus--done {
-  color: rgba($lightText, 0.95);
+  color: rgba($formResultWin, 0.95);
 }
 
 .careerStart__tabStatus--done .careerStart__tabStatusIcon {
-  border-color: rgba($formResultWin, 0.7);
+  border-color: rgba($formResultWin, 0.78);
   color: $formResultWin;
-  background: rgba($formResultWin, 0.16);
+  background: rgba($formResultWin, 0.2);
 }
 
 .careerStart__teamSelectionTab {
@@ -758,4 +773,3 @@
     grid-template-columns: 1fr;
   }
 }
-

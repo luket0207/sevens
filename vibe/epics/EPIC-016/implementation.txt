@@ -18,6 +18,7 @@ Feature status:
 - FEAT-1608: done
 - FEAT-1609: done
 - FEAT-1610: done
+- FEAT-1611: done
 
 What was implemented:
 - Added shared button design tokens to `src/assets/scss/ui/colours.scss`:
@@ -68,3 +69,353 @@ Files changed:
 Tradeoffs / follow-up tasks:
 - The debug review matrix is currently placed in Info UI docs to support implementation verification; keep or hide later based on production documentation preference.
 - Existing repository lint baseline remains failing in unrelated files, so lint cannot currently be used as a clean EPIC-only gate.
+
+Feature update (2026-03-11): FEAT-1611 - Bespoke context-aware Continue button for Career Calendar
+
+What was implemented:
+- Replaced the shared generic primary `Button` in the career calendar control panel with a dedicated component:
+  - `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+  - `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- Integrated bespoke button into `CareerControlPanel`:
+  - removed generic primary variant usage for the Continue action
+  - preserved shared buttons for secondary navigation links
+- Wired contextual event metadata into the bespoke button:
+  - action text still comes from existing continue-flow label logic (`getContinueFlowLabel`)
+  - icon + visual theme resolve from existing calendar event visual mapping where possible (`resolveCalendarEventVisual`)
+  - fallback icon for non-event actions is Font Awesome arrow (`faArrowRight`)
+- Added event-aware styling treatment by continue action context:
+  - draw actions use draw-themed visuals
+  - cup/league match contexts map to cup/league event visuals
+  - generic next/setup/simulating actions use fallback style/icon
+- Enforced bespoke layout requirements:
+  - fixed 100px button height
+  - “action card/button hybrid” presentation with icon panel + stacked text
+  - premium hover/focus/active effects with no movement/scale/layout shift
+- Updated career-home data wiring to pass competition context for player fixture actions, so match continue actions can inherit correct cup/league visual style.
+
+Engine components considered for FEAT-1611:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used for FEAT-1611:
+- `button` shared component remains used for non-continue controls (navigation links in the same panel).
+
+Engine components not used (and why):
+- The bespoke continue action intentionally does not use the shared button component per feature requirement.
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this UI-component replacement and styling integration.
+
+Additional files changed for FEAT-1611:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 1):
+- Implemented BUG-001 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Added a subtle always-on ambient glow animation to the bespoke continue button.
+  - Glow colour now follows existing contextual button styling by using the per-state `--continue-glow` token.
+  - Kept interaction clarity by disabling ambient animation during hover/focus/active/disabled states.
+
+Engine components considered for update-1 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-1 bug fix:
+- None directly; fix is scoped to existing bespoke continue-button SCSS presentation.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because the bug was a local style animation enhancement.
+
+Additional files changed in update-1 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 2):
+- Implemented BUG-002 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Increased idle ambient edge-glow visibility on the bespoke continue button.
+  - Added dedicated `--continue-ambient-glow` token per button context so glow remains colour-matched while being readable.
+  - Strengthened pulse shadow layers (edge ring + outer blur) without changing interaction-state behavior.
+
+Engine components considered for update-2 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-2 bug fix:
+- None directly; adjustment is local to continue-button SCSS.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a visual token/shadow refinement only.
+
+Additional files changed in update-2 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 3):
+- Implemented BUG-003 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Increased continue-button ambient glow readability in idle state.
+  - Kept ambient glow visible while hovering by including ambient layers in hover shadow treatment.
+  - Preserved existing focus/active/disabled behavior clarity.
+
+Engine components considered for update-3 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-3 bug fix:
+- None directly; adjustment is local to continue-button SCSS.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a style-intensity/hover-state refinement only.
+
+Additional files changed in update-3 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 4):
+- Implemented BUG-004 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Significantly increased idle and pulse ambient glow visibility.
+  - Preserved visible glow on hover while increasing hover ambient intensity.
+  - Added extra spacing around the continue button by reducing width and adding margin.
+  - Increased continue-button height from 100px to 125px.
+
+Engine components considered for update-4 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-4 bug fix:
+- None directly; changes are scoped to continue-button SCSS presentation.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this bug fix only adjusted visual intensity and component sizing.
+
+Additional files changed in update-4 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 5):
+- Implemented BUG-005 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Concentrated the continue-button ambient glow by tightening outer blur/spread values.
+  - Preserved strong visual readability while reducing glow overreach.
+  - Added more gap between button and container by reducing button width and increasing margin.
+
+Engine components considered for update-5 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-5 bug fix:
+- None directly; changes are local to continue-button SCSS.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this bug fix only refined visual spread and spacing.
+
+Additional files changed in update-5 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 6):
+- Implemented BUG-006 and BUG-007 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Tightened continue-button ambient glow to a near hard-line profile with slight fade.
+  - Removed "Next Action" eyebrow text from continue-button copy.
+
+Engine components considered for update-6 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-6 bug fix:
+- None directly; changes are local to continue-button JSX/SCSS.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a presentation/content refinement.
+
+Additional files changed in update-6 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 7):
+- Implemented BUG-008 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Increased glow pulse travel distance at animation peak so glow moves further out from button edge.
+  - Kept tighter base-state profile to preserve concentrated edge look.
+
+Engine components considered for update-7 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-7 bug fix:
+- None directly; change is local to continue-button SCSS keyframes.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was an animation-distance refinement only.
+
+Additional files changed in update-7 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 8):
+- Implemented BUG-009 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Added explicit sonar-style outward pulse ring animation.
+  - Preserved colour matching by reusing existing ambient glow token per context.
+  - Kept focus/active/disabled interaction clarity by disabling sonar ring in those states.
+
+Engine components considered for update-8 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-8 bug fix:
+- None directly; change is local to continue-button SCSS presentation.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a visual animation behavior refinement only.
+
+Additional files changed in update-8 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
+
+Bug fix pass (2026-03-11, update 9):
+- Implemented BUG-010 and BUG-011 from updated `EPIC-016/bugs.txt`.
+- Key updates:
+  - Restored proper hover-effect clipping by reintroducing `overflow: hidden` on the button surface.
+  - Introduced a dedicated shell wrapper around the button for sonar rendering outside the clipped button area.
+  - Reworked sonar pulse animation from scale-based growth to fixed pixel spread capped at `12px` max outward travel.
+
+Engine components considered for update-9 bug fixes:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in update-9 bug fix:
+- None directly; changes are local to the bespoke career-calendar continue-button JSX/SCSS.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because these fixes only refined local component structure and visual animation behavior.
+
+Additional files changed in update-9 bug-fix pass:
+- `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `vibe/epics/EPIC-016/bugs.txt`
+- `vibe/epics/EPIC-016/implementation.txt`
+- `vibe/epics/EPIC-016/testing.txt`
