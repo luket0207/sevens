@@ -129,11 +129,12 @@ Epics and Files
 
 Epic Completion Gate
 - An epic is only done when its testing has been run and documented.
+- After an epic is marked `done`, it must be added to `vibe/epicOverview.txt` in the same change.
 - At the end of every epic, execute and record:
   - Full manual regression flow for that epic
   - Relevant automated tests proving the epic works as intended
   - Any remaining gaps, with clear next actions
-  - Add a brief summary of the epic to the file vibe/epicOverview.txt
+  - Add or update a brief summary entry for that epic in `vibe/epicOverview.txt`
 
 Working Agreement While Vibe Coding
 - Build in small increments and log progress in epic files continuously.

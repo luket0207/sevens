@@ -1,0 +1,463 @@
+EPIC-018 - Staff Card Usage, Staff Slots, and Staff Progression
+
+Overview
+The goal of this epic is to implement how staff cards actually affect the game.
+
+Until now, staff cards have existed mainly as collectible/library items.
+This epic makes them usable.
+
+This epic introduces:
+- active hiring of Staff Member cards
+- active use of Staff Upgrade cards
+- staff slot limits
+- staff slot progression tied to first-time promotion
+- staff card expiry for unused Staff Member cards
+- removal of used staff cards from the library
+- replacement/sacking flow when staff capacity is full
+
+This epic is about:
+- staff card usage
+- team staff management rules
+- staff slot progression
+- staff member replacement flow
+- staff card expiry handling
+
+This epic is not about:
+- changing how staff cards are generated
+- changing the staff card reward matrix
+- changing what staff do in training/scouting resolution beyond being upgraded/hired
+- salary/wage costs
+- money systems
+- staff personalities
+- staff moving between teams
+
+================================================================
+Core Staff Rules
+================================================================
+
+The player begins the game with:
+- 2 members of staff already hired
+- 2 total staff slots
+
+This means:
+- the player starts with a full staff team
+- they cannot hire a 3rd member of staff until they unlock another slot
+
+The player can still obtain additional staff cards while already full:
+- this is fine
+- those cards go into the card library as normal
+- they can later be hired if space becomes available, or by replacing an existing staff member
+
+================================================================
+Staff Slot Progression Rules
+================================================================
+
+Staff slots increase through promotion progression.
+
+Rule:
+- when the team is promoted to a league they have never reached before in that career, they gain 1 extra staff slot
+
+Examples:
+- start in League 5 with 2 staff slots
+- first promotion to League 4 -> gain +1 slot
+- first promotion to League 3 -> gain +1 slot
+- first promotion to League 2 -> gain +1 slot
+- first promotion to League 1 -> gain +1 slot
+
+This means:
+- if the player reaches League 1 for the first time in that career, they will have 6 staff slots total
+
+Important permanence rules:
+- gained slots are permanent for the rest of the career
+- if the player is relegated, they do not lose the slot(s)
+- if the player is promoted back to a league they have already reached before, they do not gain another slot
+- the player only gains a new slot when reaching a higher league than they have ever reached before in that career
+
+This means the career must track:
+- highest league reached so far
+- current total staff slots unlocked
+
+================================================================
+Staff Member Cards
+================================================================
+
+Staff Member cards should now be usable from the card library.
+
+Each Staff Member card in the library should show:
+- its existing staff information
+- a button labelled:
+  - Hire
+
+When Hire is clicked:
+
+Case 1 - space available
+- if the player has an open staff slot
+- the staff member is immediately added to the team staff
+- the card is consumed
+- the card is removed from the library
+
+Case 2 - no space available
+- if the player already has a full staff team
+- the user must be given a choice to:
+  - sack an existing staff member and replace them with the new one
+  - or cancel
+- if they choose to sack:
+  - the chosen current staff member is permanently removed from the game
+  - the new staff member is added to the team
+  - the card is consumed
+  - the card is removed from the library
+- if they cancel:
+  - nothing changes
+  - the card remains in the library
+  - no existing staff member is removed
+
+Important rule:
+- sacked staff members are removed from the game completely
+- do not return them to the library
+- do not keep them in a hidden pool
+
+================================================================
+Staff Member Card Expiry
+================================================================
+
+Unused Staff Member cards should expire.
+
+Rule:
+- 7 days after the card was collected, the card expires
+- expired Staff Member cards are removed from the library
+- the card is lost permanently
+
+Requirements:
+- the expiry value/date must be displayed on the Staff Member card
+- expiry should be based on the in-game calendar/day system
+- once expired, the card should no longer be usable
+
+Scope note:
+- this expiry rule applies to Staff Member cards in the library
+- do not apply this rule to staff who are already hired
+- do not apply this rule to Staff Upgrade cards unless explicitly added later
+
+================================================================
+Staff Upgrade Cards
+================================================================
+
+Staff Upgrade cards should now be usable from the card library.
+
+Each Staff Upgrade card in the library should show:
+- its existing upgrade information
+- a button labelled:
+  - Use
+
+When Use is clicked:
+- open a modal showing the list of current staff members
+- the player chooses which current staff member to apply the upgrade to
+- the effect of the upgrade card is applied to that chosen staff member
+
+Upgrade rules:
+- staff ratings are capped at 100
+- a stat cannot be upgraded beyond 100
+- if the upgrade would exceed 100, clamp it to 100
+- the upgrade applies only to the targeted staff member chosen in the modal
+
+After successful use:
+- the upgrade card is consumed
+- the upgrade card is removed from the library
+
+If the user cancels out of the modal:
+- no effect is applied
+- the card remains in the library
+
+================================================================
+Card Consumption Rules
+================================================================
+
+A staff card should only be removed from the library when its effect has actually been used successfully.
+
+Remove the card when:
+- a Staff Member card is successfully hired
+- a Staff Member card is successfully used to replace/swap with a currently employed staff member
+- a Staff Upgrade card is successfully applied to a staff member
+
+Do not remove the card when:
+- the player opens Hire but cancels
+- the player opens the replacement flow but cancels
+- the player opens Use on a Staff Upgrade card but cancels before applying it
+- the card has not yet been successfully resolved
+
+================================================================
+Integration Rules
+================================================================
+
+This epic should integrate with:
+- the card library
+- the in-game calendar/day progression
+- the player's current staff state
+- the staff slot state
+- promotion progression state
+
+The implementation should preserve the existing staff-card generation system and simply add the usage/application behaviour on top of it.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1801 - Add Persistent Team Staff State with Starting Staff
+----------------------------------------------------------------
+
+Description
+Create the active team staff state used by the career and populate it with the player's starting staff.
+
+Requirements
+- The player should begin the game with 2 hired staff members already active on the team.
+- The player should begin with 2 total staff slots.
+- The team staff state should be stored in career state and be available to the card library and future systems.
+- Keep the structure easy to read and reusable for future staff-related features.
+
+Acceptance Criteria
+- A new career starts with 2 active staff members.
+- A new career starts with 2 staff slots.
+- Team staff state persists in career data.
+
+----------------------------------------------------------------
+FEAT-1802 - Track Highest League Reached and Permanent Staff Slot Unlocks
+----------------------------------------------------------------
+
+Description
+Track the player's highest-ever league reached so staff slot unlocks can be awarded only once per new tier reached.
+
+Requirements
+- Store the highest league reached in the current career.
+- When the player is promoted to a league they have never reached before, unlock exactly 1 additional staff slot.
+- Do not unlock another slot for reaching a league already reached previously.
+- Do not remove unlocked slots after relegation.
+- Continue this progression until the player has reached League 1, resulting in 6 total slots.
+
+Acceptance Criteria
+- Staff slots increase only on first-time promotion to a new highest league.
+- Relegation does not remove unlocked slots.
+- Re-promotion to a previously reached league does not give another slot.
+- Reaching League 1 for the first time results in 6 total slots.
+
+----------------------------------------------------------------
+FEAT-1803 - Display Available Staff Slots and Current Staff Count
+----------------------------------------------------------------
+
+Description
+Expose the player's staff capacity clearly in the relevant UI.
+
+Requirements
+- Show current staff count versus maximum staff slots where appropriate in staff-related UI.
+- This should support the user understanding whether they can hire immediately or need to replace someone.
+- Keep the display simple and clear.
+
+Acceptance Criteria
+- The player can see how many staff they have and how many slots are available.
+- It is clear when the staff team is full.
+
+----------------------------------------------------------------
+FEAT-1804 - Add Hire Action to Staff Member Cards in the Library
+----------------------------------------------------------------
+
+Description
+Make Staff Member cards in the card library actively hireable.
+
+Requirements
+- Staff Member cards should display a button labelled:
+  - Hire
+- Clicking Hire should attempt to add the staff member to the player's active staff.
+- If there is an open staff slot, hire immediately.
+- On successful hire:
+  - add the staff member to active staff
+  - remove the card from the library
+
+Acceptance Criteria
+- Staff Member cards show a Hire button.
+- Clicking Hire adds the staff member immediately if space is available.
+- Successfully hired staff cards are removed from the library.
+
+----------------------------------------------------------------
+FEAT-1805 - Add Staff Replacement / Sacking Flow When Hiring at Full Capacity
+----------------------------------------------------------------
+
+Description
+Handle Staff Member hiring when the player already has a full staff team.
+
+Requirements
+- If the player clicks Hire on a Staff Member card while all staff slots are full:
+  - open a replacement/sacking flow
+- Show the user's current staff list
+- Allow the player to:
+  - choose an existing staff member to sack and replace with the new one
+  - or cancel
+- If a current staff member is chosen:
+  - remove that staff member from the game completely
+  - add the new staff member to active staff
+  - remove the hired card from the library
+- If the user cancels:
+  - no change happens
+  - the card remains in the library
+
+Acceptance Criteria
+- Hiring at full capacity opens a replacement flow.
+- The player can choose an existing staff member to sack.
+- Sacked staff are removed from the game completely.
+- The new staff member replaces them successfully.
+- Cancelling leaves everything unchanged.
+
+----------------------------------------------------------------
+FEAT-1806 - Add Staff Member Card Expiry System
+----------------------------------------------------------------
+
+Description
+Make unused Staff Member cards expire after 7 in-game days.
+
+Requirements
+- Every Staff Member card placed into the library should store when it was collected.
+- 7 days after collection, if the card is still unused in the library, it expires.
+- Expired Staff Member cards should be removed from the library automatically.
+- Expired cards are lost permanently.
+- Do not apply this expiry to already hired staff.
+
+Acceptance Criteria
+- Staff Member cards track their collection timing.
+- Unused Staff Member cards expire 7 in-game days later.
+- Expired Staff Member cards are removed from the library.
+
+----------------------------------------------------------------
+FEAT-1807 - Display Staff Member Card Expiry Information in the Library
+----------------------------------------------------------------
+
+Description
+Show the expiry value/date for Staff Member cards in the card library.
+
+Requirements
+- Each Staff Member card in the library should display its expiry information clearly.
+- The player should be able to understand how long they have left to use the card.
+- Use the in-game day/calendar context rather than real-world time.
+
+Acceptance Criteria
+- Staff Member cards display expiry information.
+- The user can clearly see that these cards will expire if unused.
+
+----------------------------------------------------------------
+FEAT-1808 - Add Use Action to Staff Upgrade Cards in the Library
+----------------------------------------------------------------
+
+Description
+Make Staff Upgrade cards actively usable from the library.
+
+Requirements
+- Staff Upgrade cards should display a button labelled:
+  - Use
+- Clicking Use should open a modal listing the player's current staff.
+- The player can choose one staff member to receive the upgrade.
+- If successfully applied:
+  - update the chosen staff member
+  - remove the Staff Upgrade card from the library
+- If cancelled:
+  - no effect is applied
+  - the card remains in the library
+
+Acceptance Criteria
+- Staff Upgrade cards show a Use button.
+- Clicking Use opens a staff-selection modal.
+- Successfully used upgrade cards are removed from the library.
+- Cancelling keeps the card in the library.
+
+----------------------------------------------------------------
+FEAT-1809 - Apply Staff Upgrade Effects with Rating Cap of 100
+----------------------------------------------------------------
+
+Description
+Apply Staff Upgrade card effects to the selected staff member while respecting stat caps.
+
+Requirements
+- Read the chosen Staff Upgrade card effect.
+- Apply it to the chosen staff member's relevant rating.
+- Staff member ratings cannot exceed 100.
+- Clamp upgraded values at 100 if necessary.
+- Keep the upgrade application logic centralised and reusable.
+
+Acceptance Criteria
+- Staff upgrades correctly modify the intended rating.
+- Ratings never exceed 100.
+- The applied changes persist on the selected staff member.
+
+----------------------------------------------------------------
+FEAT-1810 - Remove Used Staff Cards from the Library Only on Successful Use
+----------------------------------------------------------------
+
+Description
+Enforce correct card-consumption rules for staff cards.
+
+Requirements
+- Remove a Staff Member card from the library only when:
+  - it is successfully hired
+  - or successfully used to replace an existing staff member
+- Remove a Staff Upgrade card from the library only when:
+  - it is successfully applied to a staff member
+- Do not remove a card when the player cancels out before applying its effect.
+
+Acceptance Criteria
+- Used staff cards are removed only after successful application.
+- Cancelled actions do not consume the card.
+
+----------------------------------------------------------------
+FEAT-1811 - Integrate Staff Card Usage with Calendar Day Progression
+----------------------------------------------------------------
+
+Description
+Ensure staff card expiry and staff state update correctly as the in-game days advance.
+
+Requirements
+- Tie Staff Member expiry checks into the in-game calendar/day progression system.
+- As days advance, expired Staff Member cards should be cleaned from the library.
+- Ensure this system works consistently across normal progression.
+
+Acceptance Criteria
+- Staff card expiry updates correctly as the calendar advances.
+- Expired cards disappear at the correct in-game time.
+
+----------------------------------------------------------------
+FEAT-1812 - Add Staff Card Usage Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for validating staff card usage, expiry, and slot progression.
+
+Requirements
+- Add development-friendly visibility for:
+  - current staff members
+  - unlocked staff slots
+  - highest league reached
+  - pending expiring Staff Member cards
+  - Hire/Use resolution outcomes
+  - replacement flow behaviour
+- Keep this lightweight and useful for implementation/testing.
+
+Acceptance Criteria
+- Developers can inspect the key state behind staff card usage.
+- Slot unlocking, expiry, hiring, and upgrades are easier to validate.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The player starts with 2 active staff members and 2 staff slots.
+- Staff slots increase by 1 only when the player reaches a new highest league for the first time.
+- Staff slots are permanent once unlocked.
+- Staff Member cards show a Hire button.
+- Staff Member cards can be hired if staff space is available.
+- If no staff space is available, the player can sack an existing staff member or cancel.
+- Sacked staff are removed from the game completely.
+- Staff Member cards expire 7 in-game days after collection if unused.
+- Staff Member cards display their expiry information in the library.
+- Staff Upgrade cards show a Use button.
+- Staff Upgrade cards can be applied to a chosen current staff member through a modal.
+- Staff ratings are capped at 100 when upgraded.
+- Staff cards are only removed from the library when successfully used.
+- Cancelled staff card actions do not consume the card.
+- Staff card usage is integrated with the in-game calendar and staff state.

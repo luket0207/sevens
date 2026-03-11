@@ -1,5 +1,5 @@
 EPIC OVERVIEW
-Last updated: 2026-03-10
+Last updated: 2026-03-11
 
 EPIC-001 - Core Career Shell (Status: done)
 This epic established the first playable career shell by replacing the original landing flow with a new Home page and wiring base career routes. It implemented the Career Start page structure with required setup state (team name, stadium, kit, players) and gating so career start remains disabled until required values are present.
@@ -43,5 +43,11 @@ This epic introduced a full player-traits foundation across generation, storage,
 EPIC-014 - Roguelike Card Foundation (Status: done)
 This epic replaced the prior training-first direction with a complete card reward/library backbone for career mode. It delivered the unified card model, full definition tables, reward matrix + resolver, 3-card mandatory choice flow, reroll-by-discard logic, persistent card library (sort/filter/discard), and a dedicated reward route. Follow-up bug fixes added debug reward-input controls and stabilized card tile layout with fixed-height, aligned card rows.
 
-EPIC-015 - Placeholder (Status: not started)
-Epic folder and tracking files exist but contain no defined scope or implementation entries yet. This remains reserved for future work.
+EPIC-015 - Career Start Coaches Tab, Team Selection UX Tidy Up, and Team Selection Rebalance (Status: done)
+This epic reworked `/career/start` into a cleaner flow by removing the standalone Players tab, merging player choice into Team Selection, adding coach selection (2 picks from 2x3 common coach groups), and gating pitch setup until player selection is complete with random auto-place support. It also tightened initial team generation from 20-25 to 20-22, integrated coach data into career state and staff page display, and included iterative UX/polish fixes across wizard navigation, kit setup, and setup completion flow.
+
+EPIC-016 - Button System Visual Refresh (Status: done)
+This epic refreshed the shared button system across primary/secondary/tertiary variants with centralized design tokens, stronger visual hierarchy, and premium hover/focus/active/disabled states without layout movement. It also added a dedicated contextual Continue action control for the career calendar with event-based icon/colour treatment and bespoke styling tuned through iterative bug-fix passes.
+
+EPIC-017 - League Table Layout Split and League Stats Tabs (Status: done)
+This epic split league-table rendering into compact and detailed variants, moved the compact snapshot into the Career Home controls panel, and made it a full-card link to League Stats. It also reworked League Stats into one-league-at-a-time tabs with the detailed table at the top and 3-column player stat tables below, while preserving team-click squad modal behavior in detailed mode.
