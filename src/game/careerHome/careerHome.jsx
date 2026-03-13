@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useGame } from "../../engine/gameContext/gameContext";
+import { MODAL_BUTTONS, useModal } from "../../engine/ui/modal/modalContext";
 import FlashModal from "../../engine/ui/flashModal/flashModal";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import {
@@ -20,19 +21,43 @@ import {
   simulateCareerDay,
 } from "../careerSimulation";
 import {
+  ACADEMY_CARD_DEFINITIONS,
+  CARD_RARITIES,
   CardLibraryBar,
+  SCOUTING_CARD_DEFINITIONS,
+  STAFF_UPGRADE_CARD_DEFINITIONS,
+  TRAINING_CARD_DEFINITIONS,
+  addCardToLibrary,
+  attachStaffMemberLifecycleToCard,
+  createCardModel,
   createDefaultCareerCardState,
   discardCardFromLibrary,
   ensureCareerCardState,
   generateCardOfferSet,
+  getPendingStaffMemberExpiries,
+  isStaffMemberCard,
+  isStaffUpgradeCard,
+  normalizeCareerDayNumber,
+  pruneExpiredStaffMemberCards,
   resolveFormWinsBucket,
   resolveLeagueTierFromCompetitionId,
 } from "../cards";
 import { CARD_REWARD_MATCH_RESULTS } from "../cards/constants/cardConstants";
+import { generateStaffMemberCard } from "../cards/utils/staffMemberGenerator";
+import StaffSelectionModalContent from "../staff/components/staffSelectionModalContent";
+import {
+  applyStaffStateToPlayerTeam,
+  applyStaffUpgradeToMember,
+  ensurePlayerTeamStaffState,
+  hireStaffMemberInOpenSlot,
+  replaceActiveStaffMember,
+  resolveStaffSlotSummary,
+} from "../staff/utils/staffState";
 import "./careerHome.scss";
 
 const CALENDAR_STATUS_READY = "ready";
 const DAY_FLASH_DURATION_SECONDS = 1.2;
+const DEBUG_MANUAL_CARD_SOURCE = "debug_manual_add";
 
 const getActiveSeason = (seasons, activeSeasonId) => {
   if (!Array.isArray(seasons) || seasons.length === 0) {
@@ -42,9 +67,87 @@ const getActiveSeason = (seasons, activeSeasonId) => {
   return seasons.find((season) => season.id === activeSeasonId) ?? seasons[0];
 };
 
+const buildDebugManualCardCatalog = () => {
+  const fixedDefinitionEntries = [
+    ...TRAINING_CARD_DEFINITIONS,
+    ...SCOUTING_CARD_DEFINITIONS,
+    ...ACADEMY_CARD_DEFINITIONS,
+    ...STAFF_UPGRADE_CARD_DEFINITIONS,
+  ].map((definition) => {
+    const categoryLabel =
+      definition?.type === "training"
+        ? "Training"
+        : definition?.type === "scouting"
+        ? "Scouting"
+        : definition?.type === "academy"
+        ? "Academy"
+        : definition?.subtype === "staff_upgrade"
+        ? "Staff Upgrade"
+        : "Card";
+
+    return {
+      id: `definition:${definition.id}`,
+      label: `${categoryLabel} | ${definition.rarity} | ${definition.name}`,
+      kind: "fixed_definition",
+      definition,
+    };
+  });
+
+  const proceduralStaffMemberEntries = [
+    CARD_RARITIES.COMMON,
+    CARD_RARITIES.UNCOMMON,
+    CARD_RARITIES.RARE,
+  ].map((rarity) => ({
+    id: `procedural_staff_member:${rarity}`,
+    label: `Staff Member | ${rarity} | Procedural`,
+    kind: "procedural_staff_member",
+    rarity,
+  }));
+
+  const allEntries = [...fixedDefinitionEntries, ...proceduralStaffMemberEntries];
+  allEntries.sort((leftEntry, rightEntry) => leftEntry.label.localeCompare(rightEntry.label));
+  return allEntries;
+};
+
+const instantiateCardFromDebugManualCatalogEntry = (catalogEntry) => {
+  if (!catalogEntry || typeof catalogEntry !== "object") {
+    return null;
+  }
+
+  if (catalogEntry.kind === "procedural_staff_member") {
+    return generateStaffMemberCard({
+      rarity: catalogEntry.rarity,
+      source: DEBUG_MANUAL_CARD_SOURCE,
+    });
+  }
+
+  if (catalogEntry.kind === "fixed_definition") {
+    const definition = catalogEntry.definition;
+    if (!definition || typeof definition !== "object") {
+      return null;
+    }
+
+    return createCardModel({
+      id: "",
+      name: definition.name,
+      type: definition.type,
+      rarity: definition.rarity,
+      subtype: definition.subtype ?? "",
+      definitionId: definition.id,
+      payload: {
+        ...definition,
+      },
+      source: DEBUG_MANUAL_CARD_SOURCE,
+    });
+  }
+
+  return null;
+};
+
 const CareerHome = () => {
   const navigate = useNavigate();
   const { gameState, setGameState, setGameValue } = useGame();
+  const { openModal, closeModal } = useModal();
   const [isFlashOpen, setIsFlashOpen] = useState(false);
   const [flashContent, setFlashContent] = useState("");
   const [isSimulatingDay, setIsSimulatingDay] = useState(false);
@@ -79,8 +182,22 @@ const CareerHome = () => {
     return lookup;
   }, [careerWorld, competitions]);
   const cardsState = useMemo(() => ensureCareerCardState(gameState?.career?.cards), [gameState?.career?.cards]);
+  const cardLibrary = Array.isArray(cardsState?.library) ? cardsState.library : [];
   const calendarState = useMemo(() => gameState?.career?.calendar ?? null, [gameState?.career?.calendar]);
+  const currentCareerDayNumber = normalizeCareerDayNumber(calendarState?.careerDayNumber);
   const simulationState = useMemo(() => calendarState?.simulation ?? null, [calendarState?.simulation]);
+  const playerTeamStaffState = useMemo(
+    () => ensurePlayerTeamStaffState(careerWorld?.playerTeam),
+    [careerWorld?.playerTeam]
+  );
+  const staffSlotSummary = useMemo(
+    () => resolveStaffSlotSummary(playerTeamStaffState),
+    [playerTeamStaffState]
+  );
+  const pendingStaffMemberExpiries = getPendingStaffMemberExpiries({
+    library: cardLibrary,
+    currentCareerDay: currentCareerDayNumber,
+  });
   const seasons = useMemo(
     () => (Array.isArray(calendarState?.seasons) ? calendarState.seasons : []),
     [calendarState]
@@ -111,7 +228,13 @@ const CareerHome = () => {
       return;
     }
 
-    const nextCalendarState = hasCalendarForCurrentWorld ? null : buildCareerCalendarState({ careerWorld });
+    const safeCurrentCareerDayNumber = normalizeCareerDayNumber(currentCalendarState?.careerDayNumber);
+    const nextCalendarState = hasCalendarForCurrentWorld
+      ? null
+      : buildCareerCalendarState({
+          careerWorld,
+          startingCareerDayNumber: safeCurrentCareerDayNumber,
+        });
 
     setGameState((prev) => ({
       ...prev,
@@ -128,6 +251,8 @@ const CareerHome = () => {
               seasons: nextCalendarState?.seasons ?? [],
               activeSeasonId: nextCalendarState?.activeSeasonId ?? "",
               currentDayIndex: nextCalendarState?.currentDayIndex ?? 0,
+              careerDayNumber:
+                nextCalendarState?.careerDayNumber ?? safeCurrentCareerDayNumber,
               visibleMonthIndex: nextCalendarState?.visibleMonthIndex ?? 0,
               pendingFlashDayIndex: null,
               pendingDayResults: nextCalendarState?.pendingDayResults ?? null,
@@ -225,7 +350,6 @@ const CareerHome = () => {
     seasonFixturesRevealed: Boolean(calendarState?.seasonFixturesRevealed),
   });
   const primaryButtonLabel = getContinueFlowLabel(primaryContinueAction);
-  const cardLibrary = Array.isArray(cardsState?.library) ? cardsState.library : [];
   const defaultDebugCardRewardContext = {
     leagueTier: resolveLeagueTierFromCompetitionId(careerWorld?.playerTeam?.competitionId),
     formWins: resolveFormWinsBucket(
@@ -233,6 +357,11 @@ const CareerHome = () => {
     ),
     matchResult: CARD_REWARD_MATCH_RESULTS.WIN,
   };
+  const debugManualCardCatalog = buildDebugManualCardCatalog();
+  const debugManualCardCatalogById = debugManualCardCatalog.reduce((state, entry) => {
+    state[entry.id] = entry;
+    return state;
+  }, {});
 
   const updateVisibleMonth = (nextMonthIndex) => {
     setGameValue(
@@ -264,6 +393,199 @@ const CareerHome = () => {
           },
         },
       };
+    });
+  };
+
+  const commitSuccessfulStaffCardUsage = ({
+    previousState,
+    consumedCardId,
+    nextStaffState,
+    staffActionDebug,
+  }) => {
+    const nowIso = new Date().toISOString();
+    const currentCardsState = ensureCareerCardState(previousState?.career?.cards);
+    const nextLibrary = discardCardFromLibrary({
+      library: currentCardsState.library,
+      cardId: consumedCardId,
+    });
+    const nextPlayerTeam = applyStaffStateToPlayerTeam(
+      previousState?.career?.world?.playerTeam,
+      nextStaffState
+    );
+
+    return {
+      ...previousState,
+      career: {
+        ...previousState.career,
+        world: {
+          ...(previousState.career?.world ?? {}),
+          playerTeam: nextPlayerTeam,
+        },
+        cards: {
+          ...currentCardsState,
+          library: nextLibrary,
+          debug: {
+            ...currentCardsState.debug,
+            lastStaffAction: staffActionDebug,
+            librarySize: nextLibrary.length,
+          },
+          lastUpdatedAt: nowIso,
+        },
+      },
+    };
+  };
+
+  const hireStaffMemberCard = (cardId) => {
+    const incomingCard = cardLibrary.find((card) => card.id === cardId);
+    if (!isStaffMemberCard(incomingCard)) {
+      return;
+    }
+
+    if (!staffSlotSummary.isFull) {
+      setGameState((prev) => {
+        const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+        const nextIncomingCard = currentCardsState.library.find((card) => card.id === cardId);
+        if (!isStaffMemberCard(nextIncomingCard)) {
+          return prev;
+        }
+
+        const currentPlayerTeam = prev?.career?.world?.playerTeam;
+        const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+        const hireResult = hireStaffMemberInOpenSlot({
+          staffState: currentStaffState,
+          incomingStaffMember: nextIncomingCard,
+        });
+        if (!hireResult.ok) {
+          return prev;
+        }
+
+        return commitSuccessfulStaffCardUsage({
+          previousState: prev,
+          consumedCardId: cardId,
+          nextStaffState: hireResult.nextStaffState,
+          staffActionDebug: {
+            type: "hire",
+            status: "success",
+            cardId: cardId,
+            cardName: nextIncomingCard?.name ?? "",
+            targetStaffId: nextIncomingCard?.id ?? "",
+            at: new Date().toISOString(),
+          },
+        });
+      });
+      return;
+    }
+
+    const replacementDescription = `Your staff slots are full (${staffSlotSummary.currentCount}/${staffSlotSummary.maxSlots}). Select one current staff member to sack and replace.`;
+
+    openModal({
+      modalTitle: "Staff Full - Replace Staff Member",
+      buttons: MODAL_BUTTONS.NONE,
+      modalContent: (
+        <StaffSelectionModalContent
+          title={`Hire ${incomingCard?.name ?? "Staff Member"}`}
+          description={replacementDescription}
+          staffMembers={playerTeamStaffState.members}
+          actionLabel="Sack + Replace"
+          onSelectStaff={(outgoingStaffId) => {
+            setGameState((prev) => {
+              const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+              const nextIncomingCard = currentCardsState.library.find((card) => card.id === cardId);
+              if (!isStaffMemberCard(nextIncomingCard)) {
+                return prev;
+              }
+
+              const currentPlayerTeam = prev?.career?.world?.playerTeam;
+              const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+              const replaceResult = replaceActiveStaffMember({
+                staffState: currentStaffState,
+                outgoingStaffId,
+                incomingStaffMember: nextIncomingCard,
+              });
+              if (!replaceResult.ok) {
+                return prev;
+              }
+
+              return commitSuccessfulStaffCardUsage({
+                previousState: prev,
+                consumedCardId: cardId,
+                nextStaffState: replaceResult.nextStaffState,
+                staffActionDebug: {
+                  type: "hire_replace",
+                  status: "success",
+                  cardId: cardId,
+                  cardName: nextIncomingCard?.name ?? "",
+                  replacedStaffId: outgoingStaffId,
+                  replacedStaffName: replaceResult.removedStaffMember?.name ?? "",
+                  targetStaffId: nextIncomingCard?.id ?? "",
+                  at: new Date().toISOString(),
+                },
+              });
+            });
+            closeModal();
+          }}
+          onCancel={closeModal}
+        />
+      ),
+    });
+  };
+
+  const useStaffUpgradeCard = (cardId) => {
+    const upgradeCard = cardLibrary.find((card) => card.id === cardId);
+    if (!isStaffUpgradeCard(upgradeCard)) {
+      return;
+    }
+
+    openModal({
+      modalTitle: "Use Staff Upgrade",
+      buttons: MODAL_BUTTONS.NONE,
+      modalContent: (
+        <StaffSelectionModalContent
+          title={upgradeCard?.name ?? "Staff Upgrade"}
+          description={upgradeCard?.payload?.effect ?? "Select a staff member to receive this upgrade."}
+          staffMembers={playerTeamStaffState.members}
+          actionLabel="Apply Upgrade"
+          onSelectStaff={(targetStaffId) => {
+            setGameState((prev) => {
+              const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+              const nextUpgradeCard = currentCardsState.library.find((card) => card.id === cardId);
+              if (!isStaffUpgradeCard(nextUpgradeCard)) {
+                return prev;
+              }
+
+              const currentPlayerTeam = prev?.career?.world?.playerTeam;
+              const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+              const upgradeResult = applyStaffUpgradeToMember({
+                staffState: currentStaffState,
+                targetStaffId,
+                staffUpgradeCard: nextUpgradeCard,
+              });
+              if (!upgradeResult.ok) {
+                return prev;
+              }
+
+              return commitSuccessfulStaffCardUsage({
+                previousState: prev,
+                consumedCardId: cardId,
+                nextStaffState: upgradeResult.nextStaffState,
+                staffActionDebug: {
+                  type: "upgrade",
+                  status: "success",
+                  cardId: cardId,
+                  cardName: nextUpgradeCard?.name ?? "",
+                  targetStaffId,
+                  targetRatingKey: upgradeResult.appliedChange?.ratingKey ?? "",
+                  previousRatingValue: upgradeResult.appliedChange?.previousValue ?? 0,
+                  nextRatingValue: upgradeResult.appliedChange?.nextValue ?? 0,
+                  at: new Date().toISOString(),
+                },
+              });
+            });
+            closeModal();
+          }}
+          onCancel={closeModal}
+        />
+      ),
     });
   };
 
@@ -340,6 +662,56 @@ const CareerHome = () => {
     });
 
     navigate("/career/card-reward");
+  };
+
+  const triggerDebugManualAddCardToLibrary = (catalogEntryId) => {
+    const catalogEntry = debugManualCardCatalogById[catalogEntryId];
+    if (!catalogEntry) {
+      return;
+    }
+
+    setGameState((prev) => {
+      const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+      const createdCard = instantiateCardFromDebugManualCatalogEntry(catalogEntry);
+      if (!createdCard) {
+        return prev;
+      }
+      const currentCareerDay = normalizeCareerDayNumber(prev?.career?.calendar?.careerDayNumber);
+      const cardWithLifecycle = attachStaffMemberLifecycleToCard({
+        card: createdCard,
+        collectedCareerDay: currentCareerDay,
+      });
+      const addition = addCardToLibrary({
+        library: currentCardsState.library,
+        nextLibraryCardNumber: currentCardsState.nextLibraryCardNumber,
+        card: cardWithLifecycle,
+      });
+
+      return {
+        ...prev,
+        career: {
+          ...prev.career,
+          cards: {
+            ...currentCardsState,
+            library: addition.nextLibrary,
+            nextLibraryCardNumber: addition.nextLibraryCardNumber,
+            debug: {
+              ...currentCardsState.debug,
+              lastStaffAction: {
+                type: "debug_manual_add_card",
+                status: "success",
+                cardId: addition.addedCard?.id ?? "",
+                cardName: addition.addedCard?.name ?? "",
+                catalogEntryId: catalogEntry.id,
+                at: new Date().toISOString(),
+              },
+              librarySize: addition.nextLibrary.length,
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          },
+        },
+      };
+    });
   };
 
   const moveToNextDay = () => {
@@ -482,33 +854,59 @@ const CareerHome = () => {
       const nextDayIndex = currentDayIndex + 1;
       const nextMonthIndex = getMonthIndexFromDayIndex(nextDayIndex);
       const nextDay = activeSeason.days[nextDayIndex] ?? null;
+      const nextCareerDayNumber = currentCareerDayNumber + 1;
 
       if (nextDay) {
         setFlashContent(buildDayTransitionLabel(nextDay));
         setIsFlashOpen(true);
       }
 
-      setGameState((prev) => ({
-        ...prev,
-        career: {
-          ...prev.career,
-          calendar: {
-            ...(prev.career?.calendar ?? {}),
-            currentDayIndex: nextDayIndex,
-            visibleMonthIndex: nextMonthIndex,
-            pendingFlashDayIndex: null,
-            lastAdvancedAt: new Date().toISOString(),
-            simulation: simulationResult.nextSimulationState,
-            championsCupStructure: simulationResult.nextSimulationState?.cups?.competitions?.championsCup ?? {},
-            debug: {
-              ...(prev.career?.calendar?.debug ?? {}),
-              simulation: simulationResult.nextSimulationState?.debug ?? {},
+      setGameState((prev) => {
+        const expiryResult = pruneExpiredStaffMemberCards({
+          cardsState: prev?.career?.cards,
+          currentCareerDay: nextCareerDayNumber,
+        });
+
+        return {
+          ...prev,
+          career: {
+            ...prev.career,
+            calendar: {
+              ...(prev.career?.calendar ?? {}),
+              currentDayIndex: nextDayIndex,
+              careerDayNumber: nextCareerDayNumber,
+              visibleMonthIndex: nextMonthIndex,
+              pendingFlashDayIndex: null,
+              lastAdvancedAt: new Date().toISOString(),
+              simulation: simulationResult.nextSimulationState,
+              championsCupStructure:
+                simulationResult.nextSimulationState?.cups?.competitions?.championsCup ?? {},
+              debug: {
+                ...(prev.career?.calendar?.debug ?? {}),
+                simulation: simulationResult.nextSimulationState?.debug ?? {},
+              },
+              pendingCupDraw: null,
+              pendingDayResults: null,
             },
-            pendingCupDraw: null,
-            pendingDayResults: null,
+            cards: {
+              ...expiryResult.nextCardsState,
+              debug: {
+                ...expiryResult.nextCardsState.debug,
+                lastStaffAction:
+                  expiryResult.expiredCards.length > 0
+                    ? {
+                        type: "staff_member_expiry_cleanup",
+                        status: "success",
+                        expiredCardIds: expiryResult.expiredCards.map((card) => card.id),
+                        expiredCardNames: expiryResult.expiredCards.map((card) => card.name),
+                        at: new Date().toISOString(),
+                      }
+                    : expiryResult.nextCardsState.debug?.lastStaffAction ?? null,
+              },
+            },
           },
-        },
-      }));
+        };
+      });
       setIsSimulatingDay(false);
     };
 
@@ -539,7 +937,14 @@ const CareerHome = () => {
                 canGoNextMonth={visibleMonthIndex < activeSeason.months.length - 1}
               />
 
-              <CardLibraryBar library={cardLibrary} onDiscardCard={discardLibraryCard} />
+              <CardLibraryBar
+                library={cardLibrary}
+                onDiscardCard={discardLibraryCard}
+                onHireStaffMemberCard={hireStaffMemberCard}
+                onUseStaffUpgradeCard={useStaffUpgradeCard}
+                staffSummary={staffSlotSummary}
+                currentCareerDay={currentCareerDayNumber}
+              />
             </div>
           </article>
 
@@ -580,9 +985,14 @@ const CareerHome = () => {
             continueAction={primaryContinueAction}
             continueActionLabel={primaryButtonLabel}
             onTriggerCardReward={triggerDebugCardReward}
+            onTriggerManualAddCardToLibrary={triggerDebugManualAddCardToLibrary}
+            debugManualCardCatalog={debugManualCardCatalog}
             defaultCardRewardContext={defaultDebugCardRewardContext}
             cardDebug={cardsState?.debug ?? {}}
             cardLibrary={cardLibrary}
+            staffSummary={staffSlotSummary}
+            staffState={playerTeamStaffState}
+            pendingStaffMemberExpiries={pendingStaffMemberExpiries}
           />
         </section>
       </section>

@@ -3,39 +3,27 @@ import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import { useGame } from "../../engine/gameContext/gameContext";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import PlayerSkillsetBars from "../shared/playerSkillsetBars/playerSkillsetBars";
+import { ensurePlayerTeamStaffState, resolveStaffSlotSummary } from "./utils/staffState";
 import "./staff.scss";
 
 const mapCoachSkillsForDisplay = (coach) => ({
   "Overall Rating": Number(coach?.payload?.overallRating) || 0,
   Scouting: Number(coach?.payload?.scouting) || 0,
   Judgement: Number(coach?.payload?.judgement) || 0,
-  "Youth Training": Number(coach?.payload?.youthTraining) || 0,
   "GK Training": Number(coach?.payload?.gkTraining) || 0,
   "DF Training": Number(coach?.payload?.dfTraining) || 0,
   "MD Training": Number(coach?.payload?.mdTraining) || 0,
   "AT Training": Number(coach?.payload?.atTraining) || 0,
 });
 
-const normalizeCoachEntries = (coaches) => {
-  if (!Array.isArray(coaches)) {
-    return [];
-  }
-
-  return coaches.filter((coach) => coach && typeof coach === "object");
-};
-
-const resolveSelectedCoaches = (gameState) => {
-  const worldCoaches = normalizeCoachEntries(gameState?.career?.world?.playerTeam?.coaches);
-  if (worldCoaches.length > 0) {
-    return worldCoaches;
-  }
-
-  return normalizeCoachEntries(gameState?.career?.setup?.coaches);
-};
-
 const Staff = () => {
   const { gameState } = useGame();
-  const selectedCoaches = useMemo(() => resolveSelectedCoaches(gameState), [gameState]);
+  const playerTeamStaffState = useMemo(
+    () => ensurePlayerTeamStaffState(gameState?.career?.world?.playerTeam),
+    [gameState?.career?.world?.playerTeam]
+  );
+  const selectedCoaches = playerTeamStaffState.members;
+  const staffSlotSummary = resolveStaffSlotSummary(playerTeamStaffState);
 
   return (
     <PageLayout title="Staff" subtitle="Your selected coaching staff for this career run.">
@@ -45,6 +33,12 @@ const Staff = () => {
             Back to Career Home
           </Button>
         </div>
+        <section className="staffPage__summary">
+          <p>
+            Active staff: {staffSlotSummary.currentCount} / {staffSlotSummary.maxSlots}
+          </p>
+          <p>Highest league reached: League {playerTeamStaffState.highestLeagueTierReached}</p>
+        </section>
 
         {selectedCoaches.length === 0 ? (
           <section className="staffPage__empty">

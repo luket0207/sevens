@@ -104,6 +104,7 @@ const CareerSeasonSummary = () => {
     const nextCalendarState = buildCareerCalendarState({
       careerWorld: nextCareerWorld,
       carryOverTeamFormByTeamId: simulationState?.teamFormByTeamId ?? {},
+      startingCareerDayNumber: Number(calendar?.careerDayNumber) || 0,
     });
 
     setGameState((prev) => ({
@@ -118,6 +119,7 @@ const CareerSeasonSummary = () => {
           seasons: nextCalendarState.seasons,
           activeSeasonId: nextCalendarState.activeSeasonId,
           currentDayIndex: nextCalendarState.currentDayIndex,
+          careerDayNumber: nextCalendarState.careerDayNumber,
           visibleMonthIndex: nextCalendarState.visibleMonthIndex,
           pendingFlashDayIndex: null,
           pendingDayResults: null,

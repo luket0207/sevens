@@ -12,6 +12,17 @@ export {
   resolveLeagueTierFromCompetitionId,
 } from "./utils/cardRewardGenerator";
 export { addCardToLibrary, discardCardFromLibrary, sortAndFilterLibraryCards } from "./utils/cardLibrary";
+export { pruneExpiredStaffMemberCards } from "./utils/staffCardState";
+export {
+  STAFF_MEMBER_CARD_EXPIRY_DAYS,
+  attachStaffMemberLifecycleToCard,
+  formatStaffMemberExpiryLabel,
+  getPendingStaffMemberExpiries,
+  isStaffMemberCard,
+  isStaffUpgradeCard,
+  normalizeCareerDayNumber,
+  removeExpiredStaffMemberCardsFromLibrary,
+} from "./utils/staffCardLifecycle";
 export { default as CardTile } from "./components/cardTile";
 export { default as CardLibraryBar } from "./components/cardLibraryBar";
 export { default as CardRewardChoice } from "./cardRewardChoice";

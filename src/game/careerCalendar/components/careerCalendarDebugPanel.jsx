@@ -25,9 +25,14 @@ const CareerCalendarDebugPanel = ({
   continueAction,
   continueActionLabel,
   onTriggerCardReward,
+  onTriggerManualAddCardToLibrary,
+  debugManualCardCatalog,
   defaultCardRewardContext,
   cardDebug,
   cardLibrary,
+  staffSummary,
+  staffState,
+  pendingStaffMemberExpiries,
 }) => {
   const defaultLeagueTier = Math.max(1, Math.min(5, Number(defaultCardRewardContext?.leagueTier) || 5));
   const defaultFormWins = Math.max(0, Math.min(5, Number(defaultCardRewardContext?.formWins) || 0));
@@ -38,9 +43,23 @@ const CareerCalendarDebugPanel = ({
       ? CARD_REWARD_MATCH_RESULTS.LOSE
       : CARD_REWARD_MATCH_RESULTS.WIN;
 
+  const safeStaffSummary = staffSummary && typeof staffSummary === "object" ? staffSummary : {};
+  const safeStaffState = staffState && typeof staffState === "object" ? staffState : {};
+  const safePendingStaffMemberExpiries = Array.isArray(pendingStaffMemberExpiries)
+    ? pendingStaffMemberExpiries
+    : [];
+  const safeDebugManualCardCatalog = Array.isArray(debugManualCardCatalog)
+    ? [...debugManualCardCatalog]
+    : [];
+  safeDebugManualCardCatalog.sort((leftEntry, rightEntry) =>
+    String(leftEntry?.label ?? "").localeCompare(String(rightEntry?.label ?? ""))
+  );
+  const defaultManualCardEntryId = safeDebugManualCardCatalog[0]?.id ?? "";
+
   const [debugLeagueTier, setDebugLeagueTier] = useState(String(defaultLeagueTier));
   const [debugFormWins, setDebugFormWins] = useState(String(defaultFormWins));
   const [debugMatchResult, setDebugMatchResult] = useState(defaultMatchResult);
+  const [debugManualCardId, setDebugManualCardId] = useState(defaultManualCardEntryId);
 
   const handleTriggerCardReward = () => {
     const parsedLeagueTier = Number.parseInt(debugLeagueTier, 10);
@@ -54,6 +73,13 @@ const CareerCalendarDebugPanel = ({
       formWins: Number.isInteger(parsedFormWins) ? parsedFormWins : defaultFormWins,
       matchResult: safeMatchResult,
     });
+  };
+
+  const handleTriggerManualCardAdd = () => {
+    if (!debugManualCardId) {
+      return;
+    }
+    onTriggerManualAddCardToLibrary(debugManualCardId);
   };
 
   return (
@@ -75,6 +101,14 @@ const CareerCalendarDebugPanel = ({
         </p>
         <p className="careerCalendarDebug__line">
           Continue action: {continueActionLabel} ({continueAction || "n/a"})
+        </p>
+        <p className="careerCalendarDebug__line">
+          Staff slots: {Math.max(0, Number(safeStaffSummary.currentCount) || 0)}/
+          {Math.max(0, Number(safeStaffSummary.maxSlots) || 0)} | Highest league reached: League{" "}
+          {Number(safeStaffState.highestLeagueTierReached) || 5}
+        </p>
+        <p className="careerCalendarDebug__line">
+          Pending staff card expiries: {safePendingStaffMemberExpiries.length}
         </p>
         <div className="careerCalendarDebug__rewardDecision">
           <p className="careerCalendarDebug__line careerCalendarDebug__line--label">Debug card reward context</p>
@@ -116,6 +150,35 @@ const CareerCalendarDebugPanel = ({
             Debug Card Reward
           </Button>
         </div>
+        <div className="careerCalendarDebug__rewardDecision">
+          <p className="careerCalendarDebug__line careerCalendarDebug__line--label">
+            Manual add card to library
+          </p>
+          <div className="careerCalendarDebug__rewardFieldGrid careerCalendarDebug__rewardFieldGrid--single">
+            <label className="careerCalendarDebug__rewardField">
+              <span>Card</span>
+              <select
+                value={debugManualCardId}
+                onChange={(event) => setDebugManualCardId(event.target.value)}
+              >
+                {safeDebugManualCardCatalog.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="careerCalendarDebug__actions">
+            <Button
+              variant={BUTTON_VARIANT.SECONDARY}
+              onClick={handleTriggerManualCardAdd}
+              disabled={!debugManualCardId}
+            >
+              Add Selected Card To Library
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="careerCalendarDebug__jsonPanels">
@@ -143,6 +206,14 @@ const CareerCalendarDebugPanel = ({
           <h3>Card Library</h3>
           <pre>{JSON.stringify(cardLibrary, null, 2)}</pre>
         </article>
+        <article className="careerCalendarDebug__jsonCard">
+          <h3>Staff State</h3>
+          <pre>{JSON.stringify(staffState, null, 2)}</pre>
+        </article>
+        <article className="careerCalendarDebug__jsonCard">
+          <h3>Pending Staff Expiries</h3>
+          <pre>{JSON.stringify(pendingStaffMemberExpiries, null, 2)}</pre>
+        </article>
       </div>
     </section>
   );
@@ -169,6 +240,13 @@ CareerCalendarDebugPanel.propTypes = {
   continueAction: PropTypes.string,
   continueActionLabel: PropTypes.string,
   onTriggerCardReward: PropTypes.func,
+  onTriggerManualAddCardToLibrary: PropTypes.func,
+  debugManualCardCatalog: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      label: PropTypes.string,
+    })
+  ),
   defaultCardRewardContext: PropTypes.shape({
     leagueTier: PropTypes.number,
     formWins: PropTypes.number,
@@ -176,6 +254,12 @@ CareerCalendarDebugPanel.propTypes = {
   }),
   cardDebug: PropTypes.object,
   cardLibrary: PropTypes.array,
+  staffSummary: PropTypes.shape({
+    currentCount: PropTypes.number,
+    maxSlots: PropTypes.number,
+  }),
+  staffState: PropTypes.object,
+  pendingStaffMemberExpiries: PropTypes.arrayOf(PropTypes.object),
 };
 
 CareerCalendarDebugPanel.defaultProps = {
@@ -191,6 +275,8 @@ CareerCalendarDebugPanel.defaultProps = {
   continueAction: "",
   continueActionLabel: "",
   onTriggerCardReward: () => {},
+  onTriggerManualAddCardToLibrary: () => {},
+  debugManualCardCatalog: [],
   defaultCardRewardContext: {
     leagueTier: 5,
     formWins: 0,
@@ -198,6 +284,12 @@ CareerCalendarDebugPanel.defaultProps = {
   },
   cardDebug: {},
   cardLibrary: [],
+  staffSummary: {
+    currentCount: 0,
+    maxSlots: 0,
+  },
+  staffState: {},
+  pendingStaffMemberExpiries: [],
 };
 
 export default CareerCalendarDebugPanel;

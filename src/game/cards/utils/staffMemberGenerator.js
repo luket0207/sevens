@@ -1,6 +1,7 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import { generatePlayerName } from "../../playerGeneration";
 import { CARD_RARITIES, CARD_STAFF_SUBTYPES, CARD_TYPES } from "../constants/cardConstants";
+import { calculateStaffOverallRating } from "../../staff/utils/staffRatings";
 import { createCardModel } from "./cardModel";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -68,7 +69,7 @@ const buildStaffMemberRatings = ({ rarity, rolePreference }) => {
 
   const youthValues = buildRatingSetFromTargetAverage({
     targetAverage: youthAverageTarget,
-    count: 3,
+    count: 2,
   });
   const trainingValues = buildRatingSetFromTargetAverage({
     targetAverage: trainingAverageTarget,
@@ -78,7 +79,6 @@ const buildStaffMemberRatings = ({ rarity, rolePreference }) => {
   return {
     scouting: youthValues[0],
     judgement: youthValues[1],
-    youthTraining: youthValues[2],
     gkTraining: trainingValues[0],
     dfTraining: trainingValues[1],
     mdTraining: trainingValues[2],
@@ -101,16 +101,7 @@ export const generateStaffMemberCard = ({
     rarity: safeRarity,
     rolePreference,
   });
-  const allRatings = [
-    ratings.scouting,
-    ratings.judgement,
-    ratings.youthTraining,
-    ratings.gkTraining,
-    ratings.dfTraining,
-    ratings.mdTraining,
-    ratings.atTraining,
-  ];
-  const overallRating = Math.round(allRatings.reduce((sum, value) => sum + value, 0) / allRatings.length);
+  const overallRating = calculateStaffOverallRating(ratings);
   const generatedName = generatePlayerName().name;
 
   return createCardModel({
@@ -125,7 +116,6 @@ export const generateStaffMemberCard = ({
       overallRating,
       scouting: ratings.scouting,
       judgement: ratings.judgement,
-      youthTraining: ratings.youthTraining,
       gkTraining: ratings.gkTraining,
       dfTraining: ratings.dfTraining,
       mdTraining: ratings.mdTraining,

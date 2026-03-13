@@ -12,6 +12,10 @@ import {
   isSavedTeamManagementComplete,
 } from "../../teamManagement/utils/teamManagementState";
 import { TEAM_MANAGEMENT_DEFAULT_TACTICS } from "../../teamManagement/constants/teamManagementConstants";
+import {
+  applyStaffStateToPlayerTeam,
+  createInitialPlayerTeamStaffState,
+} from "../../staff/utils/staffState";
 
 export const CAREER_GENERATION_PHASES = Object.freeze({
   PREPARING: "preparing",
@@ -73,7 +77,12 @@ const buildPlayerTeamState = (careerSetup) => {
       }
     : defaultTeamManagement;
 
-  return {
+  const initialStaffState = createInitialPlayerTeamStaffState({
+    startingStaffMembers: selectedStartingCoaches,
+    startingCompetitionId: "league-5",
+  });
+
+  const playerTeam = {
     id: "player-team",
     isPlayerTeam: true,
     competitionId: "league-5",
@@ -94,6 +103,8 @@ const buildPlayerTeamState = (careerSetup) => {
     form: [],
     teamManagement,
   };
+
+  return applyStaffStateToPlayerTeam(playerTeam, initialStaffState);
 };
 
 const createProgressEmitter = ({ totalUnits, onProgress }) => {

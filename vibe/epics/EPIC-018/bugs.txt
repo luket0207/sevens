@@ -1,0 +1,125 @@
+EPIC-018 Bug Log
+Date: 2026-03-12
+
+BUG-001 - Add manual card injection dropdown in debug menu
+Repro steps:
+1. Open `/career/home`.
+2. Use the existing debug reward trigger repeatedly to try and get specific staff cards.
+3. Observe that targeting one exact card is slow due reward-roll probabilities.
+Expected:
+- Debug menu should provide a sorted dropdown containing all card types/definitions.
+- User should be able to pick any card and add it directly to the player library.
+Actual:
+- Debug menu only provided reward-context rolls, so obtaining specific cards required repeated random attempts.
+Suspected cause:
+- No deterministic debug path existed for direct card injection into card library.
+Attempted fixes:
+- Added a complete debug card catalog builder in `careerHome`:
+  - includes all fixed definitions (training/scouting/academy/staff-upgrade)
+  - includes procedural staff-member options by rarity
+- Added manual add callback in `careerHome` to:
+  - instantiate selected card
+  - attach staff-member lifecycle metadata where required
+  - append to card library through shared library helper
+- Extended `CareerCalendarDebugPanel` with:
+  - sorted card dropdown
+  - "Add Selected Card To Library" action button
+Final fix:
+- Implemented sorted manual-add dropdown and add action in debug panel:
+  - `src/game/careerHome/careerHome.jsx`
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+- Added direct library insertion flow using existing card-model/state helpers and lifecycle attachment for staff-member expiry tracking.
+Status: fixed
+
+
+BUG-002
+Repro steps:
+1. Open `/career/home`.
+2. Ensure at least one `Staff Member` card exists in Card Library.
+3. Hover over the staff-member card.
+Expected:
+- Hovering a Staff Member card should show the staff member's stat profile.
+- The shown values should be exactly the same values applied when that card is hired.
+Actual:
+- Card hover did not reveal a stat breakdown for staff-member cards.
+Suspected cause:
+- Card tile UI did not include a hover projection panel for staff-member payload ratings.
+Attempted fixes:
+- Updated `CardTile` to build a stat list directly from `card.payload` values used by hire flow:
+  - `overallRating`
+  - `scouting`
+  - `judgement`
+  - `youthTraining`
+  - `gkTraining`
+  - `dfTraining`
+  - `mdTraining`
+  - `atTraining`
+- Added a hover/focus overlay in card-tile styles so staff stats appear on hover without changing hire logic.
+Final fix:
+- Implemented staff-member hover stat projection panel sourced from card payload (same data object consumed during hiring):
+  - `src/game/cards/components/cardTile.jsx`
+  - `src/game/cards/components/cardTile.scss`
+- Overlay appears on card hover and keyboard focus-within, showing exact hire-time stat values.
+Status: fixed
+
+
+BUG-003
+Repro steps:
+1. Open `/career/home`.
+2. Hover over a `Staff Member` card in Card Library.
+3. Observe the hover stats layout and the `Hire` button visibility.
+Expected:
+- Stats overlay should have clear spacing between left and right data columns.
+- `Hire` button should remain visible while hover stats are shown.
+Actual:
+- Column spacing in hover stats was cramped.
+- Hover overlay visually covered the `Hire` button area.
+Suspected cause:
+- Hover overlay used full-card absolute positioning with no action-layer priority.
+- Grid column gap for hover stats was too small.
+Attempted fixes:
+- Increased hover stats grid column gap.
+- Changed per-stat row layout to explicit label/value grid spacing.
+- Elevated card action layer above hover overlay via z-index so `Hire` stays visible.
+Final fix:
+- Improved staff-hover stat formatting and prevented button occlusion by updating card-tile styles:
+  - `src/game/cards/components/cardTile.scss`
+Status: fixed
+
+
+BUG-004
+Repro steps:
+1. Open staff-related surfaces:
+   - `/career/start` coach selection
+   - `/career/home` staff-member card hover
+   - `/staff`
+2. Observe that `Youth Training` still appears as a staff stat.
+3. Inspect staff-member payload data paths (generated cards + normalized staff state).
+Expected:
+- `Youth Training` should be removed from staff-member data model.
+- `Youth Training` should not appear on any staff UI surface.
+Actual:
+- Staff members still carried a `youthTraining` payload field in generation/state flows.
+- Staff UI still rendered `Youth Training`.
+Suspected cause:
+- Staff-member generator and state/card normalizers still included the legacy `youthTraining` field.
+- Staff visual mappings still listed `Youth Training`.
+Attempted fixes:
+- Added shared staff-rating helpers to centralize:
+  - rating keys
+  - overall rating calculation
+  - payload sanitization (including `youthTraining` removal)
+- Updated staff-member generation and state/card normalization to remove `youthTraining`.
+- Removed `Youth Training` from staff visual mappings and hover stat cards.
+Final fix:
+- Removed `youthTraining` from staff-member data generation and normalization, and removed it from staff UI output:
+  - `src/game/staff/utils/staffRatings.js`
+  - `src/game/staff/utils/staffState.js`
+  - `src/game/cards/utils/staffMemberGenerator.js`
+  - `src/game/cards/state/cardState.js`
+  - `src/game/cards/components/cardTile.jsx`
+  - `src/game/careerStart/components/careerStartCoachSelectionTab.jsx`
+  - `src/game/staff/staff.jsx`
+  - `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+Status: fixed

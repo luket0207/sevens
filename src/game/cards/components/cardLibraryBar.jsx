@@ -3,10 +3,18 @@ import PropTypes from "prop-types";
 import { BUTTON_VARIANT } from "../../../engine/ui/button/button";
 import { CARD_RARITIES, CARD_TYPES } from "../constants/cardConstants";
 import { sortAndFilterLibraryCards } from "../utils/cardLibrary";
+import { isStaffMemberCard, isStaffUpgradeCard } from "../utils/staffCardLifecycle";
 import CardTile from "./cardTile";
 import "./cardLibraryBar.scss";
 
-const CardLibraryBar = ({ library, onDiscardCard }) => {
+const CardLibraryBar = ({
+  library,
+  onDiscardCard,
+  onHireStaffMemberCard,
+  onUseStaffUpgradeCard,
+  staffSummary,
+  currentCareerDay,
+}) => {
   const [sortBy, setSortBy] = useState("name");
   const [typeFilter, setTypeFilter] = useState("all");
   const [rarityFilter, setRarityFilter] = useState("all");
@@ -21,6 +29,42 @@ const CardLibraryBar = ({ library, onDiscardCard }) => {
       }),
     [library, rarityFilter, sortBy, typeFilter]
   );
+  const safeStaffSummary = staffSummary && typeof staffSummary === "object" ? staffSummary : {};
+  const staffCount = Math.max(0, Number(safeStaffSummary.currentCount) || 0);
+  const staffSlots = Math.max(0, Number(safeStaffSummary.maxSlots) || 0);
+  const isStaffFull = staffSlots > 0 && staffCount >= staffSlots;
+
+  const resolveCardAction = (card) => {
+    if (isStaffMemberCard(card) && typeof onHireStaffMemberCard === "function") {
+      return {
+        actionLabel: "Hire",
+        actionVariant: BUTTON_VARIANT.PRIMARY,
+        onAction: () => onHireStaffMemberCard(card.id),
+      };
+    }
+
+    if (isStaffUpgradeCard(card) && typeof onUseStaffUpgradeCard === "function") {
+      return {
+        actionLabel: "Use",
+        actionVariant: BUTTON_VARIANT.PRIMARY,
+        onAction: () => onUseStaffUpgradeCard(card.id),
+      };
+    }
+
+    if (typeof onDiscardCard === "function") {
+      return {
+        actionLabel: "Discard",
+        actionVariant: BUTTON_VARIANT.SECONDARY,
+        onAction: () => onDiscardCard(card.id),
+      };
+    }
+
+    return {
+      actionLabel: "",
+      actionVariant: BUTTON_VARIANT.SECONDARY,
+      onAction: null,
+    };
+  };
 
   return (
     <section className="cardLibraryBar">
@@ -28,6 +72,9 @@ const CardLibraryBar = ({ library, onDiscardCard }) => {
         <div>
           <h3>Card Library</h3>
           <p>Total cards: {Array.isArray(library) ? library.length : 0}</p>
+          <p>
+            Staff slots: {staffCount}/{staffSlots} {isStaffFull ? "(Full)" : ""}
+          </p>
         </div>
         <div className="cardLibraryBar__controls">
           <label>
@@ -64,18 +111,21 @@ const CardLibraryBar = ({ library, onDiscardCard }) => {
         {visibleCards.length === 0 ? (
           <p className="cardLibraryBar__empty">No cards match the current filters.</p>
         ) : (
-          visibleCards.map((card) => (
-            <CardTile
-              key={card.id}
-              card={card}
-              compact
-              actionLabel="Discard"
-              actionVariant={BUTTON_VARIANT.SECONDARY}
-              onAction={
-                typeof onDiscardCard === "function" ? () => onDiscardCard(card.id) : undefined
-              }
-            />
-          ))
+          visibleCards.map((card) => {
+            const action = resolveCardAction(card);
+            return (
+              <CardTile
+                key={card.id}
+                card={card}
+                compact
+                actionLabel={action.actionLabel}
+                actionVariant={action.actionVariant}
+                onAction={action.onAction}
+                currentCareerDay={currentCareerDay}
+                showStaffExpiry
+              />
+            );
+          })
         )}
       </div>
     </section>
@@ -92,11 +142,25 @@ CardLibraryBar.propTypes = {
     })
   ),
   onDiscardCard: PropTypes.func,
+  onHireStaffMemberCard: PropTypes.func,
+  onUseStaffUpgradeCard: PropTypes.func,
+  staffSummary: PropTypes.shape({
+    currentCount: PropTypes.number,
+    maxSlots: PropTypes.number,
+  }),
+  currentCareerDay: PropTypes.number,
 };
 
 CardLibraryBar.defaultProps = {
   library: [],
   onDiscardCard: null,
+  onHireStaffMemberCard: null,
+  onUseStaffUpgradeCard: null,
+  staffSummary: {
+    currentCount: 0,
+    maxSlots: 0,
+  },
+  currentCareerDay: 0,
 };
 
 export default CardLibraryBar;

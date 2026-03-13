@@ -4,7 +4,7 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
-import { ensureCareerCardState } from "../cards";
+import { ensureCareerCardState, normalizeCareerDayNumber, pruneExpiredStaffMemberCards } from "../cards";
 import { getContinueFlowLabel, resolveCupDrawContinueAction } from "../careerFlow/utils/continueFlow";
 import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import "./cupDraw.scss";
@@ -24,6 +24,7 @@ const CupDraw = () => {
   const seasons = Array.isArray(calendar?.seasons) ? calendar.seasons : [];
   const activeSeason = seasons.find((season) => season.id === calendar?.activeSeasonId) ?? seasons[0] ?? null;
   const rawCurrentDayIndex = Number.isInteger(calendar?.currentDayIndex) ? calendar.currentDayIndex : 0;
+  const currentCareerDayNumber = normalizeCareerDayNumber(calendar?.careerDayNumber);
   const currentDay = activeSeason?.days?.[rawCurrentDayIndex] ?? null;
   const dayOneSetupGateState = resolveDayOneSetupGateState({
     currentDay,
@@ -152,21 +153,35 @@ const CupDraw = () => {
     const isSeasonComplete = rawCurrentDayIndex >= activeSeason.totalDays - 1;
     const nextDayIndex = isSeasonComplete ? rawCurrentDayIndex : rawCurrentDayIndex + 1;
     const nextVisibleMonthIndex = getMonthIndexFromDayIndex(nextDayIndex);
+    const nextCareerDayNumber = isSeasonComplete
+      ? currentCareerDayNumber
+      : currentCareerDayNumber + 1;
 
-    setGameState((prev) => ({
-      ...prev,
-      career: {
-        ...prev.career,
-        calendar: {
-          ...(prev.career?.calendar ?? {}),
-          currentDayIndex: nextDayIndex,
-          visibleMonthIndex: nextVisibleMonthIndex,
-          pendingCupDraw: null,
-          pendingFlashDayIndex: null,
-          lastAdvancedAt: new Date().toISOString(),
+    setGameState((prev) => {
+      const expiryResult = pruneExpiredStaffMemberCards({
+        cardsState: prev?.career?.cards,
+        currentCareerDay: nextCareerDayNumber,
+      });
+
+      return {
+        ...prev,
+        career: {
+          ...prev.career,
+          calendar: {
+            ...(prev.career?.calendar ?? {}),
+            currentDayIndex: nextDayIndex,
+            careerDayNumber: nextCareerDayNumber,
+            visibleMonthIndex: nextVisibleMonthIndex,
+            pendingCupDraw: null,
+            pendingFlashDayIndex: null,
+            lastAdvancedAt: new Date().toISOString(),
+          },
+          cards: {
+            ...expiryResult.nextCardsState,
+          },
         },
-      },
-    }));
+      };
+    });
 
     navigate("/career/home");
   };

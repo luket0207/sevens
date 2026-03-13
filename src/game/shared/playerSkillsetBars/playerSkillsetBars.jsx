@@ -9,7 +9,6 @@ const PREFERRED_SKILL_ORDER = Object.freeze([
   "Distribution",
   "Scouting",
   "Judgement",
-  "Youth Training",
   "GK Training",
   "DF Training",
   "MD Training",

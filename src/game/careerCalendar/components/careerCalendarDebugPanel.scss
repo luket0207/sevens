@@ -35,6 +35,10 @@
   gap: 0.55rem;
 }
 
+.careerCalendarDebug__rewardFieldGrid--single {
+  grid-template-columns: 1fr;
+}
+
 .careerCalendarDebug__rewardField {
   display: grid;
   gap: 0.28rem;

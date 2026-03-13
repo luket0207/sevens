@@ -1,6 +1,11 @@
 import { buildCareerGenerationDebugSummary } from "../../careerGeneration/utils/careerGenerationDebug";
 import { DOMESTIC_LEAGUE_IDS, LEAGUE_ID_TO_NAME } from "../../careerSimulation/constants/simulationConstants";
 import { normaliseTeamForm } from "../../careerSimulation/utils/teamForm";
+import {
+  applyFirstTimePromotionSlotUnlock,
+  applyStaffStateToPlayerTeam,
+  ensurePlayerTeamStaffState,
+} from "../../staff/utils/staffState";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -146,11 +151,22 @@ export const buildNextCareerWorldFromSeasonOutcomes = ({
   );
 
   const nextPlayerLeagueId = teamLeagueById[playerTeamId] ?? nextCareerWorld?.playerTeam?.competitionId ?? "league-5";
-  nextCareerWorld.playerTeam = {
-    ...(nextCareerWorld.playerTeam ?? {}),
+  const previousPlayerTeam = nextCareerWorld.playerTeam ?? {};
+  const currentStaffState = ensurePlayerTeamStaffState(previousPlayerTeam);
+  const nextPlayerTeamBase = {
+    ...previousPlayerTeam,
     competitionId: nextPlayerLeagueId,
     competitionName: LEAGUE_ID_TO_NAME[nextPlayerLeagueId] ?? nextCareerWorld?.playerTeam?.competitionName ?? "",
   };
+  const staffProgressionResult = applyFirstTimePromotionSlotUnlock({
+    staffState: currentStaffState,
+    nextCompetitionId: nextPlayerLeagueId,
+  });
+
+  nextCareerWorld.playerTeam = applyStaffStateToPlayerTeam(
+    nextPlayerTeamBase,
+    staffProgressionResult.nextStaffState
+  );
   nextCareerWorld.generatedAt = new Date().toISOString();
   nextCareerWorld.competitions = nextCompetitions;
   nextCareerWorld.domesticCompetitions = nextCompetitions.filter((competition) => competition.type === "domestic");

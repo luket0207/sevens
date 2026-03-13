@@ -1,6 +1,7 @@
 @use "../../../assets/scss/ui/import" as *;
 
 .careerCardTile {
+  position: relative;
   border: 1px solid rgba($lightText, 0.22);
   border-radius: 10px;
   background: rgba($siteBackground, 0.34);
@@ -70,6 +71,58 @@
 }
 
 .careerCardTile__actions {
+  position: relative;
+  z-index: 2;
   margin-top: auto;
   width: 100%;
+}
+
+.careerCardTile__staffHoverStats {
+  position: absolute;
+  inset: 0;
+  padding: 0.6rem;
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.95);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.careerCardTile__staffHoverTitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba($lightText, 0.88);
+}
+
+.careerCardTile__staffHoverGrid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  row-gap: 0.22rem;
+  column-gap: 0.9rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.careerCardTile__staffHoverStat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.65rem;
+  font-size: 0.78rem;
+  color: rgba($lightText, 0.9);
+
+  strong {
+    color: $lightText;
+    font-weight: 700;
+  }
+}
+
+.careerCardTile:hover .careerCardTile__staffHoverStats,
+.careerCardTile:focus-within .careerCardTile__staffHoverStats {
+  opacity: 1;
 }

@@ -110,6 +110,7 @@ const buildCalendarDebug = ({
 export const buildCareerCalendarState = ({
   careerWorld,
   carryOverTeamFormByTeamId = {},
+  startingCareerDayNumber = 0,
 }) => {
   const { season, dayLookup } = createSeasonScaffold({
     seasonId: "season-1",
@@ -133,11 +134,13 @@ export const buildCareerCalendarState = ({
   sortSeasonEvents(season);
 
   const initialCurrentDayIndex = 0;
+  const safeStartingCareerDayNumber = Math.max(0, Number.parseInt(startingCareerDayNumber, 10) || 0);
 
   return {
     seasons: [season],
     activeSeasonId: season.id,
     currentDayIndex: initialCurrentDayIndex,
+    careerDayNumber: safeStartingCareerDayNumber,
     visibleMonthIndex: getMonthIndexFromDayIndex(initialCurrentDayIndex),
     pendingFlashDayIndex: null,
     pendingDayResults: null,

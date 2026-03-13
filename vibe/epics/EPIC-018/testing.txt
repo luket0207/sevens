@@ -1,0 +1,206 @@
+EPIC-018 Testing Log
+Date: 2026-03-12
+
+FEAT-1801 - Persistent active staff state with starting staff
+Manual steps:
+1. Start a new career from `/career/start` after selecting 2 coaches.
+2. Open `/staff`.
+3. Open `/career/home` and inspect Card Library header.
+Expected:
+- Active staff starts at `2`.
+- Staff slots start at `2`.
+- Staff state persists in `career.world.playerTeam.staff`.
+
+FEAT-1802 - Highest-league tracking + permanent slot unlocks
+Manual steps:
+1. Complete a season and reach promotion to a league not reached before.
+2. In `/career/season-summary`, click `Start New Season`.
+3. Open `/staff` and Career Home debug panel.
+4. Repeat a re-promotion to a previously reached league and verify no extra slot.
+Expected:
+- First-time promotion to a new highest league tier grants `+1` slot.
+- Relegation does not remove slots.
+- Re-promotion to already reached tier does not grant another slot.
+
+FEAT-1803 - Staff capacity display
+Manual steps:
+1. Open `/career/home` and inspect Card Library header.
+2. Open `/staff` page summary.
+Expected:
+- Both surfaces clearly show `current staff / max slots`.
+- Full-capacity state is obvious.
+
+FEAT-1804 / FEAT-1805 - Staff Member `Hire` + full-capacity replacement flow
+Manual steps:
+1. Add a Staff Member card to the library.
+2. With open slots available, click `Hire`.
+3. Verify staff is added and card removed from library.
+4. Fill staff to slot cap, then click `Hire` on another Staff Member card.
+5. In replacement modal, select an existing staff member to sack.
+6. Repeat and cancel replacement.
+Expected:
+- Open-slot hire succeeds immediately and consumes card.
+- Full-capacity hire opens replacement flow.
+- Selecting replacement removes old staff permanently, adds new staff, and consumes card.
+- Cancelling causes no changes and card remains.
+
+FEAT-1806 / FEAT-1807 / FEAT-1811 - Staff Member expiry + display + day progression integration
+Manual steps:
+1. Add a Staff Member card to library.
+2. Verify expiry info is shown on card tile.
+3. Advance career days via:
+   - `/career/home` continue flow
+   - `/cup-draw` continue flow
+   - `/career/day-results` continue flow
+4. Leave the card unused through 7 in-game day advances.
+Expected:
+- Staff Member card stores collection/expiry timing.
+- Expiry information is visible in library.
+- Card is automatically removed once expiry threshold is reached.
+- Expiry cleanup is tied to in-game day progression paths.
+
+FEAT-1808 / FEAT-1809 - Staff Upgrade `Use` flow + rating cap
+Manual steps:
+1. Add a Staff Upgrade card to library.
+2. Click `Use`.
+3. Select a target staff member in modal.
+4. Verify targeted stat increases and is clamped at `100`.
+5. Repeat and cancel modal.
+Expected:
+- `Use` opens staff-selection modal.
+- Selected staff receives intended upgrade only.
+- Ratings do not exceed `100`.
+- Successful use consumes card; cancel keeps card.
+
+FEAT-1810 - Consume staff cards only on successful use
+Manual steps:
+1. Trigger Hire/Use flows and cancel before final selection.
+2. Trigger successful Hire/Replace/Use flows.
+Expected:
+- Cancel paths do not consume cards.
+- Successful paths consume the card exactly once.
+
+FEAT-1812 - Staff debug/test visibility
+Manual steps:
+1. Open `/career/home`.
+2. Inspect `Calendar Debug` panel lines/cards for staff.
+Expected:
+- Debug panel shows staff slot summary, highest league reached, pending expiries, and staff state payload.
+- Staff card usage outcomes and expiry cleanup are visible via card debug state updates.
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-018 scope.
+  - Current lint failures are in pre-existing engine/info/shared files (prop-types and hook-rule issues).
+  - No EPIC-018-specific lint failures remain after implementation adjustments.
+
+Automated tests completed:
+- None added for this epic.
+
+Automated tests still needed:
+- Unit tests for:
+  - staff upgrade effect parsing and 100-cap clamping
+  - promotion slot unlock progression rules
+  - staff member expiry cutoff logic
+- Integration tests for:
+  - full-capacity replacement flow
+  - card consumption only on success
+  - day-advance expiry cleanup across home/day-results/cup-draw paths
+
+Test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-12, update 1)
+
+BUG-001 - Manual add-card dropdown in debug menu
+Manual steps:
+1. Open `/career/home`.
+2. Scroll to `Calendar Debug`.
+3. Locate `Manual add card to library` dropdown.
+4. Verify dropdown is sorted alphabetically and includes:
+   - Training cards
+   - Scouting cards
+   - Academy cards
+   - Staff Upgrade cards
+   - Procedural Staff Member options by rarity
+5. Select different entries and click `Add Selected Card To Library`.
+6. Verify each selected card appears in Card Library with expected type/rarity/name.
+7. Add a procedural Staff Member card and verify expiry info is present on the card tile.
+Expected:
+- Debug dropdown provides deterministic selection of all supported card categories.
+- Add action injects selected card directly into player library.
+- Staff-member cards added via debug path still include lifecycle/expiry metadata.
+
+Command checks run in update-1 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-018 scope.
+  - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
+
+Update-1 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-12, update 2)
+
+BUG-002 - Staff-member hover stat preview in card tiles
+Manual steps:
+1. Open `/career/home`.
+2. Ensure at least one `Staff Member` card exists in Card Library.
+3. Hover the staff-member card and observe overlay content.
+4. Click `Hire` for that card while staff has open slots.
+5. Open `/staff` and compare the hired staff-member ratings.
+Expected:
+- Hover overlay shows staff ratings for:
+  - Overall
+  - Scouting
+  - Judgement
+  - Youth
+  - GK
+  - DF
+  - MD
+  - AT
+- Values match exactly with the hired staff member values shown on staff surfaces.
+
+Command checks run in update-2 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-018 scope.
+  - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
+
+Update-2 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-12, update 3)
+
+BUG-003 - Staff-hover formatting and Hire button visibility
+Manual steps:
+1. Open `/career/home`.
+2. Ensure at least one `Staff Member` card exists in Card Library.
+3. Hover over a staff-member card.
+4. Confirm left/right stat columns are clearly separated.
+5. While still hovered, verify `Hire` button remains visible and clickable.
+Expected:
+- Staff-hover stat layout has clear horizontal separation between the two data columns.
+- `Hire` button is not obscured by hover overlay and stays interactable.
+
+Command checks run in update-3 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-018 scope.
+  - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
+
+Update-3 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 4)
+
+BUG-004 - Remove Youth Training from staff data and visuals
+Manual steps:
+1. Open `/career/start` and inspect coach selection stat bars.
+2. Open `/career/home`, add/inspect a `Staff Member` card, and hover it.
+3. Hire a staff member card, then open `/staff`.
+4. Trigger a flow that normalizes cards/staff state (e.g., discard/hire/upgrade, day advance) and re-check staff payloads via debug surfaces.
+Expected:
+- `Youth Training` is not shown in coach selection, staff-member hover, or staff page stat lists.
+- Staff-member payloads no longer contain `youthTraining` after normalization/generation paths.
+- Remaining staff stats and overall rating continue to render correctly.
+
+Command checks run in update-4 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-018 scope.
+  - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
+
+Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

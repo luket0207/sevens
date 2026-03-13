@@ -147,6 +147,7 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
   seasons: [],
   activeSeasonId: "",
   currentDayIndex: 0,
+  careerDayNumber: 0,
   visibleMonthIndex: 0,
   pendingFlashDayIndex: null,
   pendingDayResults: null,

@@ -10,6 +10,20 @@
   justify-content: flex-start;
 }
 
+.staffPage__summary {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba($secondaryBackground, 0.5);
+  background: rgba($primaryBackground, 0.28);
+
+  p {
+    margin: 0;
+    color: rgba($lightText, 0.9);
+  }
+}
+
 .staffPage__empty {
   display: grid;
   gap: 0.5rem;

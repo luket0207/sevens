@@ -1,8 +1,17 @@
-const cloneCard = (card) => ({
-  ...card,
-  payload: card?.payload && typeof card.payload === "object" ? { ...card.payload } : {},
-  debug: card?.debug && typeof card.debug === "object" ? { ...card.debug } : {},
-});
+import { CARD_STAFF_SUBTYPES, CARD_TYPES } from "../constants/cardConstants";
+import { sanitizeStaffMemberPayload } from "../../staff/utils/staffRatings";
+
+const isStaffMemberCard = (card) =>
+  card?.type === CARD_TYPES.STAFF && card?.subtype === CARD_STAFF_SUBTYPES.MEMBER;
+
+const cloneCard = (card) => {
+  const payload = card?.payload && typeof card.payload === "object" ? { ...card.payload } : {};
+  return {
+    ...card,
+    payload: isStaffMemberCard(card) ? sanitizeStaffMemberPayload(payload) : payload,
+    debug: card?.debug && typeof card.debug === "object" ? { ...card.debug } : {},
+  };
+};
 
 export const createDefaultCareerCardState = () => ({
   library: [],
@@ -16,6 +25,9 @@ export const createDefaultCareerCardState = () => ({
     lastStaffSubtypeRolls: [],
     lastProceduralStaffCard: null,
     rerollUsageCount: 0,
+    lastStaffAction: null,
+    lastStaffExpiryCheckDay: 0,
+    lastExpiredStaffCards: [],
   },
   lastUpdatedAt: "",
 });
@@ -44,6 +56,9 @@ export const ensureCareerCardState = (source) => {
             lastRolls: Array.isArray(source.debug.lastRolls) ? [...source.debug.lastRolls] : [],
             lastStaffSubtypeRolls: Array.isArray(source.debug.lastStaffSubtypeRolls)
               ? [...source.debug.lastStaffSubtypeRolls]
+              : [],
+            lastExpiredStaffCards: Array.isArray(source.debug.lastExpiredStaffCards)
+              ? [...source.debug.lastExpiredStaffCards]
               : [],
           }
         : createDefaultCareerCardState().debug,

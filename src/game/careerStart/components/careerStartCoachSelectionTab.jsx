@@ -13,7 +13,6 @@ const mapCoachSkillsForDisplay = (coach) => ({
   "Overall Rating": Number(coach?.payload?.overallRating) || 0,
   Scouting: Number(coach?.payload?.scouting) || 0,
   Judgement: Number(coach?.payload?.judgement) || 0,
-  "Youth Training": Number(coach?.payload?.youthTraining) || 0,
   "GK Training": Number(coach?.payload?.gkTraining) || 0,
   "DF Training": Number(coach?.payload?.dfTraining) || 0,
   "MD Training": Number(coach?.payload?.mdTraining) || 0,

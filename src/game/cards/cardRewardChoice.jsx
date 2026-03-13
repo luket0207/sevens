@@ -5,6 +5,7 @@ import PageLayout from "../shared/pageLayout/pageLayout";
 import { ensureCareerCardState } from "./state/cardState";
 import { addCardToLibrary, discardCardFromLibrary } from "./utils/cardLibrary";
 import { generateCardOfferSet } from "./utils/cardRewardGenerator";
+import { attachStaffMemberLifecycleToCard, normalizeCareerDayNumber } from "./utils/staffCardLifecycle";
 import CardTile from "./components/cardTile";
 import "./cardRewardChoice.scss";
 
@@ -49,11 +50,18 @@ const CardRewardChoice = () => {
       if (!selectedCard) {
         return prev;
       }
+      const currentCareerDayNumber = normalizeCareerDayNumber(
+        prev?.career?.calendar?.careerDayNumber
+      );
+      const cardWithLifecycle = attachStaffMemberLifecycleToCard({
+        card: selectedCard,
+        collectedCareerDay: currentCareerDayNumber,
+      });
 
       const addition = addCardToLibrary({
         library: currentCardsState.library,
         nextLibraryCardNumber: currentCardsState.nextLibraryCardNumber,
-        card: selectedCard,
+        card: cardWithLifecycle,
       });
 
       return {

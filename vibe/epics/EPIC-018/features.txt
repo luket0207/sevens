@@ -461,3 +461,20 @@ This epic is complete when:
 - Staff cards are only removed from the library when successfully used.
 - Cancelled staff card actions do not consume the card.
 - Staff card usage is integrated with the in-game calendar and staff state.
+
+================================================================
+Implementation Status (2026-03-12)
+================================================================
+
+- FEAT-1801: done
+- FEAT-1802: done
+- FEAT-1803: done
+- FEAT-1804: done
+- FEAT-1805: done
+- FEAT-1806: done
+- FEAT-1807: done
+- FEAT-1808: done
+- FEAT-1809: done
+- FEAT-1810: done
+- FEAT-1811: done
+- FEAT-1812: done

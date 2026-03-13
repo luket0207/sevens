@@ -1,0 +1,291 @@
+EPIC-018 Implementation Log
+Date: 2026-03-12
+
+Scope implemented:
+- Added persistent active-staff state with slot capacity and highest-league progression tracking.
+- Added first-time-promotion staff-slot unlock progression (permanent unlocks, no relegation loss).
+- Added staff-card usage in Card Library:
+  - Staff Member: `Hire` action with immediate hire when space exists.
+  - Staff Member at full capacity: replacement/sacking modal flow.
+  - Staff Upgrade: `Use` action with target-staff selection modal.
+- Added Staff Member card expiry (7 in-game days) with library display and day-advance cleanup.
+- Enforced card consumption only on successful staff-card resolution.
+- Added staff usage/expiry/slot debug visibility in Career Home debug panel.
+
+Feature status:
+- FEAT-1801: done
+- FEAT-1802: done
+- FEAT-1803: done
+- FEAT-1804: done
+- FEAT-1805: done
+- FEAT-1806: done
+- FEAT-1807: done
+- FEAT-1808: done
+- FEAT-1809: done
+- FEAT-1810: done
+- FEAT-1811: done
+- FEAT-1812: done
+
+What was implemented:
+- New staff-state utility system:
+  - `src/game/staff/utils/staffState.js`
+  - Centralized staff-state normalization, slot summary, hiring/replacement, upgrade application, and promotion slot-unlock logic.
+  - Upgrade effect parsing supports existing Staff Upgrade effect text and clamps ratings at `100`.
+- New staff-card lifecycle/expiry utilities:
+  - `src/game/cards/utils/staffCardLifecycle.js`
+  - `src/game/cards/utils/staffCardState.js`
+  - Added Staff Member lifecycle metadata (`collectedCareerDay`, `expiresCareerDay`) and expiry cleanup helpers.
+- Career world/player-team integration:
+  - `src/game/careerGeneration/utils/careerGenerator.js`
+  - Player team now initializes with normalized staff state (`2` active members, `2` slots, highest tier tracking).
+  - Backward compatibility retained by mirroring active staff into `playerTeam.coaches` and `playerTeam.staff.coaches`.
+- Season-transition slot progression integration:
+  - `src/game/careerSeasonSummary/utils/seasonTransition.js`
+  - On first-time promotion to a new highest league tier, unlocks `+1` slot per newly reached tier.
+  - Slot unlocks are permanent; no removals on relegation/re-promotion.
+- Calendar-day persistence and expiry progression:
+  - Added persistent `career.calendar.careerDayNumber` in:
+    - `src/engine/gameContext/gameContext.jsx`
+    - `src/game/careerStart/careerStart.jsx`
+    - `src/game/careerCalendar/utils/seasonBuilder.js`
+    - `src/game/careerHome/careerHome.jsx`
+    - `src/game/careerSeasonSummary/careerSeasonSummary.jsx`
+  - Integrated expiry cleanup into day advancement in:
+    - `src/game/careerHome/careerHome.jsx`
+    - `src/game/careerDayResults/careerDayResults.jsx`
+    - `src/game/cupDraw/cupDraw.jsx`
+- Card library staff usage UI/actions:
+  - `src/game/cards/components/cardLibraryBar.jsx`
+  - `src/game/cards/components/cardTile.jsx`
+  - Staff Member cards show `Hire`; Staff Upgrade cards show `Use`.
+  - Staff capacity (`current/slots`) shown in Card Library header.
+  - Staff Member expiry info displayed in library card tiles.
+- Staff action modal flow:
+  - `src/game/staff/components/staffSelectionModalContent.jsx`
+  - `src/game/staff/components/staffSelectionModalContent.scss`
+  - Reused modal system to select replacement/upgrade target staff members.
+- Staff page updates:
+  - `src/game/staff/staff.jsx`
+  - `src/game/staff/staff.scss`
+  - Page now reads normalized active staff state and shows active count/slot cap + highest league reached.
+- Reward-card ingestion update:
+  - `src/game/cards/cardRewardChoice.jsx`
+  - Staff Member cards now receive lifecycle metadata when added to library.
+- Debug/test visibility updates:
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+  - Added explicit debug visibility for staff slots, highest league reached, pending expiries, and raw staff state.
+- Card state debug schema extended:
+  - `src/game/cards/state/cardState.js`
+  - Added staff-action/expiry debug fields.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for persistent staff/card/calendar day state updates.
+- `button` for card/staff action controls and modal action buttons.
+- `modal` + `modalContext` for replacement and upgrade-target selection flows.
+
+Engine components not used (and why):
+- `bars` was not required; no new bar UI was needed for this scope.
+- `slidePanel`, `toast`, `tooltip` were not required for required interaction flows.
+- `makeDecision` was not required; staff action resolution uses deterministic rule checks.
+- `rng` had no new direct usage in this epic's implementation changes.
+- `saveGame` and `timer` required no direct changes for this scope.
+
+Files changed:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/cards/cardRewardChoice.jsx`
+- `src/game/cards/components/cardLibraryBar.jsx`
+- `src/game/cards/components/cardTile.jsx`
+- `src/game/cards/index.js`
+- `src/game/cards/state/cardState.js`
+- `src/game/cards/utils/staffCardLifecycle.js`
+- `src/game/cards/utils/staffCardState.js`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/utils/seasonBuilder.js`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerSeasonSummary/careerSeasonSummary.jsx`
+- `src/game/careerSeasonSummary/utils/seasonTransition.js`
+- `src/game/careerStart/careerStart.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/staff/components/staffSelectionModalContent.jsx`
+- `src/game/staff/components/staffSelectionModalContent.scss`
+- `src/game/staff/staff.jsx`
+- `src/game/staff/staff.scss`
+- `src/game/staff/utils/staffState.js`
+- `vibe/epics/EPIC-018/features.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Staff action modals are functional and lightweight; if needed later, upgrade to richer stat-comparison cards.
+- Upgrade effect parsing relies on existing effect-text format; if definitions change shape, parser should be aligned.
+- Existing repository lint baseline remains failing in unrelated engine/info/shared files; this epic did not attempt baseline cleanup.
+
+Bug fix pass (2026-03-12, update 1):
+- Implemented BUG-001 from updated `EPIC-018/bugs.txt`.
+- Key updates:
+  - Added debug manual card catalog containing every fixed card definition across training/scouting/academy/staff-upgrade types.
+  - Added procedural staff-member debug options by rarity (common/uncommon/rare).
+  - Added sorted dropdown in Career Home debug panel for deterministic card selection.
+  - Added "Add Selected Card To Library" action to inject selected card directly into player library.
+  - Ensured staff-member cards added via debug path receive lifecycle metadata (collection/expiry day fields).
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` for writing updated card-library state.
+- `button` for debug action trigger in debug panel.
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this bug fix was a deterministic debug UI/control enhancement.
+
+Additional files changed in bug-fix pass:
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.scss`
+- `vibe/epics/EPIC-018/bugs.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`
+
+Bug fix pass (2026-03-12, update 2):
+- Implemented BUG-002 from updated `EPIC-018/bugs.txt`.
+- Key updates:
+  - Added staff-member hover stat preview rendering in card tiles.
+  - Preview values are read directly from the staff-member card payload fields used by hire flow.
+  - Added hover/focus overlay styling so stats appear on mouse hover and keyboard focus.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` remains used by `CardTile` actions; no new engine component integration was required.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this fix was limited to local card tile rendering/styles and reused existing card payload data.
+
+Additional files changed in bug-fix pass (update 2):
+- `src/game/cards/components/cardTile.jsx`
+- `src/game/cards/components/cardTile.scss`
+- `vibe/epics/EPIC-018/bugs.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`
+
+Bug fix pass (2026-03-12, update 3):
+- Implemented BUG-003 from updated `EPIC-018/bugs.txt`.
+- Key updates:
+  - Increased hover stat column spacing for clearer left/right data separation.
+  - Switched stat row rendering style to a two-column label/value grid with explicit column gap.
+  - Prevented hover overlay from hiding `Hire` by layering card actions above hover overlay.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` remains used by card actions; this fix adjusted layering/styling around existing button usage.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required because this was a local presentation/layout bug fix in card tile styles.
+
+Additional files changed in bug-fix pass (update 3):
+- `src/game/cards/components/cardTile.scss`
+- `vibe/epics/EPIC-018/bugs.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`
+
+Bug fix pass (2026-03-13, update 4):
+- Implemented BUG-004 from updated `EPIC-018/bugs.txt`.
+- Key updates:
+  - Removed `youthTraining` from staff-member data model and visual output.
+  - Added shared staff-rating utility for canonical rating keys, payload sanitization, and overall-rating recompute.
+  - Updated staff-member generation to only emit:
+    - scouting
+    - judgement
+    - gkTraining
+    - dfTraining
+    - mdTraining
+    - atTraining
+  - Sanitized both active staff state and staff-member cards to strip legacy `youthTraining`.
+  - Removed Youth stat from card hover, coach selection display, staff page display, and preferred skill ordering.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `bars` remains used by `PlayerSkillsetBars` for rendering staff ratings.
+- `button` remains used by staff/coaching UI actions; no behavior changes were required.
+
+Engine components not used (and why):
+- `gameContext`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this data-model and display cleanup pass.
+
+Additional files changed in bug-fix pass (update 4):
+- `src/game/staff/utils/staffRatings.js`
+- `src/game/staff/utils/staffState.js`
+- `src/game/cards/utils/staffMemberGenerator.js`
+- `src/game/cards/state/cardState.js`
+- `src/game/cards/components/cardTile.jsx`
+- `src/game/careerStart/components/careerStartCoachSelectionTab.jsx`
+- `src/game/staff/staff.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `vibe/epics/EPIC-018/bugs.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`
