@@ -1,0 +1,251 @@
+EPIC-019 Testing Log
+Date: 2026-03-13
+
+FEAT-1901 / FEAT-1902 - Scout action + staff in-use state
+Manual steps:
+1. Open `/career/home` with at least one scouting card and at least one active staff member.
+2. Click `Scout` on a scouting card.
+3. In the modal, pick an available staff member.
+4. Attempt to use staff-replacement or staff-upgrade card flows while all staff are in use.
+Expected:
+- Scouting cards show a `Scout` action.
+- Staff selection modal only lists available (not in-use) staff.
+- Chosen staff becomes in-use and is blocked from other staff actions until report resolution.
+
+FEAT-1903 / FEAT-1904 - Scouting duration markers + continue override
+Manual steps:
+1. Assign scouting with cards of different durations (including duration 1).
+2. Inspect month/day tiles in Career Home calendar.
+3. Advance to report due day.
+Expected:
+- Orange dot appears on scouting-covered days.
+- Hovering marker shows scouting staff name(s).
+- Duration 1 marks only the next day.
+- On due day, Continue action becomes `View Scouting Report` with binocular icon and takes priority.
+
+FEAT-1905 to FEAT-1911 - Scout report generation, quality, reveal logic, and Add-to-Academy
+Manual steps:
+1. On due day, click `View Scouting Report`.
+2. Verify report player count behaves consistently with scouting rating and card quantity over multiple runs.
+3. Verify generated players include GK/outfield mix and quality-bucket spread.
+4. Verify overall/potential are hidden.
+5. Verify per-skill and per-trait reveal variance is present.
+6. Click `Add to Academy` for one or more players and confirm modal.
+Expected:
+- Report page renders and lists generated players.
+- Slot coin flips control generated count.
+- Quality-chance weighting determines quality buckets.
+- Overall/potential stay hidden.
+- Revealed ratings/traits persist after add.
+- Add-to-Academy requires confirmation and respects capacity.
+
+FEAT-1912 to FEAT-1916 - Academy state, page, capacity, maturity, and alert icon
+Manual steps:
+1. Open `/academy` from Career Home navigation.
+2. Verify players added from report appear with hidden/revealed scouting intel and maturity value.
+3. Advance days until at least one academy player reaches maturity 0.
+4. Return to Career Home and inspect Academy navigation label.
+5. Open Academy page.
+Expected:
+- Academy data persists in game state.
+- Capacity follows staff slot count (max 12).
+- Maturity ticks down daily and never below 0.
+- Mature players trigger Academy `!` alert.
+- Visiting Academy clears alert until a new academy event occurs.
+
+FEAT-1917 / FEAT-1918 - Promotion flows (GK and outfield)
+Manual steps:
+1. For a mature academy goalkeeper, click `Promote to First Team`.
+2. Verify comparison modal appears with known-value comparison vs current GK.
+3. Cancel and retry, then confirm replacement.
+4. For a mature outfield academy player, click `Promote to First Team`.
+5. Verify target-choice modal appears, then comparison modal.
+6. Cancel from comparison and verify return to target-choice modal.
+7. Confirm replacement.
+Expected:
+- GK and outfield flows follow required modal behavior.
+- Confirmed replacement removes selected first-team player and promotes academy player.
+- Promoted player becomes normal first-team player; academy entry removed.
+
+FEAT-1919 / FEAT-1920 - Mature player loss system and loss modal
+Manual steps:
+1. Leave mature academy players unpromoted over long day progression.
+2. Observe occasional player loss events after protection window.
+3. Check Career Home academy alert.
+4. Open Academy page and acknowledge loss modal.
+Expected:
+- Loss checks start only after 14 days from maturity and follow configured chance bands.
+- Lost players are removed from academy immediately.
+- Academy alert appears when loss occurs.
+- Next Academy visit shows `was scouted by another club abroad.` modal and then clears alert unless other events remain.
+
+FEAT-1921 - Staff release after report completion
+Manual steps:
+1. Assign scouting and advance to report day.
+2. Open Scout Report and click `Finish Report`.
+3. Open staff flows again.
+Expected:
+- Assigned staff is no longer in-use after report is finished.
+- Staff becomes selectable again for scouting/upgrades/replacement.
+
+FEAT-1922 - Debug/test support
+Manual steps:
+1. Open Career Home debug panel.
+2. Verify scouting and academy summary lines and JSON cards.
+Expected:
+- Debug shows active trips, due trip details, available/in-use staff counts.
+- Debug exposes scouting report roll context and academy state (capacity, maturity/loss signals, promotion/loss debug data).
+
+Command checks run:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-019 scope.
+  - Current lint failures are in pre-existing `src/engine/ui/*`, `src/engine/gameContext/*`, `src/game/info/*`, and `src/game/shared/pageLayout/*` files.
+  - No new EPIC-019-specific lint errors remained after implementation adjustments.
+
+Automated tests completed:
+- None added for this epic.
+
+Automated tests still needed:
+- Unit tests:
+  - scouting quantity/quality/reveal roll helpers
+  - academy maturity/loss timeline checks
+  - promotion replacement helpers
+- Integration tests:
+  - scouting-card assignment to report lifecycle
+  - day-advance maturity/loss progression across home/day-results/cup-draw
+  - promotion modal cancel/confirm behavior
+
+Test status: in progress (manual scenarios documented), passed (`build`), failed (`lint` baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 1)
+
+BUG-001 - Add to Academy confirm flow
+Manual steps:
+1. Open a scouting report with at least one player.
+2. Click `Add to Academy`.
+3. In confirm modal, click `Yes`.
+4. Open `/academy`.
+Expected:
+- Player is added to academy.
+- Same report entry shows `Added To Academy` label state.
+
+BUG-002 - Scouting marker tooltip
+Manual steps:
+1. Assign a scouting trip.
+2. Hover the orange marker on marked calendar days.
+Expected:
+- Tooltip appears and displays scouting staff name(s).
+
+BUG-003 - Added player button disabled state
+Manual steps:
+1. Add a player from report to academy.
+2. Re-check same entry action button.
+3. Click it again.
+Expected:
+- Button is not disabled solely because player was already added.
+- Duplicate add is prevented with a clear informational modal.
+
+BUG-004 - Scout report finish routing
+Manual steps:
+1. Run one report where no players are added and click `Finish Report`.
+2. Run another report where at least one player is added and click `Finish Report`.
+Expected:
+- No `Open Academy` button is shown on scouting report.
+- No-added run routes to `/career/home`.
+- Added run routes to `/academy`.
+
+Command checks run in update-1 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-1 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 2)
+
+BUG-005 - Scouting report count and reveal chance rules
+Manual steps:
+1. Use a scouting card with known `Player Quantity per Session` (for example, 10).
+2. Trigger report generation and count report entries.
+3. Repeat with staff scouting values at different levels.
+4. Inspect revealed skills/traits proportions over several reports.
+Expected:
+- Report entries always equal card `Player Quantity per Session`.
+- Reveal checks use raw scouting rating percent (higher scouting reveals more fields/traits).
+
+BUG-006 - Trait section visibility rules
+Manual steps:
+1. Open scouting report entries where all traits are hidden or absent.
+2. Open academy entries where all traits are hidden or absent.
+3. Open entries where at least one trait is revealed.
+Expected:
+- Trait section is not shown when no revealed traits exist.
+- No `Hidden Trait` or `No Traits` placeholder text is shown.
+- Trait section appears only when at least one trait is revealed.
+
+Command checks run in update-2 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-2 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 3)
+
+BUG-007 - Scouting report responsive grid
+Manual steps:
+1. Open scouting report with many players.
+2. View layout at mobile width, medium width, and full desktop width.
+Expected:
+- Cards render in 1 column on small screens.
+- Cards render in 2 columns on medium screens.
+- Cards render in 3 columns on large screens.
+
+BUG-008 - Academy remove + full-capacity add replacement
+Manual steps:
+1. Open Academy page and click `Remove from Academy` on a player.
+2. Confirm removal and verify player disappears from academy list.
+3. Fill academy to capacity.
+4. Open scouting report and click `Add to Academy` on a player.
+5. In replacement modal, select an academy player to remove.
+Expected:
+- Academy removal works via confirmation.
+- At full capacity, scouting add still proceeds by removing selected academy player and adding the scouted player.
+
+BUG-009 - Player images in scouting + academy cards
+Manual steps:
+1. Open scouting report and inspect player cards.
+2. Open Academy page and inspect academy player cards.
+Expected:
+- Cards display player images in kit using existing player-image rendering.
+
+BUG-010 - Goalkeeper reveal chance formula
+Manual steps:
+1. Generate scouting reports containing goalkeepers with known scouting values.
+2. Compare GK rating reveal frequency against outfield reveal behavior over repeated reports.
+Expected:
+- GK rating reveal chance follows `(scouting / 2) + 20`.
+- Outfield rating and trait reveal chance follow raw scouting percent.
+
+Command checks run in update-3 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-3 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 4)
+
+BUG-011 - Scout report player-card content alignment
+Manual steps:
+1. Open a scouting report with several generated player cards.
+2. Inspect card internals (image/details/actions area) on desktop and mobile widths.
+Expected:
+- Content within `.scoutReportPage__playerCard` aligns from the top (`flex-start`) consistently across cards.
+
+Command checks run in update-4 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

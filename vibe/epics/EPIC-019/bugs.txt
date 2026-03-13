@@ -1,0 +1,280 @@
+BUG-001 - Add to Academy confirm flow does not add players
+Status: fixed
+
+Repro steps:
+1. Open a scouting report with at least one player.
+2. Click `Add to Academy`.
+3. Confirm in modal and then open Academy page.
+
+Expected behavior:
+- Confirming should add the player to academy state.
+
+Actual behavior:
+- Player was not added.
+
+Suspected cause:
+- Modal used `onYes` callback but defaulted to `OK` button mode, so `onYes` never fired.
+
+Attempted fixes:
+- Traced modal API usage in `modalContext` and scouting page.
+
+Final fix:
+- Switched Add-to-Academy confirm modal to `MODAL_BUTTONS.YES_NO` so `onYes` executes and the academy add state update runs.
+
+
+BUG-002 - No scouting staff tooltip on calendar orange dot
+Status: fixed
+
+Repro steps:
+1. Assign a scouting trip.
+2. Hover the orange scouting marker dot on calendar day tiles.
+
+Expected behavior:
+- Tooltip appears and shows scouting coach/staff name(s).
+
+Actual behavior:
+- No visible tooltip from marker hover.
+
+Suspected cause:
+- Marker relied on native `title` rather than the shared tooltip component.
+
+Attempted fixes:
+- Checked calendar marker rendering and tooltip component usage patterns.
+
+Final fix:
+- Replaced marker `title` usage with shared `Tooltip` component and a dedicated dot trigger class.
+
+
+BUG-003 - Added players had disabled Add to Academy buttons in report
+Status: fixed
+
+Repro steps:
+1. Add a player to academy from report.
+2. Return to same report card entry.
+
+Expected behavior:
+- Button should remain interactive (while preventing duplicate adds).
+
+Actual behavior:
+- Button was disabled after first add.
+
+Suspected cause:
+- Button disable logic included `reportPlayer.addedToAcademy`.
+
+Attempted fixes:
+- Reviewed report button disable conditions and duplicate-add guard behavior.
+
+Final fix:
+- Removed disable-by-added-state behavior.
+- Kept duplicate protection in state update and added explicit "Already Added" modal feedback.
+
+
+BUG-004 - Scout report exit flow and Open Academy button behavior
+Status: fixed
+
+Repro steps:
+1. Open scouting report.
+2. Add at least one player in one run, and none in another run.
+3. Click `Finish Report`.
+
+Expected behavior:
+- No `Open Academy` button in scouting report UI.
+- If at least one player was added from current report, `Finish Report` routes to Academy.
+- If none were added, `Finish Report` routes to Career Home.
+
+Actual behavior:
+- `Open Academy` button was visible.
+- `Finish Report` always routed to Career Home.
+
+Suspected cause:
+- Static navigation target and extra button left in report summary.
+
+Attempted fixes:
+- Reviewed report footer/summary and finish flow state access.
+
+Final fix:
+- Removed `Open Academy` button.
+- Updated `Finish Report` to inspect current report add state and route to `/academy` only when players were added; otherwise `/career/home`.
+
+
+BUG-005 - Scouting report count and reveal chance logic should use scouting card quantity + raw scouting rating
+Status: fixed
+
+Repro steps:
+1. Run a scouting report with a card that has a known `Player Quantity per Session` value.
+2. Compare generated player count against card quantity.
+3. Inspect reveal behavior for skills/traits across reports.
+
+Expected behavior:
+- Generated player count should always equal `Player Quantity per Session`.
+- Reveal chance for each rating and each trait should use raw scouting rating directly (e.g. scouting 70 = 70%).
+
+Actual behavior:
+- Generated player count was reduced by coin flips tied to scouting rating.
+- Reveal chance used `judgement / 2` instead of raw scouting rating.
+
+Suspected cause:
+- Report generation still used old quantity coin-flip and judgement-based reveal logic.
+
+Attempted fixes:
+- Updated scouting report generator and scouting page call path.
+
+Final fix:
+- Removed scouting-rating coin-flip gating for player count.
+- Report now generates exactly `Player Quantity per Session` players.
+- Reveal chance now uses raw scouting rating percentage for each independent rating/trait reveal check.
+
+
+BUG-006 - Traits visibility sections should only appear when at least one trait is revealed
+Status: fixed
+
+Repro steps:
+1. Open scouting report and academy entries for players with hidden or no visible traits.
+2. Check trait section rendering.
+
+Expected behavior:
+- No trait section should render when there are no revealed traits.
+- Do not show placeholder text like `Hidden Trait` or `No Traits`.
+
+Actual behavior:
+- UI rendered hidden/no-traits placeholders.
+
+Suspected cause:
+- Trait renderers mapped hidden traits into placeholder labels and always rendered trait blocks.
+
+Attempted fixes:
+- Updated scouting and academy trait render logic to filter for revealed traits only.
+
+Final fix:
+- Removed hidden/no-traits placeholder labels from scouting and academy trait displays.
+- Trait sections now render only when at least one trait is revealed.
+
+
+BUG-007 - Scouting report cards should render in a responsive grid
+Status: fixed
+
+Repro steps:
+1. Open scouting report with multiple players.
+2. Inspect card layout on desktop and mobile widths.
+
+Expected behavior:
+- Scouting report cards render in a responsive grid.
+- Layout can display up to 3 cards per row at full desktop width.
+
+Actual behavior:
+- Cards rendered in a single-column stack.
+
+Suspected cause:
+- Report list container had no responsive multi-column grid rules.
+
+Attempted fixes:
+- Updated scouting report list layout styles with responsive breakpoints.
+
+Final fix:
+- Implemented responsive grid layout for scouting report cards:
+  - 1 column on small screens
+  - 2 columns on medium screens
+  - 3 columns on large screens
+
+
+BUG-008 - Academy removal and full-capacity replacement flow
+Status: fixed
+
+Repro steps:
+1. Open Academy page and inspect player actions.
+2. Fill academy to capacity.
+3. Attempt to add a scouting report player while academy is full.
+
+Expected behavior:
+- User can remove academy players directly from Academy page.
+- When academy is full, scouting report add flow still works by removing an existing academy player first.
+
+Actual behavior:
+- No direct remove action on Academy page.
+- Scouting report add flow blocked when academy reached capacity.
+
+Suspected cause:
+- Academy page lacked remove action.
+- Scouting add flow hard-blocked on capacity with no replacement path.
+
+Attempted fixes:
+- Added academy-state remove/replacement utilities.
+- Added academy page remove action.
+- Added scouting full-capacity replacement modal.
+
+Final fix:
+- Added `Remove from Academy` action on Academy page with confirmation.
+- Added full-capacity replacement flow in scouting report:
+  - user selects an academy player to remove
+  - selected scouting player is added immediately after removal
+
+
+BUG-009 - Show player image in scouting report and academy
+Status: fixed
+
+Repro steps:
+1. Open scouting report with generated players.
+2. Open Academy page with academy players.
+
+Expected behavior:
+- Player image with kit is displayed in both scouting report cards and academy cards.
+
+Actual behavior:
+- No player image was shown in those views.
+
+Suspected cause:
+- Views did not render existing player-image component.
+
+Attempted fixes:
+- Reused existing `PlayerImage` component used in team-management surfaces.
+
+Final fix:
+- Added `PlayerImage` rendering to scouting report cards and academy cards using current player-team kit context.
+
+
+BUG-010 - Goalkeeper rating reveal chance should use (scouting / 2) + 20
+Status: fixed
+
+Repro steps:
+1. Generate scouting report containing goalkeepers.
+2. Compare revealed GK rating behavior with outfield rating behavior.
+
+Expected behavior:
+- Goalkeeper rating reveal chance uses `(scouting / 2) + 20`.
+
+Actual behavior:
+- Goalkeeper rating reveal chance used the same raw scouting rule as outfield.
+
+Suspected cause:
+- Shared rating reveal logic did not branch for goalkeeper rating checks.
+
+Attempted fixes:
+- Added dedicated goalkeeper rating reveal chance resolver in scouting report generator.
+
+Final fix:
+- For goalkeeper ratings only, reveal chance now uses `(scouting / 2) + 20` (clamped to 0-100).
+- Outfield rating reveal remains raw scouting percentage.
+- Trait reveal remains raw scouting percentage.
+
+
+BUG-011 - Scout report player-card content alignment
+Status: fixed
+
+Repro steps:
+1. Open a scouting report with multiple player cards.
+2. Inspect vertical alignment of content inside `.scoutReportPage__playerCard`.
+
+Expected behavior:
+- Card content should align from the top (`flex-start`) for consistent card layout.
+
+Actual behavior:
+- Card content alignment was not top-aligned as required.
+
+Suspected cause:
+- Missing explicit cross-axis alignment rule on the player-card container.
+
+Attempted fixes:
+- Reviewed scouting report card container styles and existing layout rules.
+
+Final fix:
+- Added `align-items: flex-start;` to `.scoutReportPage__playerCard` in scouting styles.

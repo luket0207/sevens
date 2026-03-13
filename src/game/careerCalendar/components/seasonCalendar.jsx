@@ -7,6 +7,7 @@ import {
   resolveCalendarEventVisual,
 } from "../utils/calendarEventDisplay";
 import { CALENDAR_EVENT_TYPES } from "../constants/calendarConstants";
+import { getScoutingTripMarkerNamesForCareerDay } from "../../scouting/utils/scoutingState";
 import "./seasonCalendar.scss";
 
 const EventIndicator = ({ event, dayAbsoluteDayIndex, simulationState, playerTeamId }) => {
@@ -72,7 +73,14 @@ const shouldRenderDayEvent = ({ event, playerTeamCompetitionId }) => {
   return String(event?.competitionId ?? "").trim() === expectedCompetitionId;
 };
 
-const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId, playerTeamCompetitionId }) => {
+const DayCard = ({
+  day,
+  isCurrentDay,
+  simulationState,
+  playerTeamId,
+  playerTeamCompetitionId,
+  scoutingMarkerStaffNames,
+}) => {
   const visibleEvents = (Array.isArray(day?.events) ? day.events : []).filter((event) =>
     shouldRenderDayEvent({
       event,
@@ -88,6 +96,10 @@ const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId, playerTeamC
   ]
     .join(" ")
     .trim();
+  const scoutingMarkerTooltipText =
+    Array.isArray(scoutingMarkerStaffNames) && scoutingMarkerStaffNames.length > 0
+      ? `Scouting: ${scoutingMarkerStaffNames.join(", ")}`
+      : "";
 
   return (
     <article className={classes}>
@@ -111,6 +123,15 @@ const DayCard = ({ day, isCurrentDay, simulationState, playerTeamId, playerTeamC
           ))}
         </div>
       )}
+      {scoutingMarkerTooltipText ? (
+        <Tooltip
+          text={scoutingMarkerTooltipText}
+          icon={<span className="seasonCalendar__scoutingDot" aria-label={scoutingMarkerTooltipText} />}
+          type={TOOLTIP_TYPE.TERTIARY}
+          placement={TOOLTIP_PLACEMENT.TOP}
+          className="seasonCalendar__scoutingDotTooltipTrigger"
+        />
+      ) : null}
     </article>
   );
 };
@@ -132,12 +153,14 @@ DayCard.propTypes = {
   simulationState: PropTypes.object,
   playerTeamId: PropTypes.string,
   playerTeamCompetitionId: PropTypes.string,
+  scoutingMarkerStaffNames: PropTypes.arrayOf(PropTypes.string),
 };
 
 DayCard.defaultProps = {
   simulationState: null,
   playerTeamId: "",
   playerTeamCompetitionId: "",
+  scoutingMarkerStaffNames: [],
 };
 
 const SeasonCalendar = ({
@@ -151,6 +174,8 @@ const SeasonCalendar = ({
   simulationState,
   playerTeamId,
   playerTeamCompetitionId,
+  scoutingState,
+  currentCareerDayNumber,
 }) => {
   const visibleMonth = season?.months?.[visibleMonthIndex] ?? null;
   const visibleMonthDays = visibleMonth?.weeks?.flatMap((week) => week.days) ?? [];
@@ -188,16 +213,27 @@ const SeasonCalendar = ({
 
       <div className="seasonCalendar__gridWrap">
         <div className="seasonCalendar__monthGrid">
-          {visibleMonthDays.map((day) => (
-            <DayCard
-              day={day}
-              isCurrentDay={day.absoluteDayIndex === currentDayIndex}
-              simulationState={simulationState}
-              playerTeamId={playerTeamId}
-              playerTeamCompetitionId={playerTeamCompetitionId}
-              key={day.id}
-            />
-          ))}
+          {visibleMonthDays.map((day) => {
+            const dayCareerDayNumber =
+              Math.max(0, Number(currentCareerDayNumber) || 0) +
+              (Number(day.absoluteDayIndex) - Number(currentDayIndex));
+            const scoutingMarkerStaffNames = getScoutingTripMarkerNamesForCareerDay({
+              scoutingState,
+              careerDay: dayCareerDayNumber,
+            });
+
+            return (
+              <DayCard
+                day={day}
+                isCurrentDay={day.absoluteDayIndex === currentDayIndex}
+                simulationState={simulationState}
+                playerTeamId={playerTeamId}
+                playerTeamCompetitionId={playerTeamCompetitionId}
+                scoutingMarkerStaffNames={scoutingMarkerStaffNames}
+                key={day.id}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
@@ -230,12 +266,16 @@ SeasonCalendar.propTypes = {
   simulationState: PropTypes.object,
   playerTeamId: PropTypes.string,
   playerTeamCompetitionId: PropTypes.string,
+  scoutingState: PropTypes.object,
+  currentCareerDayNumber: PropTypes.number,
 };
 
 SeasonCalendar.defaultProps = {
   simulationState: null,
   playerTeamId: "",
   playerTeamCompetitionId: "",
+  scoutingState: {},
+  currentCareerDayNumber: 0,
 };
 
 export default SeasonCalendar;

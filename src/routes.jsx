@@ -7,6 +7,7 @@ import CareerHome from "./game/careerHome/careerHome";
 import TeamManagement from "./game/teamManagement/teamManagement";
 import Staff from "./game/staff/staff";
 import Scouting from "./game/scouting/scouting";
+import Academy from "./game/academy/academy";
 import Training from "./game/training/training";
 import CupDraw from "./game/cupDraw/cupDraw";
 import PreMatch from "./game/preMatch/preMatch";
@@ -30,6 +31,7 @@ export default function AppRoutes() {
       <Route path="/team-management" element={<TeamManagement />} />
       <Route path="/staff" element={<Staff />} />
       <Route path="/scouting" element={<Scouting />} />
+      <Route path="/academy" element={<Academy />} />
       <Route path="/training" element={<Training />} />
       <Route path="/cup-draw" element={<CupDraw />} />
       <Route path="/pre-match" element={<PreMatch />} />

@@ -5,6 +5,7 @@ import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import PageLayout from "../shared/pageLayout/pageLayout";
 import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
 import { ensureCareerCardState, normalizeCareerDayNumber, pruneExpiredStaffMemberCards } from "../cards";
+import { tickAcademyMaturityAndLoss } from "../academy/utils/academyState";
 import {
   getContinueFlowLabel,
   resolveDayResultsContinueAction,
@@ -197,15 +198,20 @@ const CareerDayResults = () => {
 
     const nextDayIndex = isSeasonComplete ? rawCurrentDayIndex : rawCurrentDayIndex + 1;
     const nextVisibleMonthIndex = getMonthIndexFromDayIndex(nextDayIndex);
-    const nextCareerDayNumber = isSeasonComplete
-      ? currentCareerDayNumber
-      : currentCareerDayNumber + 1;
+    const shouldAdvanceCareerDay = !isSeasonComplete;
+    const nextCareerDayNumber = shouldAdvanceCareerDay ? currentCareerDayNumber + 1 : currentCareerDayNumber;
 
     setGameState((prev) => {
       const expiryResult = pruneExpiredStaffMemberCards({
         cardsState: prev?.career?.cards,
         currentCareerDay: nextCareerDayNumber,
       });
+      const nextAcademyState = shouldAdvanceCareerDay
+        ? tickAcademyMaturityAndLoss({
+            academyState: prev?.career?.academy,
+            currentCareerDay: nextCareerDayNumber,
+          }).nextAcademyState
+        : prev?.career?.academy;
 
       return {
         ...prev,
@@ -225,6 +231,7 @@ const CareerDayResults = () => {
           cards: {
             ...expiryResult.nextCardsState,
           },
+          academy: nextAcademyState,
         },
       };
     });

@@ -12,7 +12,11 @@ import {
   SeasonCalendar,
 } from "../careerCalendar";
 import { clampMonthIndex, getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel";
-import { getContinueFlowLabel, resolveCareerHomeContinueAction } from "../careerFlow/utils/continueFlow";
+import {
+  CONTINUE_FLOW_ACTIONS,
+  getContinueFlowLabel,
+  resolveCareerHomeContinueAction,
+} from "../careerFlow/utils/continueFlow";
 import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
 import {
   buildCompletedDayResults,
@@ -23,6 +27,7 @@ import {
 import {
   ACADEMY_CARD_DEFINITIONS,
   CARD_RARITIES,
+  CARD_TYPES,
   CardLibraryBar,
   SCOUTING_CARD_DEFINITIONS,
   STAFF_UPGRADE_CARD_DEFINITIONS,
@@ -44,6 +49,20 @@ import {
 } from "../cards";
 import { CARD_REWARD_MATCH_RESULTS } from "../cards/constants/cardConstants";
 import { generateStaffMemberCard } from "../cards/utils/staffMemberGenerator";
+import {
+  createDefaultCareerAcademyState,
+  ensureCareerAcademyState,
+  resolveAcademyCapacityFromStaffSlots,
+  tickAcademyMaturityAndLoss,
+} from "../academy/utils/academyState";
+import {
+  assignScoutingTrip,
+  createDefaultCareerScoutingState,
+  ensureCareerScoutingState,
+  getAvailableStaffForScouting,
+  markStaffInUseForTrip,
+  resolveDueScoutingTrip,
+} from "../scouting/utils/scoutingState";
 import StaffSelectionModalContent from "../staff/components/staffSelectionModalContent";
 import {
   applyStaffStateToPlayerTeam,
@@ -194,6 +213,38 @@ const CareerHome = () => {
     () => resolveStaffSlotSummary(playerTeamStaffState),
     [playerTeamStaffState]
   );
+  const availableStaffForScouting = useMemo(
+    () => getAvailableStaffForScouting(playerTeamStaffState?.members),
+    [playerTeamStaffState]
+  );
+  const inUseStaffMembers = useMemo(
+    () =>
+      (Array.isArray(playerTeamStaffState?.members) ? playerTeamStaffState.members : []).filter(
+        (member) => member?.inUse
+      ),
+    [playerTeamStaffState]
+  );
+  const scoutingState = useMemo(
+    () => ensureCareerScoutingState(gameState?.career?.scouting),
+    [gameState?.career?.scouting]
+  );
+  const academyState = useMemo(
+    () => ensureCareerAcademyState(gameState?.career?.academy),
+    [gameState?.career?.academy]
+  );
+  const academyCapacity = useMemo(
+    () => resolveAcademyCapacityFromStaffSlots(playerTeamStaffState?.slotCount),
+    [playerTeamStaffState?.slotCount]
+  );
+  const dueScoutingTrip = useMemo(
+    () =>
+      resolveDueScoutingTrip({
+        scoutingState,
+        currentCareerDay: currentCareerDayNumber,
+      }),
+    [currentCareerDayNumber, scoutingState]
+  );
+  const isScoutingReportDue = Boolean(dueScoutingTrip);
   const pendingStaffMemberExpiries = getPendingStaffMemberExpiries({
     library: cardLibrary,
     currentCareerDay: currentCareerDayNumber,
@@ -223,8 +274,18 @@ const CareerHome = () => {
       gameState?.career?.cards &&
       Array.isArray(gameState.career.cards.library) &&
       Number.isInteger(gameState.career.cards.nextLibraryCardNumber);
+    const hasScoutingState =
+      gameState?.career?.scouting &&
+      Number.isInteger(gameState.career.scouting.nextTripNumber) &&
+      Array.isArray(gameState.career.scouting.activeTrips) &&
+      gameState.career.scouting.reportsByTripId &&
+      typeof gameState.career.scouting.reportsByTripId === "object";
+    const hasAcademyState =
+      gameState?.career?.academy &&
+      Number.isInteger(gameState.career.academy.nextAcademyPlayerNumber) &&
+      Array.isArray(gameState.career.academy.players);
 
-    if (hasCalendarForCurrentWorld && hasCardState) {
+    if (hasCalendarForCurrentWorld && hasCardState && hasScoutingState && hasAcademyState) {
       return;
     }
 
@@ -264,9 +325,24 @@ const CareerHome = () => {
               debug: nextCalendarState?.debug ?? {},
             },
         cards: hasCardState ? prev.career?.cards : createDefaultCareerCardState(),
+        scouting: hasScoutingState
+          ? ensureCareerScoutingState(prev?.career?.scouting)
+          : createDefaultCareerScoutingState(),
+        academy: hasAcademyState
+          ? ensureCareerAcademyState(prev?.career?.academy)
+          : createDefaultCareerAcademyState(),
       },
     }));
-  }, [calendarState, careerWorld, competitions.length, gameState?.career?.cards, generationStatus, setGameState]);
+  }, [
+    calendarState,
+    careerWorld,
+    competitions.length,
+    gameState?.career?.academy,
+    gameState?.career?.cards,
+    gameState?.career?.scouting,
+    generationStatus,
+    setGameState,
+  ]);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -344,6 +420,7 @@ const CareerHome = () => {
   const primaryContinueAction = resolveCareerHomeContinueAction({
     isSeasonComplete,
     isSimulatingDay,
+    isScoutingReportDue,
     hasPlayerMatchToday: Boolean(currentDayPlayerFixture) || Boolean(pendingPlayerFixtureId),
     currentDay,
     isDayOneSetupGateActive: dayOneSetupGateState.isGateActive,
@@ -435,6 +512,116 @@ const CareerHome = () => {
     };
   };
 
+  const openNoAvailableStaffModal = ({
+    modalTitle,
+    modalContent = "All current staff are already in use and unavailable.",
+  }) => {
+    openModal({
+      modalTitle,
+      modalContent,
+    });
+  };
+
+  const useScoutingCard = (cardId) => {
+    const scoutingCard = cardLibrary.find(
+      (card) => card.id === cardId && card.type === CARD_TYPES.SCOUTING
+    );
+    if (!scoutingCard) {
+      return;
+    }
+
+    if (availableStaffForScouting.length === 0) {
+      openNoAvailableStaffModal({
+        modalTitle: "No Available Staff",
+        modalContent:
+          "All current staff members are currently in use. Wait for scouting trips to finish before assigning a new one.",
+      });
+      return;
+    }
+
+    openModal({
+      modalTitle: "Assign Staff To Scouting",
+      buttons: MODAL_BUTTONS.NONE,
+      modalContent: (
+        <StaffSelectionModalContent
+          title={`Scout with ${scoutingCard?.name ?? "Scouting Card"}`}
+          description="Select an available staff member to run this scouting trip."
+          staffMembers={availableStaffForScouting}
+          actionLabel="Assign Scout"
+          onSelectStaff={(selectedStaffId) => {
+            setGameState((prev) => {
+              const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+              const nextScoutingCard = currentCardsState.library.find(
+                (card) => card.id === cardId && card.type === CARD_TYPES.SCOUTING
+              );
+              if (!nextScoutingCard) {
+                return prev;
+              }
+
+              const currentStaffState = ensurePlayerTeamStaffState(prev?.career?.world?.playerTeam);
+              const selectableStaffMembers = getAvailableStaffForScouting(currentStaffState.members);
+              const selectedStaff = selectableStaffMembers.find((staffMember) => staffMember.id === selectedStaffId);
+              if (!selectedStaff) {
+                return prev;
+              }
+
+              const assignment = assignScoutingTrip({
+                scoutingState: prev?.career?.scouting,
+                scoutingCard: nextScoutingCard,
+                staffMember: selectedStaff,
+                currentCareerDay: normalizeCareerDayNumber(prev?.career?.calendar?.careerDayNumber),
+              });
+              const nextStaffState = markStaffInUseForTrip({
+                staffState: currentStaffState,
+                staffId: selectedStaffId,
+                tripId: assignment.trip.id,
+              });
+              const nextPlayerTeam = applyStaffStateToPlayerTeam(prev?.career?.world?.playerTeam, nextStaffState);
+              const nextLibrary = discardCardFromLibrary({
+                library: currentCardsState.library,
+                cardId,
+              });
+
+              return {
+                ...prev,
+                career: {
+                  ...prev.career,
+                  world: {
+                    ...(prev.career?.world ?? {}),
+                    playerTeam: nextPlayerTeam,
+                  },
+                  scouting: assignment.nextScoutingState,
+                  cards: {
+                    ...currentCardsState,
+                    library: nextLibrary,
+                    debug: {
+                      ...currentCardsState.debug,
+                      lastStaffAction: {
+                        type: "scouting_assignment",
+                        status: "success",
+                        cardId,
+                        cardName: nextScoutingCard?.name ?? "",
+                        staffId: selectedStaffId,
+                        staffName: selectedStaff?.name ?? "",
+                        tripId: assignment.trip.id,
+                        tripReportCareerDay: assignment.trip.reportCareerDay,
+                        at: new Date().toISOString(),
+                      },
+                      librarySize: nextLibrary.length,
+                    },
+                    lastUpdatedAt: new Date().toISOString(),
+                  },
+                },
+              };
+            });
+            closeModal();
+          }}
+          onCancel={closeModal}
+        />
+      ),
+    });
+  };
+
   const hireStaffMemberCard = (cardId) => {
     const incomingCard = cardLibrary.find((card) => card.id === cardId);
     if (!isStaffMemberCard(incomingCard)) {
@@ -476,6 +663,16 @@ const CareerHome = () => {
       return;
     }
 
+    const availableStaffForReplacement = getAvailableStaffForScouting(playerTeamStaffState.members);
+    if (availableStaffForReplacement.length === 0) {
+      openNoAvailableStaffModal({
+        modalTitle: "No Replaceable Staff",
+        modalContent:
+          "All staff members are currently in use on scouting trips and cannot be replaced right now.",
+      });
+      return;
+    }
+
     const replacementDescription = `Your staff slots are full (${staffSlotSummary.currentCount}/${staffSlotSummary.maxSlots}). Select one current staff member to sack and replace.`;
 
     openModal({
@@ -485,7 +682,7 @@ const CareerHome = () => {
         <StaffSelectionModalContent
           title={`Hire ${incomingCard?.name ?? "Staff Member"}`}
           description={replacementDescription}
-          staffMembers={playerTeamStaffState.members}
+          staffMembers={availableStaffForReplacement}
           actionLabel="Sack + Replace"
           onSelectStaff={(outgoingStaffId) => {
             setGameState((prev) => {
@@ -497,6 +694,12 @@ const CareerHome = () => {
 
               const currentPlayerTeam = prev?.career?.world?.playerTeam;
               const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+              const outgoingStaffMember = (currentStaffState.members ?? []).find(
+                (member) => member?.id === outgoingStaffId
+              );
+              if (outgoingStaffMember?.inUse) {
+                return prev;
+              }
               const replaceResult = replaceActiveStaffMember({
                 staffState: currentStaffState,
                 outgoingStaffId,
@@ -536,6 +739,16 @@ const CareerHome = () => {
       return;
     }
 
+    const availableStaffForUpgrades = getAvailableStaffForScouting(playerTeamStaffState.members);
+    if (availableStaffForUpgrades.length === 0) {
+      openNoAvailableStaffModal({
+        modalTitle: "No Available Staff",
+        modalContent:
+          "All staff members are currently in use on scouting trips and cannot receive upgrades right now.",
+      });
+      return;
+    }
+
     openModal({
       modalTitle: "Use Staff Upgrade",
       buttons: MODAL_BUTTONS.NONE,
@@ -543,7 +756,7 @@ const CareerHome = () => {
         <StaffSelectionModalContent
           title={upgradeCard?.name ?? "Staff Upgrade"}
           description={upgradeCard?.payload?.effect ?? "Select a staff member to receive this upgrade."}
-          staffMembers={playerTeamStaffState.members}
+          staffMembers={availableStaffForUpgrades}
           actionLabel="Apply Upgrade"
           onSelectStaff={(targetStaffId) => {
             setGameState((prev) => {
@@ -555,6 +768,12 @@ const CareerHome = () => {
 
               const currentPlayerTeam = prev?.career?.world?.playerTeam;
               const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+              const targetStaffMember = (currentStaffState.members ?? []).find(
+                (member) => member?.id === targetStaffId
+              );
+              if (targetStaffMember?.inUse) {
+                return prev;
+              }
               const upgradeResult = applyStaffUpgradeToMember({
                 staffState: currentStaffState,
                 targetStaffId,
@@ -719,6 +938,14 @@ const CareerHome = () => {
       return;
     }
 
+    if (
+      isScoutingReportDue ||
+      primaryContinueAction === CONTINUE_FLOW_ACTIONS.SCOUTING_REPORT
+    ) {
+      navigate("/scouting");
+      return;
+    }
+
     if (dayOneSetupGateState.isGateActive) {
       navigate("/team-management");
       return;
@@ -866,6 +1093,10 @@ const CareerHome = () => {
           cardsState: prev?.career?.cards,
           currentCareerDay: nextCareerDayNumber,
         });
+        const academyTick = tickAcademyMaturityAndLoss({
+          academyState: prev?.career?.academy,
+          currentCareerDay: nextCareerDayNumber,
+        });
 
         return {
           ...prev,
@@ -904,6 +1135,7 @@ const CareerHome = () => {
                     : expiryResult.nextCardsState.debug?.lastStaffAction ?? null,
               },
             },
+            academy: academyTick.nextAcademyState,
           },
         };
       });
@@ -931,6 +1163,8 @@ const CareerHome = () => {
                 simulationState={simulationState}
                 playerTeamId={careerWorld?.playerTeam?.id ?? ""}
                 playerTeamCompetitionId={careerWorld?.playerTeam?.competitionId ?? ""}
+                scoutingState={scoutingState}
+                currentCareerDayNumber={currentCareerDayNumber}
                 onPreviousMonth={() => updateVisibleMonth(visibleMonthIndex - 1)}
                 onNextMonth={() => updateVisibleMonth(visibleMonthIndex + 1)}
                 canGoPreviousMonth={visibleMonthIndex > 0}
@@ -940,6 +1174,7 @@ const CareerHome = () => {
               <CardLibraryBar
                 library={cardLibrary}
                 onDiscardCard={discardLibraryCard}
+                onScoutCard={useScoutingCard}
                 onHireStaffMemberCard={hireStaffMemberCard}
                 onUseStaffUpgradeCard={useStaffUpgradeCard}
                 staffSummary={staffSlotSummary}
@@ -960,6 +1195,7 @@ const CareerHome = () => {
               playerTeamId={careerWorld?.playerTeam?.id ?? ""}
               teamLookupById={teamLookupById}
               teamFormByTeamId={simulationState?.teamFormByTeamId ?? {}}
+              academyAlertActive={academyState?.hasAlert}
               onAdvanceDay={moveToNextDay}
             />
           </aside>
@@ -993,6 +1229,12 @@ const CareerHome = () => {
             staffSummary={staffSlotSummary}
             staffState={playerTeamStaffState}
             pendingStaffMemberExpiries={pendingStaffMemberExpiries}
+            scoutingState={scoutingState}
+            dueScoutingTrip={dueScoutingTrip}
+            availableStaffForScouting={availableStaffForScouting}
+            inUseStaffMembers={inUseStaffMembers}
+            academyState={academyState}
+            academyCapacity={academyCapacity}
           />
         </section>
       </section>

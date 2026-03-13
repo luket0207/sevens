@@ -33,6 +33,12 @@ const CareerCalendarDebugPanel = ({
   staffSummary,
   staffState,
   pendingStaffMemberExpiries,
+  scoutingState,
+  dueScoutingTrip,
+  availableStaffForScouting,
+  inUseStaffMembers,
+  academyState,
+  academyCapacity,
 }) => {
   const defaultLeagueTier = Math.max(1, Math.min(5, Number(defaultCardRewardContext?.leagueTier) || 5));
   const defaultFormWins = Math.max(0, Math.min(5, Number(defaultCardRewardContext?.formWins) || 0));
@@ -48,6 +54,20 @@ const CareerCalendarDebugPanel = ({
   const safePendingStaffMemberExpiries = Array.isArray(pendingStaffMemberExpiries)
     ? pendingStaffMemberExpiries
     : [];
+  const safeScoutingState = scoutingState && typeof scoutingState === "object" ? scoutingState : {};
+  const safeAcademyState = academyState && typeof academyState === "object" ? academyState : {};
+  const safeAvailableStaffForScouting = Array.isArray(availableStaffForScouting)
+    ? availableStaffForScouting
+    : [];
+  const safeInUseStaffMembers = Array.isArray(inUseStaffMembers) ? inUseStaffMembers : [];
+  const activeScoutingTrips = Array.isArray(safeScoutingState.activeTrips) ? safeScoutingState.activeTrips : [];
+  const academyPlayers = Array.isArray(safeAcademyState.players) ? safeAcademyState.players : [];
+  const academyPendingLossNotifications = Array.isArray(safeAcademyState.pendingLossNotifications)
+    ? safeAcademyState.pendingLossNotifications
+    : [];
+  const latestScoutingReportDebug = dueScoutingTrip?.id
+    ? safeScoutingState?.reportsByTripId?.[dueScoutingTrip.id]?.debug ?? null
+    : null;
   const safeDebugManualCardCatalog = Array.isArray(debugManualCardCatalog)
     ? [...debugManualCardCatalog]
     : [];
@@ -109,6 +129,19 @@ const CareerCalendarDebugPanel = ({
         </p>
         <p className="careerCalendarDebug__line">
           Pending staff card expiries: {safePendingStaffMemberExpiries.length}
+        </p>
+        <p className="careerCalendarDebug__line">
+          Scouting trips active: {activeScoutingTrips.length} | Due report:{" "}
+          {dueScoutingTrip ? `${dueScoutingTrip.id} (Day ${dueScoutingTrip.reportCareerDay})` : "None"}
+        </p>
+        <p className="careerCalendarDebug__line">
+          Staff scouting availability: {safeAvailableStaffForScouting.length} available |{" "}
+          {safeInUseStaffMembers.length} in use
+        </p>
+        <p className="careerCalendarDebug__line">
+          Academy: {academyPlayers.length}/{Math.max(0, Number(academyCapacity) || 0)} | Alert:{" "}
+          {safeAcademyState.hasAlert ? "On" : "Off"} | Pending loss notifications:{" "}
+          {academyPendingLossNotifications.length}
         </p>
         <div className="careerCalendarDebug__rewardDecision">
           <p className="careerCalendarDebug__line careerCalendarDebug__line--label">Debug card reward context</p>
@@ -214,6 +247,18 @@ const CareerCalendarDebugPanel = ({
           <h3>Pending Staff Expiries</h3>
           <pre>{JSON.stringify(pendingStaffMemberExpiries, null, 2)}</pre>
         </article>
+        <article className="careerCalendarDebug__jsonCard">
+          <h3>Scouting State</h3>
+          <pre>{JSON.stringify(scoutingState, null, 2)}</pre>
+        </article>
+        <article className="careerCalendarDebug__jsonCard">
+          <h3>Scouting Report Debug</h3>
+          <pre>{JSON.stringify(latestScoutingReportDebug, null, 2)}</pre>
+        </article>
+        <article className="careerCalendarDebug__jsonCard">
+          <h3>Academy State</h3>
+          <pre>{JSON.stringify(academyState, null, 2)}</pre>
+        </article>
       </div>
     </section>
   );
@@ -260,6 +305,12 @@ CareerCalendarDebugPanel.propTypes = {
   }),
   staffState: PropTypes.object,
   pendingStaffMemberExpiries: PropTypes.arrayOf(PropTypes.object),
+  scoutingState: PropTypes.object,
+  dueScoutingTrip: PropTypes.object,
+  availableStaffForScouting: PropTypes.arrayOf(PropTypes.object),
+  inUseStaffMembers: PropTypes.arrayOf(PropTypes.object),
+  academyState: PropTypes.object,
+  academyCapacity: PropTypes.number,
 };
 
 CareerCalendarDebugPanel.defaultProps = {
@@ -290,6 +341,12 @@ CareerCalendarDebugPanel.defaultProps = {
   },
   staffState: {},
   pendingStaffMemberExpiries: [],
+  scoutingState: {},
+  dueScoutingTrip: null,
+  availableStaffForScouting: [],
+  inUseStaffMembers: [],
+  academyState: {},
+  academyCapacity: 0,
 };
 
 export default CareerCalendarDebugPanel;

@@ -4,6 +4,7 @@ export const CONTINUE_FLOW_ACTIONS = Object.freeze({
   NEXT_DAY: "next_day",
   MATCH: "match",
   MATCH_DAY_RESULTS: "match_day_results",
+  SCOUTING_REPORT: "scouting_report",
   TEAM_SETUP: "team_setup",
   LEAGUE_FIXTURE_GENERATION: "league_fixture_generation",
   LEAGUE_CUP_DRAW: "league_cup_draw",
@@ -17,6 +18,7 @@ const CONTINUE_FLOW_LABELS = Object.freeze({
   [CONTINUE_FLOW_ACTIONS.NEXT_DAY]: "Continue to Next Day",
   [CONTINUE_FLOW_ACTIONS.MATCH]: "Continue to Match",
   [CONTINUE_FLOW_ACTIONS.MATCH_DAY_RESULTS]: "Continue to Match Day Results",
+  [CONTINUE_FLOW_ACTIONS.SCOUTING_REPORT]: "View Scouting Report",
   [CONTINUE_FLOW_ACTIONS.TEAM_SETUP]: "Continue to Team Setup",
   [CONTINUE_FLOW_ACTIONS.LEAGUE_FIXTURE_GENERATION]: "Continue to League Fixture Generation",
   [CONTINUE_FLOW_ACTIONS.LEAGUE_CUP_DRAW]: "Continue to League Cup Draw",
@@ -45,17 +47,22 @@ export const getContinueFlowLabel = (action) =>
 export const resolveCareerHomeContinueAction = ({
   isSeasonComplete,
   isSimulatingDay,
+  isScoutingReportDue,
   hasPlayerMatchToday,
   currentDay,
   isDayOneSetupGateActive,
   seasonFixturesRevealed,
 }) => {
-  if (isSeasonComplete) {
-    return CONTINUE_FLOW_ACTIONS.FINISH_SEASON;
-  }
-
   if (isSimulatingDay) {
     return CONTINUE_FLOW_ACTIONS.SIMULATING;
+  }
+
+  if (isScoutingReportDue) {
+    return CONTINUE_FLOW_ACTIONS.SCOUTING_REPORT;
+  }
+
+  if (isSeasonComplete) {
+    return CONTINUE_FLOW_ACTIONS.FINISH_SEASON;
   }
 
   if (isDayOneSetupGateActive) {

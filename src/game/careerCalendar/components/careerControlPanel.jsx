@@ -16,6 +16,7 @@ const CareerControlPanel = ({
   playerTeamId,
   teamLookupById,
   teamFormByTeamId,
+  academyAlertActive,
 }) => {
   return (
     <section className="careerControlPanel">
@@ -39,6 +40,9 @@ const CareerControlPanel = ({
           </Button>
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/staff">
             Staff
+          </Button>
+          <Button variant={BUTTON_VARIANT.SECONDARY} to="/academy">
+            Academy {academyAlertActive ? "!" : ""}
           </Button>
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/career/cups">
             Cups
@@ -82,6 +86,7 @@ CareerControlPanel.propTypes = {
   playerTeamId: PropTypes.string,
   teamLookupById: PropTypes.object,
   teamFormByTeamId: PropTypes.object,
+  academyAlertActive: PropTypes.bool,
 };
 
 CareerControlPanel.defaultProps = {
@@ -93,6 +98,7 @@ CareerControlPanel.defaultProps = {
   playerTeamId: "",
   teamLookupById: {},
   teamFormByTeamId: {},
+  academyAlertActive: false,
 };
 
 export default CareerControlPanel;

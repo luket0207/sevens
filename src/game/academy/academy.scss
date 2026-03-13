@@ -1,0 +1,101 @@
+@use "../../assets/scss/ui/import" as *;
+
+.academyPage {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.academyPage__summary,
+.academyPage__empty {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.3);
+  padding: 0.8rem;
+}
+
+.academyPage__summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.academyPage__list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.academyPage__playerCard {
+  border: 1px solid rgba($cardTypeAcademy, 0.7);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.35);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.academyPage__playerHead h3 {
+  margin: 0;
+}
+
+.academyPage__playerHead p,
+.academyPage__intel p {
+  margin: 0;
+  color: rgba($lightText, 0.88);
+}
+
+.academyPage__contentGrid {
+  display: grid;
+  grid-template-columns: minmax(70px, 84px) minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.academyPage__imageWrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.academyPage__actions {
+  margin-top: 0.2rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.academyPage__modalContent {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.academyPage__modalList {
+  display: grid;
+  gap: 0.4rem;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.academyPage__modalListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.academyPage__modalActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.academyPage__comparisonRows {
+  display: grid;
+  gap: 0.25rem;
+
+  p {
+    margin: 0;
+    color: rgba($lightText, 0.9);
+  }
+}

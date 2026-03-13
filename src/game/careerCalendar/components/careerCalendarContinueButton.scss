@@ -280,6 +280,16 @@
   --continue-icon: #{$calendarEventChampionsCupDrawIcon};
 }
 
+.careerCalendarContinueButton--scoutingReport {
+  --continue-bg-top: #{color.mix($cardTypeScouting, $siteBackground, 58%)};
+  --continue-bg-bottom: #{color.mix($cardTypeAcademy, $siteBackground, 40%)};
+  --continue-border: #{rgba($cardTypeAcademy, 0.78)};
+  --continue-glow: #{rgba($cardTypeAcademy, 0.25)};
+  --continue-ambient-glow: #{rgba($cardTypeAcademy, 0.7)};
+  --continue-focus: #{rgba($cardTypeAcademy, 0.34)};
+  --continue-icon: #{$cardTypeScouting};
+}
+
 .careerCalendarContinueButton--fallback {
   --continue-bg-top: #{rgba($secondaryBackground, 0.8)};
   --continue-bg-bottom: #{rgba($primaryBackground, 0.8)};

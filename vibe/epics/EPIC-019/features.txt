@@ -1,0 +1,892 @@
+EPIC-019 - Scouting Card Usage, Scouting Reports, and Academy Foundation
+
+Overview
+The goal of this epic is to implement how scouting cards actually work in the game.
+
+This epic introduces:
+- using scouting cards from the card library
+- assigning a current staff member to go scouting
+- locking that staff member as in use for the scouting duration
+- marking scouting days on the calendar
+- generating a scouting report when the scouting trip ends
+- generating scouted players from scouting card rules
+- partially revealing scouted player stats/traits using coach Judgement
+- adding scouted players to a new Academy section of game state
+- creating the Academy page
+- academy slot rules
+- academy maturity
+- promoting matured players to the first team
+- academy player loss to other clubs after maturity
+
+This epic is about:
+- scouting-card execution
+- scouting trip lifecycle
+- scouted player generation
+- hidden/unhidden academy scouting intel
+- academy storage and promotion flow
+
+This epic is not about:
+- changing the card reward system itself
+- changing how players are fundamentally generated
+- changing trait generation rules
+- advanced scouting filters
+- transfer systems
+- money systems
+- academy training cards or academy effects from other card types beyond storage foundations
+
+================================================================
+Core Scouting Card Rules
+================================================================
+
+Scouting cards need a new button:
+- Scout
+
+When the Scout button is clicked:
+- show a modal
+- let the user choose an available current staff member
+- once chosen, that staff member becomes:
+  - inUse = true
+- while in use, that staff member cannot be used for anything else until returning from scouting
+
+The scouting trip duration is determined by:
+- the scouting card's Duration (Days) value
+
+That duration should be counted from the current day.
+
+Calendar marking rules:
+- the scouting trip duration must be shown on the calendar
+- mark the affected days with a small orange dot in the bottom right corner of the day tile
+- when hovered, the tooltip shows the name of the staff member sent scouting
+- if the duration is 1, only the next day is marked
+
+When the final marked day is reached:
+- before doing anything else that day
+- before matches, draws, or normal continue flow
+- the Continue button must switch into:
+  - View Scouting Report
+- this button should use:
+  - Font Awesome icon faBinoculars
+
+================================================================
+Scouting Report Generation
+================================================================
+
+When the user clicks View Scouting Report:
+- navigate to a new page called the Scout Report page
+
+The scouting report page shows:
+- the list of scouted players found during that session
+
+How many players are generated:
+- use the scouting card's Player Quantity per Session value
+- use the selected coach's Scouting rating
+- perform a figurative coin flip for each possible player slot
+- chance of heads = coach Scouting rating
+- chance of tails = 100 - coach Scouting rating
+- number of heads = number of players generated for the report
+
+This happens instantly.
+No animation is required.
+
+Example:
+- Player Quantity per Session = 10
+- coach Scouting rating = 62
+- roll 10 times
+- if heads occurs 6 times, then 6 players are generated
+
+================================================================
+Scouted Player Quality Resolution
+================================================================
+
+Each generated scouted player has a quality bucket determined by the scouting card's quality chances.
+
+Scouting cards contain:
+- Bad Player Chance
+- Ok Player Chance
+- Good Player Chance
+- Great Player Chance
+- Elite Player Chance
+
+These values add up to 100 and act as weighted chances for each generated player.
+
+Use these quality buckets to determine the player's overall and potential ranges:
+
+Bad Player Chance
+- Overall: 10-20
+- Potential: 15-25
+
+Ok Player Chance
+- Overall: 15-25
+- Potential: 25-35
+
+Good Player Chance
+- Overall: 15-30
+- Potential: 30-40
+
+Great Player Chance
+- Overall: 20-35
+- Potential: 35-45
+
+Elite Player Chance
+- Overall: 25-35
+- Potential: 40-50
+
+Rules:
+- overall must fall within the chosen range
+- potential must fall within the chosen range
+- potential must be higher than overall
+
+From then on:
+- the player is generated like any normal player
+- include:
+  - normal position generation rules
+  - influence rules
+  - traits
+  - name
+  - appearance
+  - etc.
+
+Position chance:
+- 10% chance the scouted player is a goalkeeper
+- 90% chance the scouted player is outfield
+
+================================================================
+Hidden / Revealed Scouting Information
+================================================================
+
+On the scouting report page:
+- there should be space to show all player values
+- but by default all ratings are hidden
+- traits are also hidden by default
+
+Values that are never hidden:
+- name
+- appearance
+- normal identity/display info
+- player type context if useful
+
+Values that always remain hidden at scouting stage:
+- current overall
+- potential
+
+These do not participate in reveal checks and must always remain hidden on the scouting report and in the academy until promotion.
+
+Hidden values that may be revealed through Judgement:
+
+Goalkeepers
+- Shot Stopping
+- Distribution
+- Control
+- Traits
+
+Outfield players
+- Tackling
+- Marking
+- Passing
+- Movement
+- Control
+- Dribbling
+- Shooting
+- Traits
+
+Reveal process:
+- use the chosen coach's Judgement rating / 2
+- this becomes the reveal chance percentage for each individual rating and each individual trait
+- check every rating independently
+- check every trait independently
+
+Example:
+- coach Judgement = 40
+- reveal chance = 20%
+- every eligible rating gets its own 20% reveal roll
+- every trait gets its own 20% reveal roll
+
+Trait reveal notes:
+- if a player has 2 traits, each trait is checked independently
+- one may be visible while the other stays hidden
+
+This reveal state must persist with the academy player data once added to the academy.
+
+================================================================
+Adding Players to the Academy
+================================================================
+
+At the bottom of each scouted player entry there should be a button:
+- Add to Academy
+
+When clicked:
+- show an are you sure modal
+- text:
+  - Are you sure you want to add {playerName} to your academy?
+
+If confirmed:
+- add the player to a new game context section:
+  - player academy
+
+The academy stores:
+- the player
+- hidden/unhidden scouting reveal state
+- maturity
+- any other required scouting-origin metadata
+
+Academy slot rules:
+- academy slots are tied to staff slots:
+  - 1 academy slot per staff slot
+- academy slots can also be increased through other means later
+- academy max slots = 12
+
+This means:
+- current academy capacity must be tracked
+- academy add flow must respect capacity
+
+================================================================
+Academy Page
+================================================================
+
+Add a new page:
+- Academy
+
+Add it to:
+- the navigation on the home control panel
+
+The Academy page should display:
+- all players currently in the academy
+
+Each academy player should show:
+- normal player identity data
+- the hidden/unhidden scouting state preserved from the scouting report
+- maturity
+
+For now:
+- maturity should be displayed because it is needed for debugging in the next epic
+- eventually it will become hidden later
+
+================================================================
+Maturity Rules
+================================================================
+
+When a player is added to the academy:
+- generate a Maturity value
+- random number between 60 and 200
+
+Every day:
+- maturity reduces by 1
+- minimum is 0
+- never goes negative
+
+When maturity reaches 0:
+- the player is considered mature
+- show an ! icon on the Academy button on the home page
+- show a new button on that player's academy entry:
+  - Promote to First Team
+
+Academy button notification rules:
+- if the player opens the Academy page while there was an ! icon, remove the ! icon
+- it stays gone until another academy event should make it appear again
+
+================================================================
+Promotion to First Team
+================================================================
+
+When the user clicks Promote to First Team:
+
+If academy player is a goalkeeper:
+- show a comparison modal
+- compare the academy player's known values against the current goalkeeper
+- allow:
+  - Cancel
+  - Replace current goalkeeper
+- if replaced:
+  - current goalkeeper is removed from the game
+  - academy player joins first team
+  - academy player becomes a normal player
+
+If academy player is an outfield player:
+- first show a modal where the user chooses which current outfield player to compare against
+- then show the comparison modal
+- if they cancel in the comparison modal:
+  - return to the player-choice modal
+- if they cancel from the player-choice modal:
+  - close the whole promotion flow
+  - nothing changes
+- if they confirm replacement:
+  - chosen current first-team outfield player is removed from the game
+  - academy player joins first team
+  - academy player becomes a normal player
+
+Promotion reveal rule:
+- when an academy player is promoted:
+  - all hidden stats and traits become fully revealed
+  - hidden/unhidden scouting data can be discarded
+  - the player becomes a normal player from then on
+
+================================================================
+Mature Player Loss to Other Clubs
+================================================================
+
+Once a player is mature and remains in the academy, they may be lost to another club.
+
+Protection window:
+- for the first 14 days after maturity, they remain in the academy for certain
+
+After that, each day there is a chance they are scouted by another club:
+
+Days 15 to 50
+- 0.5%
+
+Days 51 to 112
+- 1%
+
+Days 113 to 162
+- 2%
+
+Days 163 to 224
+- 5%
+
+Days 225+
+- 50%
+
+If the player is scouted by another club:
+- remove them from the academy immediately
+- remove them from the game
+- show ! on the Academy button
+
+When the player next opens the Academy page:
+- show a modal:
+  - {playerName} was scouted by another club abroad.
+- after acknowledging the modal:
+  - continue to the Academy page
+- then remove the ! icon again until another academy event occurs
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-1901 - Add Scout Action to Scouting Cards
+----------------------------------------------------------------
+
+Description
+Make scouting cards usable from the card library.
+
+Requirements
+- Scouting cards must show a button labelled:
+  - Scout
+- Clicking Scout opens a modal for selecting an available staff member.
+- Only current active staff members who are not already in use may be selected.
+
+Acceptance Criteria
+- Scouting cards show a Scout button.
+- Clicking it opens staff selection.
+- Only available staff can be chosen.
+
+----------------------------------------------------------------
+FEAT-1902 - Add Staff In-Use State for Scouting Trips
+----------------------------------------------------------------
+
+Description
+Track when a staff member is away on scouting and unavailable for other uses.
+
+Requirements
+- When a staff member is chosen for a scouting card:
+  - set them to inUse
+- Staff marked inUse cannot be used for anything else until they return from scouting.
+- Persist this state in career data.
+
+Acceptance Criteria
+- Staff can be marked inUse by scouting.
+- In-use staff are unavailable for other actions.
+- The inUse state persists correctly.
+
+----------------------------------------------------------------
+FEAT-1903 - Track Scouting Duration and Mark Calendar Days
+----------------------------------------------------------------
+
+Description
+Represent scouting trips across future calendar days.
+
+Requirements
+- Use the scouting card Duration (Days) value.
+- Mark the relevant future days on the calendar with a small orange dot in the bottom-right corner.
+- Tooltip on hover should show the scouting staff member's name.
+- If duration is 1, only the next day is marked.
+- Persist the scouting trip state so it survives navigation.
+
+Acceptance Criteria
+- Scouting days are marked on the calendar.
+- Tooltips show the assigned staff member's name.
+- Duration 1 marks only the next day.
+- Marking lasts for the full scouting duration.
+
+----------------------------------------------------------------
+FEAT-1904 - Override Continue Button with View Scouting Report on Report Day
+----------------------------------------------------------------
+
+Description
+Interrupt the normal continue flow when a scouting report is due.
+
+Requirements
+- On the final marked scouting day, before anything else happens that day:
+  - change the Continue button into:
+    - View Scouting Report
+- Use the Font Awesome icon:
+  - faBinoculars
+- This takes priority over matches, draws, or standard next-day progression for that moment.
+
+Acceptance Criteria
+- When a scouting report is due, the Continue button changes appropriately.
+- The binoculars icon is shown.
+- The scouting report flow happens before other day actions.
+
+----------------------------------------------------------------
+FEAT-1905 - Create Scout Report Page
+----------------------------------------------------------------
+
+Description
+Add a dedicated page for displaying the results of a scouting trip.
+
+Requirements
+- Create a new Scout Report page.
+- The page shows all players found in that scouting session.
+- It should support player cards/entries with visible and hidden values.
+- Keep it readable and ready for future expansion.
+
+Acceptance Criteria
+- A Scout Report page exists.
+- It displays all players generated by the scouting session.
+
+----------------------------------------------------------------
+FEAT-1906 - Determine Scouted Player Count from Scouting Rating and Card Quantity
+----------------------------------------------------------------
+
+Description
+Calculate how many players appear in the scouting report.
+
+Requirements
+- Use:
+  - scouting card Player Quantity per Session
+  - chosen coach Scouting rating
+- For each possible player slot:
+  - roll a figurative coin flip
+  - chance of heads = coach Scouting rating
+  - chance of tails = 100 - coach Scouting rating
+- Number of heads = number of generated players
+- Resolve instantly with no animations.
+
+Acceptance Criteria
+- Scouted player count is derived from the exact described process.
+- More scouting skill tends to yield more found players.
+- The result is instant from the user's perspective.
+
+----------------------------------------------------------------
+FEAT-1907 - Resolve Scouted Player Quality Buckets from Card Quality Chances
+----------------------------------------------------------------
+
+Description
+Determine the quality bucket for each generated scouted player.
+
+Requirements
+- Use the scouting card's exact:
+  - Bad Player Chance
+  - Ok Player Chance
+  - Good Player Chance
+  - Great Player Chance
+  - Elite Player Chance
+- These act as weighted chances for each generated player.
+- Use the exact overall/potential ranges from this epic:
+  - Bad: Overall 10-20, Potential 15-25
+  - Ok: Overall 15-25, Potential 25-35
+  - Good: Overall 15-30, Potential 30-40
+  - Great: Overall 20-35, Potential 35-45
+  - Elite: Overall 25-35, Potential 40-50
+- Potential must always be higher than overall.
+
+Acceptance Criteria
+- Each scouted player is assigned a quality bucket using the card's weights.
+- Overall and potential are generated inside the correct ranges.
+- Potential is always greater than overall.
+
+----------------------------------------------------------------
+FEAT-1908 - Generate Full Scouted Players Using Standard Player Generation Rules
+----------------------------------------------------------------
+
+Description
+Generate scouted players as real players using the existing player generation systems.
+
+Requirements
+- Each scouted player should be generated like any other player in the game, including:
+  - position handling
+  - influence rules
+  - traits
+  - name
+  - appearance
+  - usual player fields
+- Position chances:
+  - 10% goalkeeper
+  - 90% outfield
+- Integrate with the current player generation framework rather than duplicating a simpler parallel system.
+
+Acceptance Criteria
+- Scouted players are fully generated players.
+- Goalkeeper chance is 10%; outfield chance is 90%.
+- Traits and other normal player-generation outputs still apply.
+
+----------------------------------------------------------------
+FEAT-1909 - Add Hidden/Visible Scouting Intel Model for Ratings and Traits
+----------------------------------------------------------------
+
+Description
+Support partially hidden scouting information on scouted players.
+
+Requirements
+- On the scouting report, hide all scouted ratings and traits by default.
+- Never hide:
+  - name
+  - appearance
+  - core identity data
+- Always keep hidden:
+  - overall
+  - potential
+- For revealable values, support:
+  Goalkeepers:
+  - Shot Stopping
+  - Distribution
+  - Control
+  - Traits
+  Outfield:
+  - Tackling
+  - Marking
+  - Passing
+  - Movement
+  - Control
+  - Dribbling
+  - Shooting
+  - Traits
+- Store hidden/unhidden state per field and per trait.
+
+Acceptance Criteria
+- Scouted players support field-level hidden/unhidden state.
+- Overall and potential always remain hidden at this stage.
+- Ratings and traits can be independently hidden or revealed.
+
+----------------------------------------------------------------
+FEAT-1910 - Reveal Scouting Intel Using Coach Judgement / 2
+----------------------------------------------------------------
+
+Description
+Use the selected coach's Judgement to determine which ratings and traits become visible in the scouting report.
+
+Requirements
+- Use:
+  - coach Judgement / 2
+- This becomes the reveal chance for each individual rating and each individual trait.
+- Roll each rating independently.
+- Roll each trait independently.
+- Persist the resulting visible/hidden state into the academy if the player is added there.
+
+Acceptance Criteria
+- Judgement-based reveal uses the exact described formula.
+- Each rating is revealed independently.
+- Each trait is revealed independently.
+- Reveal state persists with the player.
+
+----------------------------------------------------------------
+FEAT-1911 - Add Add to Academy Action with Confirmation Modal
+----------------------------------------------------------------
+
+Description
+Allow the user to take a scouted player into the academy.
+
+Requirements
+- Each scouted player entry must show a button:
+  - Add to Academy
+- Clicking it should show an are-you-sure modal:
+  - Are you sure you want to add {playerName} to your academy?
+- If confirmed:
+  - add the player to player academy in game context
+- Academy capacity rules must be respected.
+
+Acceptance Criteria
+- Scouted players can be added to the academy.
+- Confirmation is shown before adding.
+- Confirmed players enter academy state correctly.
+
+----------------------------------------------------------------
+FEAT-1912 - Add Player Academy to Game Context
+----------------------------------------------------------------
+
+Description
+Create the new academy data structure in game state.
+
+Requirements
+- Add a new section to game context:
+  - player academy
+- Store academy players with:
+  - player data
+  - hidden/unhidden reveal state
+  - maturity
+  - scouting-origin data needed by later flows
+- Keep the structure future-proof for later academy systems.
+
+Acceptance Criteria
+- Academy state exists in game context.
+- Academy players are stored correctly with scouting reveal data and maturity.
+
+----------------------------------------------------------------
+FEAT-1913 - Create Academy Page and Add It to Home Navigation
+----------------------------------------------------------------
+
+Description
+Add the Academy page and link it from the home control panel.
+
+Requirements
+- Create a new page:
+  - Academy
+- Add it to the home control panel navigation.
+- Display academy players on the page.
+- Show their current visible/hidden scouting information.
+- Show maturity for now for debugging purposes.
+
+Acceptance Criteria
+- The Academy page exists.
+- It is linked from the home control panel.
+- Academy players and their scouting-state data are displayed there.
+
+----------------------------------------------------------------
+FEAT-1914 - Add Academy Slot Capacity Rules
+----------------------------------------------------------------
+
+Description
+Implement academy capacity and slot limits.
+
+Requirements
+- The academy has:
+  - 1 slot per staff slot
+- Academy slots can also increase through other means later.
+- Maximum academy slots = 12.
+- Adding a player to the academy must respect the current slot count.
+- Display current academy capacity where useful.
+
+Acceptance Criteria
+- Academy capacity is tied to staff slots.
+- Academy capacity is capped at 12.
+- Players cannot be added beyond current capacity.
+
+----------------------------------------------------------------
+FEAT-1915 - Generate and Track Academy Maturity
+----------------------------------------------------------------
+
+Description
+Add maturity to academy players and reduce it over time.
+
+Requirements
+- When a player is added to the academy:
+  - assign random maturity between 60 and 200
+- Every day:
+  - reduce maturity by 1
+- Minimum maturity is 0.
+- Display maturity for now in the academy UI.
+
+Acceptance Criteria
+- Academy players receive maturity values.
+- Maturity decreases daily and stops at 0.
+- Maturity is visible for debugging.
+
+----------------------------------------------------------------
+FEAT-1916 - Detect Mature Academy Players and Add Academy Alert Icon
+----------------------------------------------------------------
+
+Description
+Show when academy players are ready for promotion.
+
+Requirements
+- When an academy player's maturity reaches 0:
+  - mark them as mature
+  - show an ! icon on the Academy button on the home page
+  - show a Promote to First Team button on that player's academy entry
+- Once the user visits the Academy page while the ! icon is active:
+  - clear the icon
+- The icon should reappear later if another academy event requires it.
+
+Acceptance Criteria
+- Mature players are detected correctly.
+- The Academy button shows an ! when required.
+- The icon clears once the Academy page is visited.
+
+----------------------------------------------------------------
+FEAT-1917 - Add Goalkeeper Promotion Comparison and Replacement Flow
+----------------------------------------------------------------
+
+Description
+Allow mature academy goalkeepers to be promoted into the first team.
+
+Requirements
+- When Promote to First Team is clicked for a goalkeeper:
+  - show a comparison modal
+  - compare the academy player's known values with the current first-team goalkeeper
+- Allow:
+  - Cancel
+  - Replace current goalkeeper
+- If replaced:
+  - remove current goalkeeper from the game
+  - add academy player to first team
+  - fully reveal all academy player stats and traits
+  - convert them into a normal player
+
+Acceptance Criteria
+- Mature academy goalkeepers can be compared against the current goalkeeper.
+- The player can cancel or replace.
+- Successful replacement promotes the academy player and removes the old goalkeeper.
+
+----------------------------------------------------------------
+FEAT-1918 - Add Outfield Promotion Compare-and-Replace Flow
+----------------------------------------------------------------
+
+Description
+Allow mature academy outfield players to be promoted into the first team.
+
+Requirements
+- When Promote to First Team is clicked for an outfield player:
+  - first show a modal to choose which current outfield player to compare against
+- Then show the comparison modal
+- If the user cancels from the comparison modal:
+  - return to the comparison-target choice modal
+- If they cancel from the target-choice modal:
+  - close the whole flow with no change
+- If they confirm replacement:
+  - remove the chosen current outfield player from the game
+  - promote the academy player into first team
+  - fully reveal all stats and traits
+  - remove scouting hidden-state data since they become a normal player
+
+Acceptance Criteria
+- Mature academy outfield players can be compared against selected current outfield players.
+- The two-step cancel flow behaves correctly.
+- Successful replacement promotes the academy player and removes the old player.
+
+----------------------------------------------------------------
+FEAT-1919 - Add Mature Academy Player Loss-to-Other-Club System
+----------------------------------------------------------------
+
+Description
+Implement the risk of losing mature academy players if left too long.
+
+Requirements
+- Once a player becomes mature:
+  - protect them for the first 14 days after maturity
+- After that, each day apply the following loss chances:
+
+Days 15 to 50
+- 0.5%
+
+Days 51 to 112
+- 1%
+
+Days 113 to 162
+- 2%
+
+Days 163 to 224
+- 5%
+
+Days 225+
+- 50%
+
+If the player is lost:
+- remove them from the academy immediately
+- remove them from the game
+- show ! on the Academy button
+
+Acceptance Criteria
+- Mature academy players become at risk after the first 14 days.
+- Daily loss chances follow the exact timeline above.
+- Lost players are removed immediately from academy and game state.
+
+----------------------------------------------------------------
+FEAT-1920 - Show Academy Loss Modal on Next Academy Page Visit
+----------------------------------------------------------------
+
+Description
+Notify the user when an academy player has been lost to another club.
+
+Requirements
+- If an academy player has been lost to another club:
+  - on the next visit to the Academy page
+  - show a modal:
+    - {playerName} was scouted by another club abroad.
+- After acknowledging the modal:
+  - continue to the Academy page
+- Then clear the Academy button ! icon unless another academy event still requires it.
+
+Acceptance Criteria
+- Lost-player notification appears the next time the Academy page is opened.
+- The message uses the correct player name.
+- The Academy alert icon clears appropriately after the page visit.
+
+----------------------------------------------------------------
+FEAT-1921 - Release Staff from In-Use State After Scouting Report Resolution
+----------------------------------------------------------------
+
+Description
+Return staff members from scouting once their scouting trip has completed.
+
+Requirements
+- Once the scouting report has been reached and resolved:
+  - the assigned staff member should no longer be inUse
+- Ensure staff become available again for other systems after the report cycle is complete.
+
+Acceptance Criteria
+- Staff assigned to scouting become available again after the scouting report is resolved.
+- inUse state is cleared correctly.
+
+----------------------------------------------------------------
+FEAT-1922 - Add Scouting and Academy Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight development/debug support for validating scouting and academy flows.
+
+Requirements
+- Add development-friendly visibility for:
+  - scouting trip state
+  - inUse staff
+  - report due dates
+  - player count rolls
+  - player quality rolls
+  - hidden/unhidden reveal outcomes
+  - academy capacity
+  - maturity countdown
+  - mature player loss checks
+  - promotion outcomes
+- Keep this support lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can inspect the key state and calculations behind scouting and academy systems.
+- The full scouting-to-academy flow is easier to validate during testing.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- Scouting cards can be used from the library through a Scout button.
+- A current available staff member can be assigned to scouting.
+- Assigned staff become inUse and unavailable until they return.
+- Scouting duration is marked on the calendar with orange dots.
+- Hovering the scouting marker shows the scouting staff member's name.
+- On the final scouting day, Continue becomes View Scouting Report with faBinoculars.
+- A Scout Report page exists.
+- Scouted player count is generated using the exact coin-flip process from Player Quantity per Session and coach Scouting.
+- Scouted player quality uses the scouting card quality weights exactly.
+- Overall and potential are generated in the correct ranges, with potential always higher than overall.
+- Scouted players are fully generated players using the normal player-generation system.
+- Ratings and traits start hidden and are revealed using Judgement / 2 exactly as described.
+- Overall and potential remain hidden at scouting/academy stages.
+- Scouted players can be added to the academy with confirmation.
+- The academy exists in game context and has its own page.
+- Academy capacity follows 1 slot per staff slot, capped at 12.
+- Academy players have maturity values between 60 and 200 that tick down daily.
+- Mature academy players can be promoted to the first team through goalkeeper/outfield-specific replacement flows.
+- Mature academy players can also be lost to other clubs using the exact post-maturity timing/chance rules.
+- Academy alert icons and loss notification modals behave correctly.
+- Staff return from inUse state after scouting completes.

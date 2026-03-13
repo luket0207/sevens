@@ -46,6 +46,7 @@
 }
 
 .seasonCalendar__day {
+  position: relative;
   min-height: 0;
   min-width: 0;
   aspect-ratio: 1 / 1;
@@ -205,4 +206,35 @@
 
 .seasonCalendar__eventIconWrap--playoff {
   color: $calendarEventPlayoffIcon;
+}
+
+.seasonCalendar__scoutingDot {
+  width: 0.52rem;
+  height: 0.52rem;
+  border-radius: 999px;
+  background: $cardTypeAcademy;
+  border: 1px solid rgba($lightText, 0.65);
+  box-shadow: 0 0 0 1px rgba($siteBackground, 0.6);
+}
+
+.seasonCalendar__scoutingDotTooltipTrigger {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  display: inline-flex;
+  width: 0.8rem;
+  height: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  box-shadow: none;
+  padding: 0;
+  line-height: 0;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }

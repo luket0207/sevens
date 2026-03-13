@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faBinoculars } from "@fortawesome/free-solid-svg-icons";
 import { CALENDAR_EVENT_TYPES, MATCH_EVENT_TYPES } from "../constants/calendarConstants";
 import { resolveCalendarEventVisual } from "../utils/calendarEventDisplay";
 import { CONTINUE_FLOW_ACTIONS, getContinueFlowLabel } from "../../careerFlow/utils/continueFlow";
@@ -10,6 +10,12 @@ const FALLBACK_VISUAL = Object.freeze({
   visualKey: "fallback",
   icon: faArrowRight,
   ariaLabel: "Continue",
+});
+
+const SCOUTING_REPORT_VISUAL = Object.freeze({
+  visualKey: "scoutingReport",
+  icon: faBinoculars,
+  ariaLabel: "View Scouting Report",
 });
 
 const normaliseCompetitionId = (value) => String(value ?? "").trim().toLowerCase();
@@ -93,6 +99,10 @@ const buildVisualEventForAction = ({ continueAction, currentDay, playerFixtureCo
 };
 
 const resolveContinueVisual = ({ continueAction, currentDay, playerFixtureCompetitionId }) => {
+  if (continueAction === CONTINUE_FLOW_ACTIONS.SCOUTING_REPORT) {
+    return SCOUTING_REPORT_VISUAL;
+  }
+
   const visualEvent = buildVisualEventForAction({
     continueAction,
     currentDay,

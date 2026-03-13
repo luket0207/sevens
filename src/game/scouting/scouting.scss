@@ -1,0 +1,115 @@
+@use "../../assets/scss/ui/import" as *;
+
+.scoutReportPage {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.scoutReportPage__panel {
+  border: 1px solid rgba($lightText, 0.2);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.34);
+  padding: 0.8rem;
+}
+
+.scoutReportPage__panel--summary,
+.scoutReportPage__panel--footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.scoutReportPage__list {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scoutReportPage__playerCard {
+  border: 1px solid rgba($cardTypeScouting, 0.72);
+  border-radius: 10px;
+  background: rgba($siteBackground, 0.36);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.scoutReportPage__playerHead h3 {
+  margin: 0;
+}
+
+.scoutReportPage__playerHead p,
+.scoutReportPage__identity p,
+.scoutReportPage__skills p,
+.scoutReportPage__traits p {
+  margin: 0;
+  color: rgba($lightText, 0.88);
+}
+
+.scoutReportPage__contentGrid {
+  display: grid;
+  grid-template-columns: minmax(70px, 84px) minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.scoutReportPage__imageWrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.scoutReportPage__details {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.scoutReportPage__traits ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.scoutReportPage__actions {
+  margin-top: 0.2rem;
+}
+
+.scoutReportPage__modalContent {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.scoutReportPage__modalList {
+  display: grid;
+  gap: 0.4rem;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.scoutReportPage__modalListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.scoutReportPage__modalActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 920px) {
+  .scoutReportPage__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1360px) {
+  .scoutReportPage__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

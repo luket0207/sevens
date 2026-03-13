@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { createDefaultCareerCardState } from "../../game/cards/state/cardState";
+import { createDefaultCareerScoutingState } from "../../game/scouting/utils/scoutingState";
+import { createDefaultCareerAcademyState } from "../../game/academy/utils/academyState";
 
 /*
 Usage:
@@ -244,6 +246,8 @@ const DEFAULT_CAREER_CALENDAR = Object.freeze({
 });
 
 const DEFAULT_CAREER_CARDS = Object.freeze(createDefaultCareerCardState());
+const DEFAULT_CAREER_SCOUTING = Object.freeze(createDefaultCareerScoutingState());
+const DEFAULT_CAREER_ACADEMY = Object.freeze(createDefaultCareerAcademyState());
 
 const DEFAULT_GAME_STATE = Object.freeze({
   player: {
@@ -262,6 +266,8 @@ const DEFAULT_GAME_STATE = Object.freeze({
     world: DEFAULT_CAREER_WORLD,
     calendar: DEFAULT_CAREER_CALENDAR,
     cards: DEFAULT_CAREER_CARDS,
+    scouting: DEFAULT_CAREER_SCOUTING,
+    academy: DEFAULT_CAREER_ACADEMY,
   },
 });
 

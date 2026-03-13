@@ -1,0 +1,315 @@
+EPIC-019 Implementation Log
+Date: 2026-03-13
+
+Scope implemented:
+- Added full scouting-card execution flow from card library to scouting trip assignment.
+- Added persistent scouting trip state, report generation, and report-resolution lifecycle.
+- Added staff `inUse` enforcement for scouting trips and released staff after report completion.
+- Added scouting day markers to season calendar with staff-name hover context.
+- Added continue-flow override for due scouting reports with `faBinoculars` visual.
+- Replaced scouting placeholder with Scout Report page.
+- Added scouting report player-generation logic (quantity coin flips, quality buckets, judgement reveals).
+- Added Add-to-Academy flow with confirmation and capacity checks.
+- Added academy state model, academy route/page, maturity progression, promotion flow, and mature-player loss system.
+- Added academy alert behavior on home navigation and loss notification modal behavior on academy visit.
+- Added lightweight scouting+academy debug visibility in Career Home debug panel.
+
+Feature status:
+- FEAT-1901: done
+- FEAT-1902: done
+- FEAT-1903: done
+- FEAT-1904: done
+- FEAT-1905: done
+- FEAT-1906: done
+- FEAT-1907: done
+- FEAT-1908: done
+- FEAT-1909: done
+- FEAT-1910: done
+- FEAT-1911: done
+- FEAT-1912: done
+- FEAT-1913: done
+- FEAT-1914: done
+- FEAT-1915: done
+- FEAT-1916: done
+- FEAT-1917: done
+- FEAT-1918: done
+- FEAT-1919: done
+- FEAT-1920: done
+- FEAT-1921: done
+- FEAT-1922: done
+
+What was implemented:
+- Scouting state + lifecycle utilities:
+  - `src/game/scouting/utils/scoutingState.js`
+  - Added trip assignment, due-trip resolution, report storage, report resolution, marker-name helpers, and staff in-use mark/release helpers.
+- Scouting report generation:
+  - `src/game/scouting/utils/scoutingReportGenerator.js`
+  - Added player-count coin flip logic using scouting rating and card quantity.
+  - Added quality-bucket weighted resolution from card chance fields.
+  - Added overall/potential range resolution per quality with potential > overall.
+  - Added 10% GK / 90% outfield generation using standard player generation.
+  - Added per-skill/per-trait reveal model using `judgement / 2`.
+  - Added debug payload (slot rolls, quality counts, per-player roll context).
+- Scout Report page:
+  - `src/game/scouting/scouting.jsx`
+  - `src/game/scouting/scouting.scss`
+  - Added report rendering, hidden/revealed intel rendering, Add-to-Academy confirmation flow, capacity blocking, and report completion handling.
+- Academy state + promotion utilities:
+  - `src/game/academy/utils/academyState.js`
+  - `src/game/academy/utils/academyPromotion.js`
+  - Added academy data shape, slot-capacity rules (1 per staff slot, max 12), maturity generation/ticking, mature-loss timeline checks, alert flagging, loss notifications, and replacement-promotion logic.
+- Academy page:
+  - `src/game/academy/academy.jsx`
+  - `src/game/academy/academy.scss`
+  - Added academy roster display, hidden/revealed intel display, maturity display, mature-player promotion actions, GK compare-and-replace flow, outfield two-step compare-and-replace flow, alert clear on visit, and loss modal queue handling.
+- Core app integration:
+  - `src/routes.jsx`
+  - Added `/academy` route.
+  - `src/engine/gameContext/gameContext.jsx`
+  - Added default `career.scouting` and `career.academy` state slices.
+- Continue flow + controls:
+  - `src/game/careerFlow/utils/continueFlow.js`
+  - Added `SCOUTING_REPORT` action/label and priority resolution for due reports.
+  - `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+  - `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+  - Added binoculars visual mapping and scouting-report style state.
+- Calendar integration:
+  - `src/game/careerCalendar/components/seasonCalendar.jsx`
+  - `src/game/careerCalendar/components/seasonCalendar.scss`
+  - Added scouting markers by career day and tooltip naming.
+- Card library integration:
+  - `src/game/cards/components/cardLibraryBar.jsx`
+  - Added `Scout` action plumbing for scouting cards.
+- Career home integration:
+  - `src/game/careerHome/careerHome.jsx`
+  - Added scouting/academy state initialization safety.
+  - Added scouting-card modal flow with available staff filtering.
+  - Enforced in-use staff restrictions for scouting/upgrade/replacement staff actions.
+  - Added due-report flow to continue action + navigation.
+  - Added academy maturity/loss tick on true day advancement.
+  - Wired academy alert into control panel and scouting/academy payloads into debug panel.
+- Day-advance integration for non-home advancement paths:
+  - `src/game/careerDayResults/careerDayResults.jsx`
+  - `src/game/cupDraw/cupDraw.jsx`
+  - Added academy maturity/loss ticking when these screens advance the career day.
+- Home control panel + debug support:
+  - `src/game/careerCalendar/components/careerControlPanel.jsx`
+  - Added Academy nav alert indicator.
+  - `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+  - Added scouting and academy debug summaries/panels for implementation validation.
+
+Engine components considered:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used:
+- `gameContext` for persistent scouting/academy/card/staff/calendar state.
+- `button` for card actions, promotion actions, and flow controls.
+- `modal` + `modalContext` for scouting staff selection, academy confirmation, promotion comparisons, and academy loss notification.
+- `tooltip` for calendar event interactions and scouting marker hover behavior.
+- `rng` for scouting report rolls and academy maturity/loss probability checks.
+
+Engine components not used (and why):
+- `bars` was not required for this scope.
+- `slidePanel` was not required; existing modal/page surfaces were sufficient.
+- `toast` was not required; modal + alert indicator covered required notifications.
+- `makeDecision` was not required; deterministic helper functions covered rule checks.
+- `saveGame` and `timer` required no direct code changes for this epic.
+
+Files changed:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/game/academy/academy.jsx`
+- `src/game/academy/academy.scss`
+- `src/game/academy/utils/academyPromotion.js`
+- `src/game/academy/utils/academyState.js`
+- `src/game/cards/components/cardLibraryBar.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.jsx`
+- `src/game/careerCalendar/components/careerCalendarContinueButton.scss`
+- `src/game/careerCalendar/components/careerCalendarDebugPanel.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerFlow/utils/continueFlow.js`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/scouting/scouting.jsx`
+- `src/game/scouting/scouting.scss`
+- `src/game/scouting/utils/scoutingReportGenerator.js`
+- `src/game/scouting/utils/scoutingState.js`
+- `src/routes.jsx`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Comparison modals currently prioritize known-value readability over rich visual layouts; can be enhanced later.
+- Scout report generation is immediate by design (no animation), matching epic requirements.
+- Lint baseline remains failing in unrelated engine/info/shared files; this epic did not expand that scope.
+
+Bug fix pass (2026-03-13, update 1):
+- Implemented BUG-001 through BUG-004 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Fixed Add-to-Academy confirmation flow by using explicit YES/NO modal mode so confirm callback executes.
+  - Replaced scouting marker native title behavior with shared tooltip component for reliable coach-name hover tooltip.
+  - Removed disable-on-added behavior for report buttons and added explicit "Already Added" feedback modal.
+  - Removed Scout Report `Open Academy` button.
+  - Updated `Finish Report` routing:
+    - routes to `/academy` when at least one player from that report was added
+    - routes to `/career/home` when none were added
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `modal` + `modalContext` for corrected Add-to-Academy confirm behavior and already-added feedback.
+- `tooltip` for scouting marker hover text display.
+- `button` for report action flow and finish navigation controls.
+- `gameContext` for scouting/academy state reads used by finish routing decision.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `makeDecision`, `rng`, `saveGame`, `timer` were not required for this targeted UI/flow bug-fix pass.
+
+Additional files changed in bug-fix pass (update 1):
+- `src/game/scouting/scouting.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.jsx`
+- `src/game/careerCalendar/components/seasonCalendar.scss`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 2):
+- Implemented BUG-005 and BUG-006 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Scouting report player count now always equals card `Player Quantity per Session` (removed scouting-based count gating).
+  - Rating/trait reveal chance now uses raw scouting rating percent (removed judgement/2 reveal source).
+  - Scouting report trait section now renders only when at least one trait is revealed.
+  - Academy trait display now renders only when at least one trait is revealed.
+  - Removed hidden/no-trait placeholder strings from scouting/academy trait surfaces.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `rng` for reveal roll probability checks using scouting rating.
+- `gameContext` for report generation inputs and state persistence path.
+- `button` for existing report/academy actions impacted by trait-visibility display changes.
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` required no new integration for this generator/renderer bug-fix pass.
+
+Additional files changed in bug-fix pass (update 2):
+- `src/game/scouting/utils/scoutingReportGenerator.js`
+- `src/game/scouting/scouting.jsx`
+- `src/game/academy/academy.jsx`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 3):
+- Implemented BUG-007 through BUG-010 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Added responsive scouting report card grid layout with desktop 3-column support.
+  - Added player image rendering to scouting report and academy cards using existing `PlayerImage` component and player-team kit context.
+  - Added academy player removal flow on academy page with confirmation modal.
+  - Added scouting-report full-capacity academy replacement flow (remove one academy player, then add selected scouted player).
+  - Added goalkeeper-specific rating reveal chance logic:
+    - GK rating reveal chance = `(scouting / 2) + 20`
+    - outfield rating reveal chance = `scouting`
+    - trait reveal chance = `scouting`
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` for academy/scouting state updates in removal/replacement flows.
+- `button` for scouting/academy action controls and modal list actions.
+- `modal` + `modalContext` for academy-removal confirmation and full-capacity replacement selection flow.
+- `rng` for reveal chance logic in scouting report generation.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, `timer` were not required for this targeted layout/state/generator bug-fix pass.
+
+Additional files changed in bug-fix pass (update 3):
+- `src/game/scouting/scouting.jsx`
+- `src/game/scouting/scouting.scss`
+- `src/game/scouting/utils/scoutingReportGenerator.js`
+- `src/game/academy/academy.jsx`
+- `src/game/academy/academy.scss`
+- `src/game/academy/utils/academyState.js`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 4):
+- Implemented BUG-011 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Applied top-alignment rule to scout report player cards so content aligns to `flex-start` consistently.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- None required for this styling-only fix.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not required because this pass only changed local feature SCSS alignment.
+
+Additional files changed in bug-fix pass (update 4):
+- `src/game/scouting/scouting.scss`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
