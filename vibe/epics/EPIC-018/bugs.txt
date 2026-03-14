@@ -123,3 +123,34 @@ Final fix:
   - `src/game/staff/staff.jsx`
   - `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
 Status: fixed
+
+
+BUG-005 - Staff upgrades should work on in-use staff, but staff replacement should still block in-use staff
+Status: fixed
+
+Repro steps:
+1. Open `/career/home`.
+2. Ensure you have at least one active staff member currently marked `inUse`.
+3. Try to use a `Staff Upgrade` card on that in-use staff member.
+4. With staff slots full, try to use a `Staff Member` hire card and replace that same in-use staff member.
+
+Expected:
+- A `Staff Upgrade` card can be applied to any current staff member, including staff marked `inUse`.
+- A `Staff Member` hire card still cannot sack/replace an in-use staff member.
+
+Actual:
+- Staff upgrades incorrectly treated in-use staff as unavailable targets.
+- Staff replacement already blocked in-use staff correctly.
+
+Suspected cause:
+- The staff-upgrade flow reused the scouting-availability filter, which excludes all `inUse` staff, even though upgrades should not require staff to be idle.
+
+Attempted fixes:
+- Changed staff-upgrade target selection to use all current staff members instead of only scouting-available ones.
+- Removed the extra upgrade-time `inUse` guard so upgrades can apply to busy staff.
+- Kept the hire-replacement flow unchanged so in-use staff still cannot be removed by incoming staff-member cards.
+- Updated the no-target copy for staff upgrades so it only blocks when there are no active staff members at all.
+
+Final fix:
+- Staff upgrades can now target any active staff member, including `inUse` staff.
+- Staff-member replacement still blocks removal of in-use staff.

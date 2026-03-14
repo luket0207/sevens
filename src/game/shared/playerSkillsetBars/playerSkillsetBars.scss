@@ -46,6 +46,23 @@
   font-size: 0.62rem;
 }
 
+.playerSkillsetBars__barWrap {
+  position: relative;
+}
+
+.playerSkillsetBars__hiddenValue {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.62rem;
+}
+
+.playerSkillsetBars__row--hidden .bars__value {
+  visibility: hidden;
+}
+
 .playerSkillsetBars__traits {
   display: grid;
   gap: 0.2rem;

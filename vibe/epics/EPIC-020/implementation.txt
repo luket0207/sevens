@@ -1,0 +1,529 @@
+EPIC-020 Implementation Log
+Date: 2026-03-13
+
+Feature pass (2026-03-13, FEAT-2001 to FEAT-2013):
+- Implemented the full Academy card usage flow from the updated `EPIC-020/features.txt`.
+- Key updates:
+  - Added `Go to Academy` actions for Academy cards on Career Home without consuming the card.
+  - Added a dedicated Academy card bar above academy players with horizontal scrolling and reusable card tiles.
+  - Added centralized Academy card effect resolution for:
+    - all-player maturity reduction
+    - single-target maturity reduction
+    - academy slot expansion with max-capacity fallback
+    - current value reveal
+    - potential value reveal
+  - Added explicit best-current-staff `Judgement` sourcing for Academy reveal cards.
+  - Added persistent academy value-reveal state for `Current Value` and `Potential Value`.
+  - Added single-target choose mode on the Academy page and ensured cards are consumed only after successful application.
+  - Added persistent academy slot expansion state and updated scouting/academy/home capacity checks to use expanded capacity.
+  - Preserved academy reveal metadata when players are promoted into the first team.
+  - Added academy-card debug payloads to academy/card state for effect rolls, reveal outcomes, judgement source, slot changes, and maturity reductions.
+
+Engine components considered for feature pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in feature pass:
+- `gameContext` for persistent Academy/card/staff updates in career state.
+- `button` for Career Home card actions, Academy card usage, target selection, and promotion/removal controls.
+- `modal` + `modalContext` for existing promotion/removal flows and Academy-card unavailable feedback.
+- `rng` for Academy reveal-card judgement and success rolls.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not required because this pass reused existing page/layout patterns and only needed direct state updates plus modal-driven flows.
+
+Additional files changed in feature pass:
+- `src/game/cards/data/academyCardDefinitions.js`
+- `src/game/cards/components/cardLibraryBar.jsx`
+- `src/game/academy/academy.jsx`
+- `src/game/academy/academy.scss`
+- `src/game/academy/components/academyCardBar.jsx`
+- `src/game/academy/components/academyPlayerCard.jsx`
+- `src/game/academy/utils/academyState.js`
+- `src/game/academy/utils/academyCardState.js`
+- `src/game/academy/utils/academyCardUsage.js`
+- `src/game/academy/utils/academyPromotion.js`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/scouting/scouting.jsx`
+- `vibe/epics/EPIC-020/features.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+- `vibe/epics/EPIC-020/bugs.txt`
+
+Tradeoffs / follow-up tasks:
+- Academy reveal persistence is stored explicitly on academy entries and promoted-player origin metadata; first-team visibility currently relies on the existing first-team overall/potential surfaces already present in Team Management.
+- The best-staff `Judgement` rule is centralized and easy to retune later if the design changes to require a different staff-source rule.
+
+Bug fix pass (2026-03-13, update 1):
+- Implemented BUG-001 through BUG-004 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Added coach-selection modal flow for Academy reveal cards, limited to available staff not currently `inUse`.
+  - Added friendly result modals after successful Academy card usage with outcome-specific summaries.
+  - Reworked Academy player list layout to a responsive 1/2/3-column grid.
+  - Replaced custom Academy stat text rows with the shared skillset-bar display and added hidden-rating rendering support for Academy usage.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` for Academy card actions and target-selection interactions.
+- `modal` + `modalContext` for coach-selection and result-summary modal flows.
+- `bars` via the shared `PlayerSkillsetBars` component to render hidden Academy ratings consistently.
+- `rng` for existing reveal-card roll logic now driven by selected coach Judgement.
+- `gameContext` for persistent Academy/card/staff updates after bug-fix flow changes.
+
+Engine components not used (and why):
+- `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not required because this pass focused on Academy page rendering plus modal-driven interaction feedback.
+
+Additional files changed in bug-fix pass (update 1):
+- `src/game/academy/academy.jsx`
+- `src/game/academy/academy.scss`
+- `src/game/academy/components/academyPlayerCard.jsx`
+- `src/game/academy/utils/academyCardUsage.js`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 2):
+- Implemented BUG-005 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Kept Academy player-card content top-aligned locally so internal spacing starts from a consistent anchor.
+  - Changed the Academy-local skillset area from a minimum height to a fixed-height scrollable block so visible traits no longer stretch card interiors unevenly.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `bars` indirectly through the existing shared `PlayerSkillsetBars` component already used on Academy cards.
+
+Engine components not used (and why):
+- `gameContext`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass was a local Academy layout/styling correction only.
+
+Additional files changed in bug-fix pass (update 2):
+- `src/game/academy/academy.scss`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 3):
+- Implemented BUG-006 and BUG-007 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Added discard controls for Academy cards directly on the Academy page, with confirmation and proper library-state/debug updates.
+  - Ensured discarding an active single-target Academy card clears the pending target-selection mode.
+  - Added a dedicated green pulsing visual treatment for Academy choose-target buttons so target mode is more obvious.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` for the new Academy discard action and the styled choose-target CTA.
+- `modal` + `modalContext` for discard confirmation.
+- `gameContext` for persistent card-library and Academy target-mode updates.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass only changed Academy interactions and local visual treatment.
+
+Additional files changed in bug-fix pass (update 3):
+- `src/game/academy/academy.jsx`
+- `src/game/academy/academy.scss`
+- `src/game/academy/components/academyCardBar.jsx`
+- `src/game/academy/components/academyPlayerCard.jsx`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 4):
+- Implemented BUG-008 and BUG-009 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Centered Academy player-card action rows so one-button and two-button states sit more evenly within the card.
+  - Added a slightly darker green hover treatment for the Academy choose-target CTA while preserving the existing pulse styling.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` through the existing Academy CTA styling hooks.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass was a local Academy presentation adjustment only.
+
+Additional files changed in bug-fix pass (update 4):
+- `src/game/academy/academy.scss`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 5):
+- Implemented BUG-010 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Extended the shared card tile footer to support an optional second action button.
+  - Moved Academy `Discard Card` into the compact Academy card tile itself rather than rendering it below the tile.
+  - Centered compact card-tile action layouts so Academy card controls are grouped cleanly within the tile footer.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `button` through the shared card-tile footer actions.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass only adjusted Academy card-tile composition and local presentation.
+
+Additional files changed in bug-fix pass (update 5):
+- `src/game/cards/components/cardTile.jsx`
+- `src/game/cards/components/cardTile.scss`
+- `src/game/academy/components/academyCardBar.jsx`
+- `src/game/academy/academy.scss`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 6):
+- Implemented BUG-011 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Added affected-player names into Academy maturity/fallback debug payloads.
+  - Updated the Academy result modal to list named players for affected, promotion-ready, assessed, Judgement-passed, and revealed groups instead of relying only on counts.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` for persisting richer Academy action debug payloads.
+- `modal` + `modalContext` through the existing Academy result modal flow.
+- `rng` indirectly through the existing reveal result data already consumed by the modal.
+
+Engine components not used (and why):
+- `bars`, `button`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass only improved Academy result payloads and modal copy.
+
+Additional files changed in bug-fix pass (update 6):
+- `src/game/academy/academy.jsx`
+- `src/game/academy/utils/academyCardState.js`
+- `src/game/academy/utils/academyCardUsage.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 7):
+- Implemented BUG-012 and BUG-013 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Academy Judgement staff are now marked `inUse` for the rest of the current day and released automatically on the next day across Career Home, Cup Draw, and Day Results advancement flows.
+  - Replaced the Career Home Academy alert `!` marker with `faCircleExclamation` and added an alert-only pulse treatment on the Academy navigation button.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` for persistent staff availability changes across Academy card use and day advancement.
+- `button` for the alert-state Career Home navigation styling.
+- `modal` + `modalContext` through the existing Academy Judgement selection flow.
+- `rng` indirectly through the existing Academy reveal/Judgement flow.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass focused on staff availability persistence plus a small Career Home UI update.
+
+Additional files changed in bug-fix pass (update 7):
+- `src/game/academy/academy.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerDayResults/careerDayResults.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/careerCalendar/components/careerControlPanel.scss`
+- `src/game/cupDraw/cupDraw.jsx`
+- `src/game/staff/utils/staffState.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 8):
+- Implemented BUG-014 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Extended Academy coach-selection flow to every Academy card, not just Judgement cards.
+  - Preserved selected-coach state while single-target Academy cards wait for target selection.
+  - Added selected-coach metadata into Academy card debug payloads so result modals can reflect who ran the card.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` for persistent selected-coach and staff-usage updates after Academy card resolution.
+- `button` through the existing Academy card and target-selection UI.
+- `modal` + `modalContext` for coach selection before every Academy card use.
+- `rng` indirectly through existing reveal/Judgement resolution.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass only adjusted Academy interaction flow and debug metadata.
+
+Additional files changed in bug-fix pass (update 8):
+- `src/game/academy/academy.jsx`
+- `src/game/academy/components/academyCardBar.jsx`
+- `src/game/academy/utils/academyCardUsage.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 9):
+- Implemented BUG-015 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Reduced Academy potential-value reveal success chances to `15%`, `30%`, and `60%`.
+  - Reworked current-value reveal logic so successful uses reveal hidden skill ratings first and only reveal overall after all skill ratings are already visible.
+  - Tightened reveal-result accounting so a player only counts as newly revealed when the card actually changes visible information.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` via persistent Academy player reveal state.
+- `modal` + `modalContext` through the existing Academy result flow.
+- `rng` through the Academy reveal resolution logic.
+
+Engine components not used (and why):
+- `bars`, `button`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass only changed Academy reveal data/model behavior.
+
+Additional files changed in bug-fix pass (update 9):
+- `src/game/cards/data/academyCardDefinitions.js`
+- `src/game/academy/utils/academyCardState.js`
+- `src/game/academy/utils/academyCardUsage.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 10):
+- Implemented BUG-016 and BUG-017 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Current-value Academy cards now reveal exactly one hidden skill rating per successful use instead of flipping every hidden rating at once.
+  - Once all skill ratings are visible, the same current-value reveal flow now uncovers hidden traits one at a time before overall can reveal.
+  - Overall reveal gating now requires all Academy ratings and traits to be visible first, and reveal-change tracking follows that stricter order.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` via persistent Academy scouting intel and value reveal state.
+- `rng` through the shared `randomInt` helper used to reveal one hidden rating/trait per successful current-value card.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass only tightened Academy reveal-state progression logic.
+
+Additional files changed in bug-fix pass (update 10):
+- `src/game/academy/utils/academyCardState.js`
+- `src/game/academy/utils/academyCardUsage.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 11):
+- Implemented BUG-018 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Retuned current-value Academy card success chances from `25/50/75` to `30/60/90` for common, uncommon, and rare cards.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` indirectly via persisted Academy card definition usage in saved career state.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass only adjusted static Academy card balance values.
+
+Additional files changed in bug-fix pass (update 11):
+- `src/game/cards/data/academyCardDefinitions.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 12):
+- Implemented BUG-019 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Reordered Academy reveal resolution so the card's success chance is rolled first.
+  - Coach Judgement now rolls only after the card-success check passes, while existing reveal gating and debug output remain intact.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` via persisted Academy reveal-state updates.
+- `rng` through the existing shared `chance` helper used for both card-success and Judgement rolls.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because this pass only changed Academy reveal roll ordering.
+
+Additional files changed in bug-fix pass (update 12):
+- `src/game/academy/utils/academyCardUsage.js`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`
+
+Bug fix pass (2026-03-13, update 13):
+- Implemented BUG-020 from updated `EPIC-020/bugs.txt`.
+- Key updates:
+  - Replaced scouting-specific blocked-staff upgrade copy with a generic `in use` message so it stays accurate across scouting, Academy work, and any other staff assignments.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` via the Career Home flow that reads shared staff `inUse` state before allowing upgrades.
+- `modal` + `modalContext` through the existing blocked-upgrade messaging flow.
+
+Engine components not used (and why):
+- `bars`, `button`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass only updated blocked-flow copy.
+
+Additional files changed in bug-fix pass (update 13):
+- `src/game/careerHome/careerHome.jsx`
+- `vibe/epics/EPIC-020/bugs.txt`
+- `vibe/epics/EPIC-020/implementation.txt`
+- `vibe/epics/EPIC-020/testing.txt`

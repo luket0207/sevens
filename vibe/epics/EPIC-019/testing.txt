@@ -96,6 +96,20 @@ Expected:
 - Debug shows active trips, due trip details, available/in-use staff counts.
 - Debug exposes scouting report roll context and academy state (capacity, maturity/loss signals, promotion/loss debug data).
 
+FEAT-1923 - Coach recruitment judgement recommendations
+Manual steps:
+1. Open `/career/home` while managing a team in one league tier, then assign a scouting trip and open the generated scouting report.
+2. Check each player card for a visible coach recommendation block.
+3. Repeat with staff members that have noticeably different scouting ratings.
+4. Repeat again after moving to or loading a save in a different league tier.
+5. Add a recommended player to the academy and verify no report state changes unexpectedly during that flow.
+Expected:
+- Every scouting report player card shows one of the four recommendation levels, including `No feedback`.
+- Higher-scouting staff produce recommendations that are closer to the player's hidden quality more often.
+- Lower-scouting staff show noisier recommendations with both missed good players and occasional weak-player endorsements.
+- Lower leagues feel more generous with recommendation strength than higher leagues.
+- Recommendation remains stable for the report instance while using Add-to-Academy flow.
+
 Command checks run:
 - `npm run build`: passed.
 - `npm run lint`: failed due existing repository-wide lint baseline outside EPIC-019 scope.
@@ -108,10 +122,12 @@ Automated tests completed:
 Automated tests still needed:
 - Unit tests:
   - scouting quantity/quality/reveal roll helpers
+  - scouting recommendation resolution by league tier + scouting accuracy bands
   - academy maturity/loss timeline checks
   - promotion replacement helpers
 - Integration tests:
   - scouting-card assignment to report lifecycle
+  - scouting report recommendation rendering/persistence across report interactions
   - day-advance maturity/loss progression across home/day-results/cup-draw
   - promotion modal cancel/confirm behavior
 
@@ -249,3 +265,86 @@ Command checks run in update-4 bug-fix pass:
   - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
 
 Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Feature pass (2026-03-13, FEAT-1923)
+
+Command checks run in FEAT-1923 feature pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by the recommendation-system implementation.
+
+FEAT-1923 feature-pass test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 5)
+
+BUG-013 - Show true quality bucket in scouting report for debugging
+Manual steps:
+1. Open a scouting report with one or more generated players.
+2. Inspect each player card near the coach recommendation block.
+Expected:
+- Each card shows a clearly-labeled `Debug True Quality` value.
+- The debug value is one of `Bad`, `Ok`, `Good`, `Great`, or `Elite`.
+- Coach recommendation remains visible and unchanged as the main scouting guidance.
+
+Command checks run in update-5 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 6)
+
+BUG-012 - Superseded debug-overall request tracking cleanup
+Manual steps:
+1. Open the latest scouting report with generated players.
+2. Inspect the debug readout area on each player card.
+Expected:
+- The report continues to show `Debug True Quality`, not true overall.
+- Epic bug tracking now reflects BUG-012 as resolved via the clarified BUG-013 behavior.
+
+Command checks run in update-6 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this tracking-only bug-fix pass.
+
+Update-6 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 7)
+
+BUG-014 - Coach recommendation attempts should be quieter and less wildly wrong
+Manual steps:
+1. Generate scouting reports using a low-scouting coach and inspect recommendation output against `Debug True Quality`.
+2. Repeat with a high-scouting coach.
+3. Compare recommendation frequency on `Good`, `Great`, and `Elite` players.
+Expected:
+- Low-scouting coaches give `No feedback` more often, especially on `Good` players and below.
+- Even lower-scouting coaches still comment on some obviously strong `Elite` players.
+- High-scouting coaches usually map `Elite` to `Certain`, `Great` to `Highly likely`, and `Good` to `Likely`.
+- Recommendation mistakes are usually small rather than wildly off.
+
+Command checks run in update-7 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-7 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 8)
+
+BUG-015 - Mid-level scouts should still surface weak feedback on some good players
+Manual steps:
+1. Generate several scouting reports with a mid-level scout around scouting `54`.
+2. Inspect players whose `Debug True Quality` is `Good`.
+3. Compare recommendation mix across a full report.
+Expected:
+- Some `Good` players now receive `I have a hunch about this player` instead of defaulting too often to `No feedback`.
+- Lower-confidence guidance sits between `No feedback` and `Likely`.
+- Recommendation display styling remains distinct for the new `Hunch` tier.
+
+Command checks run in update-8 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-019 scope.
+  - No new EPIC-019-specific lint failures were introduced by this bug-fix pass.
+
+Update-8 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

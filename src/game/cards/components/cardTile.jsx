@@ -30,6 +30,9 @@ const CardTile = ({
   actionLabel,
   onAction,
   actionVariant,
+  secondaryActionLabel,
+  onSecondaryAction,
+  secondaryActionVariant,
   compact,
   currentCareerDay,
   showStaffExpiry,
@@ -65,11 +68,18 @@ const CardTile = ({
       {isStaffMember ? <p className="careerCardTile__meta">{expiryLabel}</p> : null}
       {card?.payload?.effect ? <p className="careerCardTile__text">{card.payload.effect}</p> : null}
       {card?.payload?.text ? <p className="careerCardTile__text">{card.payload.text}</p> : null}
-      {typeof onAction === "function" ? (
+      {typeof onAction === "function" || typeof onSecondaryAction === "function" ? (
         <div className="careerCardTile__actions">
-          <Button variant={actionVariant} onClick={onAction}>
-            {actionLabel}
-          </Button>
+          {typeof onAction === "function" ? (
+            <Button variant={actionVariant} onClick={onAction}>
+              {actionLabel}
+            </Button>
+          ) : null}
+          {typeof onSecondaryAction === "function" ? (
+            <Button variant={secondaryActionVariant} onClick={onSecondaryAction}>
+              {secondaryActionLabel}
+            </Button>
+          ) : null}
         </div>
       ) : null}
       {isStaffMemberCardType ? (
@@ -101,6 +111,9 @@ CardTile.propTypes = {
   actionLabel: PropTypes.string,
   onAction: PropTypes.func,
   actionVariant: PropTypes.string,
+  secondaryActionLabel: PropTypes.string,
+  onSecondaryAction: PropTypes.func,
+  secondaryActionVariant: PropTypes.string,
   compact: PropTypes.bool,
   currentCareerDay: PropTypes.number,
   showStaffExpiry: PropTypes.bool,
@@ -110,6 +123,9 @@ CardTile.defaultProps = {
   actionLabel: "",
   onAction: null,
   actionVariant: BUTTON_VARIANT.PRIMARY,
+  secondaryActionLabel: "",
+  onSecondaryAction: null,
+  secondaryActionVariant: BUTTON_VARIANT.SECONDARY,
   compact: false,
   currentCareerDay: 0,
   showStaffExpiry: false,

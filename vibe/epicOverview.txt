@@ -1,5 +1,5 @@
 EPIC OVERVIEW
-Last updated: 2026-03-11
+Last updated: 2026-03-13
 
 EPIC-001 - Core Career Shell (Status: done)
 This epic established the first playable career shell by replacing the original landing flow with a new Home page and wiring base career routes. It implemented the Career Start page structure with required setup state (team name, stadium, kit, players) and gating so career start remains disabled until required values are present.
@@ -51,3 +51,9 @@ This epic refreshed the shared button system across primary/secondary/tertiary v
 
 EPIC-017 - League Table Layout Split and League Stats Tabs (Status: done)
 This epic split league-table rendering into compact and detailed variants, moved the compact snapshot into the Career Home controls panel, and made it a full-card link to League Stats. It also reworked League Stats into one-league-at-a-time tabs with the detailed table at the top and 3-column player stat tables below, while preserving team-click squad modal behavior in detailed mode.
+
+EPIC-018 - Staff Card Usage, Staff Slots, and Staff Progression (Status: done)
+This epic made staff cards fully usable by adding staff-member hiring, full-capacity replacement/sacking flow, staff-upgrade application, slot unlocking from first-time promotions, and 7-day expiry for unused staff-member cards. It also integrated staff-card state with calendar progression, cleaned up staff data/visuals through follow-up bug fixes, and added lightweight debug support for validating slot, expiry, and hire/use behavior.
+
+EPIC-019 - Scouting Card Usage, Scouting Reports, and Academy Foundation (Status: done)
+This epic made scouting cards fully playable by adding staff assignment, in-use staff locking, calendar scouting markers, scouting report generation, revealable scouting intel, academy storage, maturity progression, promotion flows, and mature-player loss rules. Follow-up feature and bug passes added coach recruitment recommendations, academy replacement handling, responsive report/card polish, and recommendation tuning including the new low-confidence `Hunch` layer.

@@ -204,3 +204,24 @@ Command checks run in update-4 bug-fix pass:
   - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
 
 Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 5)
+
+BUG-005 - Staff upgrades can target in-use staff while replacement still blocks them
+Manual steps:
+1. Open `/career/home`.
+2. Put at least one staff member into an `inUse` state.
+3. Use a `Staff Upgrade` card and verify that in-use staff still appear in the selection modal.
+4. Apply the upgrade to an in-use staff member and confirm the card resolves successfully.
+5. With staff slots full, use a `Staff Member` card and verify that an in-use staff member still cannot be selected for replacement.
+Expected:
+- Staff upgrades can be applied to in-use staff.
+- Staff-member replacement still blocks in-use staff from being sacked.
+- If no staff exist at all, the upgrade flow shows the new generic no-staff message instead.
+
+Command checks run in update-5 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-018 scope.
+  - No new EPIC-018-specific lint failures were introduced by this bug-fix pass.
+
+Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

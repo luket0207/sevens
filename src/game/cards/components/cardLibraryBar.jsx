@@ -11,6 +11,7 @@ const CardLibraryBar = ({
   library,
   onDiscardCard,
   onScoutCard,
+  onGoToAcademyCard,
   onHireStaffMemberCard,
   onUseStaffUpgradeCard,
   staffSummary,
@@ -49,6 +50,14 @@ const CardLibraryBar = ({
         actionLabel: "Scout",
         actionVariant: BUTTON_VARIANT.PRIMARY,
         onAction: () => onScoutCard(card.id),
+      };
+    }
+
+    if (card?.type === CARD_TYPES.ACADEMY && typeof onGoToAcademyCard === "function") {
+      return {
+        actionLabel: "Go to Academy",
+        actionVariant: BUTTON_VARIANT.PRIMARY,
+        onAction: () => onGoToAcademyCard(card.id),
       };
     }
 
@@ -152,6 +161,7 @@ CardLibraryBar.propTypes = {
   ),
   onDiscardCard: PropTypes.func,
   onScoutCard: PropTypes.func,
+  onGoToAcademyCard: PropTypes.func,
   onHireStaffMemberCard: PropTypes.func,
   onUseStaffUpgradeCard: PropTypes.func,
   staffSummary: PropTypes.shape({
@@ -165,6 +175,7 @@ CardLibraryBar.defaultProps = {
   library: [],
   onDiscardCard: null,
   onScoutCard: null,
+  onGoToAcademyCard: null,
   onHireStaffMemberCard: null,
   onUseStaffUpgradeCard: null,
   staffSummary: {

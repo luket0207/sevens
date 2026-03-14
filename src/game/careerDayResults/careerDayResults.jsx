@@ -7,6 +7,11 @@ import { getMonthIndexFromDayIndex } from "../careerCalendar/utils/calendarModel
 import { ensureCareerCardState, normalizeCareerDayNumber, pruneExpiredStaffMemberCards } from "../cards";
 import { tickAcademyMaturityAndLoss } from "../academy/utils/academyState";
 import {
+  applyStaffStateToPlayerTeam,
+  ensurePlayerTeamStaffState,
+  releaseCompletedStaffAssignmentsForCareerDay,
+} from "../staff/utils/staffState";
+import {
   getContinueFlowLabel,
   resolveDayResultsContinueAction,
 } from "../careerFlow/utils/continueFlow";
@@ -206,6 +211,13 @@ const CareerDayResults = () => {
         cardsState: prev?.career?.cards,
         currentCareerDay: nextCareerDayNumber,
       });
+      const currentPlayerTeam = prev?.career?.world?.playerTeam;
+      const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+      const releasedStaffState = releaseCompletedStaffAssignmentsForCareerDay({
+        staffState: currentStaffState,
+        currentCareerDay: nextCareerDayNumber,
+      });
+      const nextPlayerTeam = applyStaffStateToPlayerTeam(currentPlayerTeam, releasedStaffState);
       const nextAcademyState = shouldAdvanceCareerDay
         ? tickAcademyMaturityAndLoss({
             academyState: prev?.career?.academy,
@@ -217,6 +229,10 @@ const CareerDayResults = () => {
         ...prev,
         career: {
           ...prev.career,
+          world: {
+            ...(prev.career?.world ?? {}),
+            playerTeam: nextPlayerTeam,
+          },
           calendar: {
             ...(prev.career?.calendar ?? {}),
             currentDayIndex: nextDayIndex,

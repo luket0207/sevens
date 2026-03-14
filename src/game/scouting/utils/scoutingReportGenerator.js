@@ -2,6 +2,10 @@ import { chance, randomInt } from "../../../engine/utils/rng/rng";
 import { rollWeightedKey } from "../../cards/utils/weightedRoll";
 import { generatePlayer } from "../../playerGeneration";
 import { GOALKEEPER_SKILLS, OUTFIELD_SKILLS, PLAYER_GENERATION_TYPES } from "../../playerGeneration/playerGenerationConstants";
+import {
+  resolveScoutingRecruitmentRecommendation,
+  SCOUTING_RECOMMENDATION_LEVEL_KEYS,
+} from "./scoutingRecommendation";
 
 const QUALITY_BUCKET_CONFIG = Object.freeze({
   bad: Object.freeze({ overall: [10, 20], potential: [15, 25] }),
@@ -80,7 +84,7 @@ const buildScoutingIntel = ({ player, scoutingRating }) => {
   };
 };
 
-export const generateScoutingReportFromTrip = ({ trip, scoutingRating }) => {
+export const generateScoutingReportFromTrip = ({ trip, scoutingRating, leagueTier }) => {
   const cardPayload = trip?.cardSnapshot ?? {};
   const playerSlots = Math.max(0, Number(cardPayload?.playerQuantityPerSession) || 0);
   const scoutingChance = clampPercent(scoutingRating);
@@ -91,6 +95,13 @@ export const generateScoutingReportFromTrip = ({ trip, scoutingRating }) => {
     good: 0,
     great: 0,
     elite: 0,
+  };
+  const recommendationCounts = {
+    [SCOUTING_RECOMMENDATION_LEVEL_KEYS.NO_FEEDBACK]: 0,
+    [SCOUTING_RECOMMENDATION_LEVEL_KEYS.HUNCH]: 0,
+    [SCOUTING_RECOMMENDATION_LEVEL_KEYS.LIKELY]: 0,
+    [SCOUTING_RECOMMENDATION_LEVEL_KEYS.HIGHLY_LIKELY]: 0,
+    [SCOUTING_RECOMMENDATION_LEVEL_KEYS.CERTAIN]: 0,
   };
 
   for (let slotIndex = 0; slotIndex < playerSlots; slotIndex += 1) {
@@ -115,21 +126,33 @@ export const generateScoutingReportFromTrip = ({ trip, scoutingRating }) => {
       player,
       scoutingRating,
     });
+    const recommendation = resolveScoutingRecruitmentRecommendation({
+      qualityBucket: quality.key,
+      overallRating: ratings.overall,
+      scoutingRating,
+      leagueTier,
+    });
 
     players.push({
       id: `${trip?.id ?? "scouting-trip"}-player-${String(players.length + 1).padStart(3, "0")}`,
       qualityBucket: quality.key,
       player,
       scoutingIntel,
+      recommendation: {
+        levelKey: recommendation.levelKey,
+        levelLabel: recommendation.levelLabel,
+      },
       addedToAcademy: false,
       debug: {
         qualityRoll: quality.rollDebug,
         overallRoll: ratings.overall,
         potentialRoll: ratings.potential,
         playerType,
+        recommendation: recommendation.debug,
       },
     });
     qualityBucketCounts[quality.key] += 1;
+    recommendationCounts[recommendation.levelKey] += 1;
   }
 
   return {
@@ -140,8 +163,10 @@ export const generateScoutingReportFromTrip = ({ trip, scoutingRating }) => {
     debug: {
       playerSlots,
       scoutingChance,
+      leagueTier: Math.max(1, Math.min(5, Number(leagueTier) || 5)),
       generatedPlayerCount: players.length,
       qualityBucketCounts,
+      recommendationCounts,
       playerCountResolution: "fixed_quantity_per_session",
     },
   };

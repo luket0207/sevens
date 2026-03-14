@@ -1,0 +1,384 @@
+EPIC-020 Testing Log
+Date: 2026-03-13
+
+FEAT-2001 to FEAT-2003 - Career Home Academy card routing and Academy card bar
+Manual steps:
+1. Open `/career/home` with at least one Academy card in the Card Library.
+2. Verify the Academy card button reads `Go to Academy`.
+3. Click `Go to Academy`.
+4. On `/academy`, inspect the new Academy card bar above the player list.
+Expected:
+- Academy cards on Career Home route to `/academy`.
+- Clicking `Go to Academy` does not apply or consume the card.
+- The Academy page shows a horizontally scrolling Academy card bar with the player's Academy cards.
+
+FEAT-2004 to FEAT-2006 - Maturity cards and Expand Academy handling
+Manual steps:
+1. Add one or more players to the academy.
+2. Use `Organise Weak Friendly Game`, `Organise Average Friendly Game`, and `Organise Strong Friendly Game`.
+3. Use `1 on 1 session` and `Train with the first team` and select individual academy players.
+4. Use `Expand Academy` while below max capacity.
+5. Use `Expand Academy` again when academy capacity is already `12`.
+Expected:
+- All-player maturity cards reduce all academy players by the exact defined amount.
+- Single-target cards enter choose-target mode and only reduce the selected player by the exact amount.
+- Maturity never drops below `0`.
+- Players hitting `0` maturity gain normal mature-player handling and Academy alert behavior.
+- `Expand Academy` adds one slot below max capacity.
+- At capacity `12`, `Expand Academy` falls back to a `-3` all-player maturity effect.
+
+FEAT-2007 to FEAT-2010 - Current/potential reveal flow and persistence
+Manual steps:
+1. Use `Run Training Drills`, `Full Training Games`, and `Mentor Sessions` on a populated academy.
+2. Use `3v3 mini games`, `Classroom Lessons`, and `Video Analysis` on a populated academy.
+3. Inspect academy players after each card use.
+4. Promote a player whose current value and/or potential value has been revealed.
+5. Open first-team management and inspect that promoted player.
+Expected:
+- Reveal cards use a two-step process:
+  - best current staff `Judgement` filters affected players
+  - card success chance then decides which affected players reveal the requested value
+- `slight` = `25%`, `good` = `50%`, `excellent` = `75%`
+- `Current Value` and `Potential Value` reveal independently and remain permanently visible once revealed.
+- Revealed values remain visible in the Academy and stay represented after promotion.
+
+FEAT-2011 to FEAT-2013 - Consumption rules, mature side effects, and debug support
+Manual steps:
+1. Click `Go to Academy` from Career Home and confirm the card stays in the library.
+2. Start single-target mode for `1 on 1 session`, then cancel targeting.
+3. Use a card successfully and confirm the used card disappears from the library.
+4. Open Career Home debug panel after several Academy card uses.
+Expected:
+- Navigation-only actions do not consume cards.
+- Cancelling single-target mode does not consume the card.
+- Successfully applied Academy cards are removed from the library.
+- Debug surfaces show Academy/card state updates including slot expansion, last Academy card action, judgement source, reveal rolls, revealed values, and maturity effects.
+
+Command checks run in feature pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this feature pass.
+
+Automated tests completed:
+- None added for this epic.
+
+Automated tests still needed:
+- Unit tests:
+  - Academy card effect resolver for each Academy card definition
+  - academy slot expansion + fallback capacity logic
+  - academy reveal-roll logic using Judgement and card success chance
+  - academy reveal persistence across promotion
+- Integration tests:
+  - Career Home Academy card `Go to Academy` routing without consumption
+  - Academy target-selection flow for single-target cards
+  - Academy card consumption timing and mature-player side effects
+
+Test status: in progress (manual scenarios documented, not executed in this shell session), passed (`build`), failed (`lint` baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 1)
+
+BUG-001 / BUG-002 - Judgement coach selection and result feedback modal
+Manual steps:
+1. Open `/academy` with at least one reveal-style Academy card and multiple staff members, including one currently `inUse` if possible.
+2. Use a reveal card such as `Run Training Drills` or `Video Analysis`.
+3. Confirm a coach-selection modal appears.
+4. Verify only not-in-use staff are listed.
+5. Pick a coach and resolve the card.
+Expected:
+- Reveal cards prompt for coach selection before applying.
+- Only available, not-in-use staff can be chosen.
+- After resolution, an OK modal clearly explains what happened, including selected coach and reveal outcome.
+
+BUG-003 - Responsive Academy player grid
+Manual steps:
+1. Open `/academy` with several academy players.
+2. Inspect layout on small, medium, and large viewport widths.
+Expected:
+- Player cards render in 1 column on small screens.
+- Player cards render in 2 columns on medium screens.
+- Player cards render in 3 columns on large screens.
+
+BUG-004 - Shared skillset display with hidden Academy ratings
+Manual steps:
+1. Open `/academy` with players who have both revealed and hidden ratings.
+2. Inspect the rating bars and traits section on each card.
+Expected:
+- Academy stats use the shared skillset bar display.
+- Hidden ratings still show a bar row with zero fill.
+- Hidden rating text reads `Hidden` instead of `0 / 100`.
+- Hidden traits are not displayed.
+
+Command checks run in update-1 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-1 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 2)
+
+BUG-005 - Consistent Academy player-card height when traits vary
+Manual steps:
+1. Open `/academy` with multiple players where at least one has visible traits and one has none.
+2. Compare the skillset sections across those cards.
+3. Confirm the action buttons sit at a consistent vertical rhythm from card to card.
+4. If a player has enough visible content to exceed the reserved skillset area, confirm the skillset block scrolls locally instead of stretching the whole card.
+Expected:
+- Academy card content remains top-aligned.
+- The skillset section uses a fixed height across cards.
+- Trait presence does not cause uneven button placement or inconsistent lower spacing.
+- Overflow stays inside the skillset area rather than changing card height.
+
+Command checks run in update-2 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-2 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 3)
+
+BUG-006 - Discard Academy cards from the Academy page
+Manual steps:
+1. Open `/academy` with several Academy cards in the card bar.
+2. Click `Discard Card` on one Academy card.
+3. Confirm the discard in the modal.
+4. Verify the card disappears from the Academy card bar.
+5. Start single-target mode on a different Academy card, then discard that same active card.
+Expected:
+- Academy cards can be discarded directly from the Academy page.
+- Discarding requires confirmation.
+- The discarded card is removed from the library immediately after confirmation.
+- If the discarded card was awaiting target selection, target mode clears cleanly.
+
+BUG-007 - Green pulsing choose-target button styling
+Manual steps:
+1. Open `/academy`.
+2. Use a single-target Academy card so academy players show `Choose` buttons.
+3. Inspect the choose-target CTA styling on player cards.
+Expected:
+- Choose-target buttons render in a green treatment rather than the default primary style.
+- Buttons show a visible pulsing glow similar to the continue-button treatment.
+- Disabled or pressed states do not keep pulsing indefinitely.
+
+Command checks run in update-3 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-3 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 4)
+
+BUG-008 - Centered Academy player-card action buttons
+Manual steps:
+1. Open `/academy` with multiple players.
+2. Inspect cards with one button and cards with two buttons.
+3. Compare horizontal alignment of the action row across those cards.
+Expected:
+- Academy player-card action buttons sit centered within the action row.
+- One-button and two-button layouts both look balanced rather than left-anchored.
+
+BUG-009 - Slightly darker green hover state for choose-target CTA
+Manual steps:
+1. Open `/academy`.
+2. Trigger choose-target mode with a single-target Academy card.
+3. Hover the green `Choose` button on a player card.
+Expected:
+- The hover state remains green.
+- The button fill darkens slightly on hover, making the hover state clearer than the resting state.
+
+Command checks run in update-4 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-4 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 5)
+
+BUG-010 - Academy discard action inside compact card tile
+Manual steps:
+1. Open `/academy` with several Academy cards in the Academy card bar.
+2. Inspect each compact Academy card tile.
+3. Confirm `Use` or `Choose Target` and `Discard Card` both render inside the tile footer area.
+4. Confirm the buttons sit centered within the compact tile rather than appearing below it.
+Expected:
+- Academy compact card tiles contain both actions within the tile itself.
+- `Discard Card` no longer renders outside the tile.
+- The action buttons are centered and grouped within the card footer.
+
+Command checks run in update-5 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-5 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 6)
+
+BUG-011 - Named affected-player lists in Academy result modals
+Manual steps:
+1. Open `/academy` with multiple academy players.
+2. Use an all-player maturity card, a single-target maturity card, and at least one reveal card.
+3. Read the result modal after each card resolves.
+Expected:
+- Maturity result modals list the names of affected players.
+- If players become ready for promotion, those names are shown explicitly.
+- Reveal result modals list assessed player names, Judgement-passed names, and revealed-player names instead of only generic counts.
+
+Command checks run in update-6 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-6 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 7)
+
+BUG-012 - Academy Judgement coach locked for the rest of the day
+Manual steps:
+1. Open `/academy` with a reveal-style Academy card and multiple available coaches.
+2. Use the card and choose one coach for Judgement.
+3. Without advancing the day, try to reuse that same coach on another scouting or Academy Judgement action.
+4. Advance to the next career day through Career Home, Cup Draw, or Day Results if relevant.
+5. Check that the coach becomes available again on the next day.
+Expected:
+- The selected Academy Judgement coach becomes unavailable immediately after the card resolves.
+- That coach cannot be selected again during the same career day.
+- The coach is automatically released on the next career day.
+
+BUG-013 - Academy alert icon and pulse on Career Home
+Manual steps:
+1. Open Career Home with an Academy alert active.
+2. Inspect the `Academy` navigation button in the control panel.
+3. Repeat with no Academy alert active.
+Expected:
+- With an alert active, the button shows `faCircleExclamation`.
+- The button pulses only while the alert is active.
+- With no alert active, the icon is absent and the button does not pulse.
+
+Command checks run in update-7 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-7 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 8)
+
+BUG-014 - Coach selection required for every Academy card
+Manual steps:
+1. Open `/academy` with both Judgement and non-Judgement Academy cards available.
+2. Use a non-Judgement Academy card such as a maturity or expansion card.
+3. Confirm a coach-selection modal appears before the card resolves.
+4. Use a single-target Academy card and confirm coach selection happens before player targeting.
+5. After resolving each card, verify the selected coach cannot be chosen again during the same career day.
+Expected:
+- Every Academy card prompts for coach selection first.
+- Non-Judgement Academy cards still lock the selected coach for the rest of the day after resolution.
+- Single-target cards retain the selected coach while target mode is active.
+
+Command checks run in update-8 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-8 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 9)
+
+BUG-015 - Updated Academy current/potential reveal rules
+Manual steps:
+1. Open `/academy` with players who still have hidden ratings and hidden current/potential values.
+2. Use `3v3 mini games`, `Classroom Lessons`, and `Video Analysis` and compare reveal frequency against the new lower potential-value chances.
+3. Use `Run Training Drills`, `Full Training Games`, and `Mentor Sessions` on players with hidden skill ratings.
+4. After those ratings are fully visible, use another successful current-value card on the same player and confirm overall can then reveal.
+Expected:
+- Potential-value cards use `15%`, `30%`, and `60%` success rates.
+- Current-value cards reveal hidden skill ratings before they reveal overall.
+- A player only counts as newly revealed when the card actually exposes new information.
+
+Command checks run in update-9 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-9 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 10)
+
+BUG-016 / BUG-017 - Current reveal progression should reveal one hidden item at a time and gate overall behind ratings plus traits
+Manual steps:
+1. Open `/academy` with a player who still has multiple hidden skill ratings and at least one hidden trait.
+2. Use a successful current-value Academy card on that player and note exactly what becomes visible.
+3. Repeat successful current-value cards until all skill ratings are visible.
+4. Continue using successful current-value cards while traits are still hidden.
+5. Once all ratings and traits are visible, use another successful current-value card and confirm overall can then reveal.
+Expected:
+- Each successful current-value card reveals only one hidden skill rating while any hidden ratings remain.
+- After ratings are exhausted, successful current-value cards reveal hidden traits one at a time.
+- Overall does not reveal until all ratings and traits are visible.
+
+Command checks run in update-10 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-10 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 11)
+
+BUG-018 - Updated current-value Academy card success chances
+Manual steps:
+1. Open `/academy` and inspect `Run Training Drills`, `Full Training Games`, and `Mentor Sessions`.
+2. Confirm their current-value reveal success chances match the latest balance request.
+3. Use each card over multiple runs if needed and compare the reveal frequency against the stronger current-value tuning.
+Expected:
+- `Run Training Drills` uses `30%`.
+- `Full Training Games` uses `60%`.
+- `Mentor Sessions` uses `90%`.
+
+Command checks run in update-11 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-11 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 12)
+
+BUG-019 - Academy reveal cards now roll card success before Judgement
+Manual steps:
+1. Open `/academy` with at least one current-value or potential-value Academy card available.
+2. Use the card and inspect the resulting reveal behavior or debug output.
+3. Confirm the card-success chance is evaluated before coach Judgement in the reveal flow.
+Expected:
+- The Academy card's own reveal chance resolves first.
+- Coach Judgement only rolls after the card-success check has already passed.
+- Existing reveal progression still works once both checks pass.
+
+Command checks run in update-12 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-12 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug fix regression pass (2026-03-13, update 13)
+
+BUG-020 - Generic blocked-staff upgrade message
+Manual steps:
+1. Open Career Home when every staff member is currently marked `inUse`.
+2. Attempt the upgrade flow that shows the blocked message.
+3. Verify the wording still makes sense whether staff are busy on scouting, Academy work, or another same-day assignment.
+Expected:
+- The blocked message says staff are currently `in use`.
+- The message does not incorrectly claim staff are specifically on scouting trips.
+
+Command checks run in update-13 bug-fix pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-020 scope.
+  - No new EPIC-020-specific lint failures were introduced by this bug-fix pass.
+
+Update-13 bug-fix test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

@@ -1,0 +1,600 @@
+EPIC-021 - Training Card Usage, Training Screen, and First Team Growth
+
+Overview
+The goal of this epic is to implement how Training cards actually work in the game.
+
+Training has 2 goals:
+- primary goal: improve the current ratings of players in the first team
+- secondary goal: reveal the potential value of first-team players whose potential is still hidden
+
+This epic introduces:
+- using Training cards from Career Home
+- assigning a coach to run a training session
+- temporary coach inUse state for the day
+- a dedicated Training screen
+- player focus/inspection during training
+- sub-ratings for first-team players
+- training success and failure logic
+- potential reveal during training
+- end-of-session reporting
+
+This epic is about:
+- training-card execution
+- first-team player growth
+- first-team potential reveal
+- coach-driven training outcomes
+- sub-rating progression
+
+This epic is not about:
+- scheduled training on the calendar
+- academy training cards
+- permanent coach fatigue systems beyond same-day inUse
+- changing how Training cards are generated
+- match engine behaviour
+
+================================================================
+Training Cards in Scope
+================================================================
+
+Use these exact Training cards:
+
+					GK	GK	GK	DF	DF	DF	DF	DF	DF	DF	MD	MD	MD	MD	MD	MD	MD	AT	AT	AT	AT	AT	AT	AT
+ID	Training Name	Rarity	Type	Positions	Shot Stopping	Distribution	Control	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting	Tackling	Marking	Passing	Movement	Control	Dribbling	Shooting
+TR-C-001	Target Practice	Common	GK	GK	0	5	3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-C-002	Deflection Practice	Common	GK	GK	3	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-U-001	Pens and Free Kicks	Uncommon	GK	GK, AT, MD	5	0	2	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	0	0	0	0	2
+TR-R-001	Final 3rd Drills	Rare	GK	All	5	3	0	3	0	0	1	0	0	0	0	0	0	1	0	0	2	0	0	1	0	0	0	2
+TR-C-003	Defensive Drills	Common	DF	DF	0	0	0	4	3	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-R-002	Bringing it out from the back	Rare	DF	DF	0	0	0	0	2	3	4	5	3	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+TR-U-002	Defensive Positioning	Uncommon	DF	DF, MD	0	0	0	0	3	0	1	2	0	0	1	2	0	0	2	0	0	0	0	0	0	0	0	0
+TR-R-003	Through Ball Drills	Rare	DF	DF, AT	0	0	0	5	3	0	2	3	0	0	0	0	0	0	0	0	0	0	0	0	2	2	0	1
+TR-C-004	Defending Corners	Common	DF	All	0	0	0	1	2	0	1	0	0	0	0	1	0	1	0	0	0	0	1	0	1	0	0	0
+TR-C-005	Passing Drills	Common	MD	MD	0	0	0	0	0	0	0	0	0	0	0	0	5	0	2	1	0	0	0	0	0	0	0	0
+TR-R-004	Rondo	Rare	MD	MD	0	0	0	0	0	0	0	0	0	0	2	2	4	5	4	1	0	0	0	0	0	0	0	0
+TR-U-003	In Possession Positioning	Uncommon	MD	MD, DF	0	0	0	0	0	1	2	2	0	0	0	0	1	2	1	2	0	0	0	0	0	0	0	0
+TR-R-005	Edge of the Box Drills	Rare	MD	MD, AT	0	0	0	0	0	0	0	0	0	0	0	0	4	0	0	4	4	0	0	2	0	0	2	2
+TR-C-006	Team Shape	Common	MD	All	0	0	0	0	0	1	1	0	0	0	0	1	1	1	0	0	0	0	1	1	1	0	0	0
+TR-C-007	1 on 1's	Common	AT	AT	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	2	1	2	3
+TR-R-006	Balls into the Box	Rare	AT	AT	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	5	5	2	6
+TR-U-004	Defending from the front	Uncommon	AT	AT, MD	0	0	0	0	0	0	0	0	0	0	2	2	0	0	1	0	0	3	2	0	0	1	0	0
+TR-R-007	2 v 1	Rare	AT	AT, DF	0	0	0	3	3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	4	2	4	2
+TR-C-008	Shooting Drills	Common	AT	All	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	2	0	0	0	0	0	1	2
+
+All table values should be used exactly as written above.
+
+================================================================
+Core Training Card Usage Rules
+================================================================
+
+On Career Home:
+- all Training cards should display a button:
+  - Start Session
+
+When Start Session is clicked:
+- the user must choose an available coach
+- that chosen coach is then marked:
+  - inUse
+- that inUse state applies for that day
+- once the coach is chosen, navigate to the Training screen
+
+The user can use as many Training cards as they want per day, provided:
+- they have an available coach to assign to each one
+
+A coach marked inUse for that day:
+- cannot be used for another training session that same day
+
+================================================================
+Training Screen Layout
+================================================================
+
+The Training screen has 3 sections:
+
+1. Top Section
+- full width
+- shows all 7 first-team players
+- compact thumbnail style
+- each player shows only:
+  - name
+  - image
+
+2. Player Details Section
+- shows the currently focused player
+- when a player in the top section is hovered:
+  - that player becomes the focused player
+- this section shows:
+  - player ratings
+  - player sub-ratings
+- use the skillset component to display the ratings
+- extend it on this page so it also shows sub-ratings
+
+3. Training Panel
+- shows:
+  - the players currently involved in the training session
+  - their images
+  - their names
+  - the coach taking the training
+  - the coach's details/ratings
+  - a button to start the training session
+
+Once the Start Training button is clicked:
+- calculate the training results
+- then show an end-of-session modal
+
+================================================================
+Potential Reveal During Training
+================================================================
+
+Training can reveal hidden potential values for first-team players.
+
+This is separate from rating growth.
+
+Process:
+- take the training coach's Judgement rating
+- divide it by 10
+- round to 1 decimal place
+- this becomes the chance that a player's potential is unhidden during that session
+
+Example:
+- coach Judgement = 42
+- reveal chance = 4.2%
+
+Rare card bonus:
+- if the Training card used is Rare:
+  - add 5% to this chance
+
+If the reveal succeeds:
+- pick 1 random player from the players involved in the training session
+- unhide that player's potential
+- show this in the end-of-session modal
+
+Rules:
+- only players involved in the training session are eligible
+- if all involved players already have revealed potential, no new reveal needs to occur
+- revealed potential remains permanently visible from then on
+
+================================================================
+Player Eligibility for Training Rewards
+================================================================
+
+The first stage of training growth is to determine which players are in the session and whether their potential gap allows them to benefit.
+
+Use:
+- the Positions field from the training card
+- the player's current team position from Team Management
+
+Positions field determines who is included in the training session.
+
+Then for each player in the session:
+- use:
+  - Overall Rating (OR)
+  - Potential Rating (PR)
+
+Apply these exact rules:
+
+If (PR - OR) > 5
+- no effect
+- move on from this part
+
+Else If (PR - OR) > 2
+- 20% chance the training will not affect this player no matter what
+- if they fail here, they are treated as not taking part from this point onwards
+- this should be flagged by the coach in the end-of-session modal
+
+Else If (PR - OR) > 0
+- 50% chance the training will not affect this player no matter what
+- if they fail here, they are treated as not taking part from this point onwards
+- this should be flagged by the coach in the end-of-session modal
+
+Else If (PR - OR) = 0
+- 0% chance the training can be successful
+- this should be shown in the end-of-session modal about this player
+
+Only players who remain eligible after this stage proceed to the training success stage.
+
+================================================================
+Training Success Rules
+================================================================
+
+For each eligible player:
+- look at the training Type from the training card
+- use the coach's rating for that training type
+- this rating is the % chance training is successful for that player
+
+Example:
+- DF training card
+- coach DF Training rating = 63
+- each eligible player in the session gets a 63% success check
+
+Each player is checked independently.
+
+If successful:
+- use the player's actual position column from the training card matrix
+- grant the listed sub-rating points for that player's position
+
+================================================================
+Sub-Ratings System
+================================================================
+
+This epic introduces sub-ratings for first-team players.
+
+Sub-ratings are tracked per skill.
+
+Purpose:
+- sub-ratings are the progress points needed to increase a visible rating by 1
+
+Rule:
+- to improve a visible rating from N to N+1
+- the player needs N sub-rating points in that skill
+
+Example:
+- player Shooting = 22
+- they need 22 Shooting sub-rating points to increase Shooting to 23
+
+Important rule:
+- sub-rating points do not carry over to the next level
+- if the threshold is met or exceeded:
+  - increase the visible rating by 1
+  - reset that skill's sub-rating progress to 0
+- do not carry excess progress into the next rating level
+
+This system should be tracked for all trainable first-team player skills.
+
+Training session gains:
+- the values from the Training card matrix are sub-rating points granted to successful players for their position
+
+All improvements to visible ratings and sub-ratings should be shown in the end-of-session modal.
+
+================================================================
+End-of-Session Modal
+================================================================
+
+After a training session is resolved:
+- show an end-of-session modal
+
+This modal should show:
+- everything that happened to each player involved in the session
+
+At minimum this includes:
+- whether they were included in the session
+- whether they were excluded by the OR/PR gating rules
+- whether the coach flagged them as slowing/not learning
+- whether training succeeded for them
+- which sub-rating points were gained
+- whether any visible rating increased
+- whether a player's potential was revealed
+
+This modal should also include:
+- a button to end the training session
+- clicking it returns the user to Career Home
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-2101 - Add Start Session Button to Training Cards on Career Home
+----------------------------------------------------------------
+
+Description
+Make Training cards usable from Career Home.
+
+Requirements
+- All Training cards should display a button:
+  - Start Session
+- Clicking it begins the training flow.
+- It should not immediately apply the card effect without coach selection first.
+
+Acceptance Criteria
+- Training cards show a Start Session button.
+- Clicking it begins the training setup flow.
+
+----------------------------------------------------------------
+FEAT-2102 - Add Coach Selection Flow for Training Sessions
+----------------------------------------------------------------
+
+Description
+Require the player to choose an available coach before a training session starts.
+
+Requirements
+- When Start Session is clicked:
+  - show a coach selection modal or equivalent flow
+- Only available coaches may be selected.
+- Once selected:
+  - mark the coach as inUse for that day
+- In-use coaches cannot be selected again for another session on the same day.
+
+Acceptance Criteria
+- A coach must be selected to start training.
+- Selected coaches become inUse for the day.
+- In-use coaches cannot be reused that day.
+
+----------------------------------------------------------------
+FEAT-2103 - Create Training Screen with 3-Section Layout
+----------------------------------------------------------------
+
+Description
+Build the dedicated Training screen.
+
+Requirements
+- Add the 3 required sections:
+  1. full-width top player strip of all 7 first-team players
+  2. focused player details section
+  3. training panel with session participants, coach details, and start button
+- Top player strip should use compact thumbnail presentation with:
+  - image
+  - name
+- Hovering a player in the strip should focus them in the details section.
+- Keep the layout readable and purpose-built for training.
+
+Acceptance Criteria
+- The Training screen exists.
+- It has the 3 required sections.
+- Hovering players updates the focused player details.
+
+----------------------------------------------------------------
+FEAT-2104 - Extend Skillset Component to Show Sub-Ratings on Training Screen
+----------------------------------------------------------------
+
+Description
+Show player sub-ratings alongside normal ratings on the Training screen.
+
+Requirements
+- Reuse the existing skillset component for displaying player ratings.
+- Extend it for the Training screen so it can also display sub-ratings.
+- This extension should be limited to the training context if needed.
+- Keep rating and sub-rating display clear and understandable.
+
+Acceptance Criteria
+- Focused players on the Training screen show both ratings and sub-ratings.
+- The existing skillset component is reused or sensibly extended.
+
+----------------------------------------------------------------
+FEAT-2105 - Determine Training Session Participants from Card Positions Field
+----------------------------------------------------------------
+
+Description
+Select the players involved in the session using the Training card's Positions field.
+
+Requirements
+- Use the Positions field from the Training card.
+- Map that to the player's current team positions from Team Management.
+- Only players in the relevant positions should be part of the session.
+- Support:
+  - single-position sessions
+  - multi-position sessions
+  - All
+
+Acceptance Criteria
+- Training participants are selected from the exact Positions field rules.
+- Only the correct players are included in the session.
+
+----------------------------------------------------------------
+FEAT-2106 - Add First-Team Sub-Ratings Data Model
+----------------------------------------------------------------
+
+Description
+Introduce persistent sub-ratings for first-team players.
+
+Requirements
+- Add sub-rating tracking per skill for first-team players.
+- Sub-ratings should exist for all trainable player skills.
+- Persist them in player state.
+- Keep them available to the Training screen and training resolution logic.
+
+Acceptance Criteria
+- First-team players have sub-rating fields.
+- Sub-ratings persist correctly in player state.
+
+----------------------------------------------------------------
+FEAT-2107 - Implement Training Potential-Gap Eligibility Gate
+----------------------------------------------------------------
+
+Description
+Determine whether players are allowed to benefit from training based on Potential Rating and Overall Rating.
+
+Requirements
+- For each player in the session, use:
+  - OR = Overall Rating
+  - PR = Potential Rating
+- Apply these exact rules:
+
+If (PR - OR) > 5
+- no effect
+
+Else If (PR - OR) > 2
+- 20% chance the training will not affect this player no matter what
+
+Else If (PR - OR) > 0
+- 50% chance the training will not affect this player no matter what
+
+Else If (PR - OR) = 0
+- 0% chance the training can be successful
+
+- Players failing this stage should be treated as not participating from that point onwards.
+- These failures should be surfaced in the end-of-session modal.
+
+Acceptance Criteria
+- Training eligibility is gated using the exact OR/PR rules above.
+- Failed players are removed from later success checks.
+- The modal reports these failures correctly.
+
+----------------------------------------------------------------
+FEAT-2108 - Implement Coach-Type-Based Training Success Rolls
+----------------------------------------------------------------
+
+Description
+Resolve whether training succeeds for each eligible player.
+
+Requirements
+- For each eligible player:
+  - use the Training card Type
+  - use the coach's rating for that training type
+- That coach rating becomes the % chance training succeeds for that player.
+- Roll each player independently.
+
+Acceptance Criteria
+- Training success is checked independently per eligible player.
+- The coach's relevant training rating determines the success chance.
+
+----------------------------------------------------------------
+FEAT-2109 - Apply Training Card Matrix Values as Sub-Rating Gains
+----------------------------------------------------------------
+
+Description
+Use the Training card matrix to grant sub-rating points to successful players.
+
+Requirements
+- For each successful player:
+  - use the player's actual position
+  - read the correct values from the training card matrix
+- Grant those values as sub-rating points for that player's relevant skills.
+- Use the table values exactly as provided in this epic.
+
+Acceptance Criteria
+- Successful players receive the correct sub-rating gains from the exact card matrix.
+- Position-based matrix columns are used correctly.
+
+----------------------------------------------------------------
+FEAT-2110 - Implement Sub-Rating-to-Rating Upgrade Logic
+----------------------------------------------------------------
+
+Description
+Allow sub-ratings to increase visible ratings.
+
+Requirements
+- To raise a visible skill from N to N+1:
+  - require N sub-rating points in that skill
+- When threshold is met or exceeded:
+  - increase the visible rating by 1
+  - reset sub-rating progress for that skill to 0
+- Do not carry excess points into the next level.
+
+Acceptance Criteria
+- Ratings increase only when the current rating threshold is met.
+- Sub-rating progress resets to 0 after a successful visible upgrade.
+- Excess points are not carried over.
+
+----------------------------------------------------------------
+FEAT-2111 - Implement Potential Reveal Chance During Training
+----------------------------------------------------------------
+
+Description
+Allow training sessions to reveal hidden first-team player potential.
+
+Requirements
+- Use the selected coach's Judgement rating.
+- Divide by 10.
+- Round to 1 decimal place.
+- This is the session's base chance to reveal a potential.
+- If the Training card is Rare:
+  - add 5% to that chance
+- If reveal succeeds:
+  - select 1 random player from the players involved in the session
+  - reveal that player's potential
+- Show this in the end-of-session modal.
+- If all involved players already have revealed potential, no new reveal is required.
+
+Acceptance Criteria
+- Training can reveal hidden potential.
+- Reveal chance uses the exact Judgement/10 rule plus rare-card 5% boost.
+- A random participating player is revealed when successful.
+
+----------------------------------------------------------------
+FEAT-2112 - Build Training End-of-Session Modal
+----------------------------------------------------------------
+
+Description
+Show a detailed report of what happened in the session.
+
+Requirements
+- After training resolves, show an end-of-session modal.
+- It should show everything that happened for each player involved, including:
+  - whether they were blocked by potential gap logic
+  - whether training succeeded
+  - what sub-rating gains were earned
+  - what visible ratings increased
+  - whether potential was revealed
+- Include a button to end the session and return to Career Home.
+
+Acceptance Criteria
+- An end-of-session modal appears after training.
+- It clearly reports all training outcomes.
+- The user can return to Career Home from the modal.
+
+----------------------------------------------------------------
+FEAT-2113 - Release Coach inUse State After Training Session Resolution
+----------------------------------------------------------------
+
+Description
+Make the coach available again after the day/session rules are satisfied.
+
+Requirements
+- Keep the coach marked inUse for that day once chosen.
+- Ensure the inUse state is integrated with same-day session limits.
+- Clear inUse at the correct day-boundary according to the current coach/day systems so the coach is available again on later days.
+
+Acceptance Criteria
+- Coaches used in training cannot be reused again on the same day.
+- Coaches become available again on later days according to the day reset rules.
+
+----------------------------------------------------------------
+FEAT-2114 - Consume Training Card Only After Successful Session Start
+----------------------------------------------------------------
+
+Description
+Handle Training card consumption correctly.
+
+Requirements
+- Remove a Training card from the library only once a training session has actually been started with a chosen coach.
+- Do not consume the card if the user cancels before coach selection is completed.
+- The card should not remain after a successfully started session.
+
+Acceptance Criteria
+- Training cards are consumed only after the session is actually started.
+- Cancelled setup does not consume the card.
+
+----------------------------------------------------------------
+FEAT-2115 - Add Training Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for validating training logic.
+
+Requirements
+- Add development-friendly visibility for:
+  - selected coach
+  - coach inUse state
+  - session participants
+  - OR/PR eligibility checks
+  - training success rolls
+  - sub-rating gains
+  - visible rating upgrades
+  - potential reveal chance
+  - revealed player selection
+- Keep this support lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can inspect the key state and calculations behind training sessions.
+- Training outcomes are easier to validate during testing.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- Training cards on Career Home show a Start Session button.
+- Starting a session requires selecting an available coach.
+- The selected coach becomes inUse for that day.
+- A dedicated Training screen exists with the 3 required sections.
+- The focused player details section shows both ratings and sub-ratings.
+- Training session participants are selected from the exact Positions field rules.
+- First-team players have persistent sub-ratings.
+- Training eligibility uses the exact OR/PR gate rules from this epic.
+- Training success uses the coach's relevant training-type rating as a % chance per eligible player.
+- Successful players receive the exact sub-rating gains from the training matrix.
+- Visible ratings upgrade when their sub-rating threshold is met, with no carry-over.
+- Training can reveal hidden first-team potential using Judgement/10, with a +5% bonus for rare cards.
+- An end-of-session modal reports all training outcomes and returns the user to Career Home.
+- Training cards are consumed correctly.
+- Coaches are unavailable for further training that same day once assigned.

@@ -8,7 +8,7 @@
   padding: 0.6rem;
   min-width: 220px;
   width: 220px;
-  height: 200px;
+  height: 250px;
   flex: 0 0 220px;
   display: flex;
   flex-direction: column;
@@ -74,6 +74,13 @@
   position: relative;
   z-index: 2;
   margin-top: auto;
+  width: 100%;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+
+.careerCardTile__actions .btn {
   width: 100%;
 }
 

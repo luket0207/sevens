@@ -52,7 +52,7 @@ import { generateStaffMemberCard } from "../cards/utils/staffMemberGenerator";
 import {
   createDefaultCareerAcademyState,
   ensureCareerAcademyState,
-  resolveAcademyCapacityFromStaffSlots,
+  resolveExpandedAcademyCapacity,
   tickAcademyMaturityAndLoss,
 } from "../academy/utils/academyState";
 import {
@@ -69,6 +69,7 @@ import {
   applyStaffUpgradeToMember,
   ensurePlayerTeamStaffState,
   hireStaffMemberInOpenSlot,
+  releaseCompletedStaffAssignmentsForCareerDay,
   replaceActiveStaffMember,
   resolveStaffSlotSummary,
 } from "../staff/utils/staffState";
@@ -233,8 +234,8 @@ const CareerHome = () => {
     [gameState?.career?.academy]
   );
   const academyCapacity = useMemo(
-    () => resolveAcademyCapacityFromStaffSlots(playerTeamStaffState?.slotCount),
-    [playerTeamStaffState?.slotCount]
+    () => resolveExpandedAcademyCapacity(playerTeamStaffState?.slotCount, academyState),
+    [academyState, playerTeamStaffState?.slotCount]
   );
   const dueScoutingTrip = useMemo(
     () =>
@@ -739,12 +740,13 @@ const CareerHome = () => {
       return;
     }
 
-    const availableStaffForUpgrades = getAvailableStaffForScouting(playerTeamStaffState.members);
-    if (availableStaffForUpgrades.length === 0) {
+    const selectableStaffForUpgrades = Array.isArray(playerTeamStaffState?.members)
+      ? playerTeamStaffState.members
+      : [];
+    if (selectableStaffForUpgrades.length === 0) {
       openNoAvailableStaffModal({
-        modalTitle: "No Available Staff",
-        modalContent:
-          "All staff members are currently in use on scouting trips and cannot receive upgrades right now.",
+        modalTitle: "No Staff Members",
+        modalContent: "You need at least one active staff member before you can use a staff upgrade card.",
       });
       return;
     }
@@ -756,7 +758,7 @@ const CareerHome = () => {
         <StaffSelectionModalContent
           title={upgradeCard?.name ?? "Staff Upgrade"}
           description={upgradeCard?.payload?.effect ?? "Select a staff member to receive this upgrade."}
-          staffMembers={availableStaffForUpgrades}
+          staffMembers={selectableStaffForUpgrades}
           actionLabel="Apply Upgrade"
           onSelectStaff={(targetStaffId) => {
             setGameState((prev) => {
@@ -768,12 +770,6 @@ const CareerHome = () => {
 
               const currentPlayerTeam = prev?.career?.world?.playerTeam;
               const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
-              const targetStaffMember = (currentStaffState.members ?? []).find(
-                (member) => member?.id === targetStaffId
-              );
-              if (targetStaffMember?.inUse) {
-                return prev;
-              }
               const upgradeResult = applyStaffUpgradeToMember({
                 staffState: currentStaffState,
                 targetStaffId,
@@ -806,6 +802,10 @@ const CareerHome = () => {
         />
       ),
     });
+  };
+
+  const goToAcademyForCard = () => {
+    navigate("/academy");
   };
 
   const triggerDebugCardReward = (overrides = {}) => {
@@ -1097,11 +1097,22 @@ const CareerHome = () => {
           academyState: prev?.career?.academy,
           currentCareerDay: nextCareerDayNumber,
         });
+        const currentPlayerTeam = prev?.career?.world?.playerTeam;
+        const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+        const releasedStaffState = releaseCompletedStaffAssignmentsForCareerDay({
+          staffState: currentStaffState,
+          currentCareerDay: nextCareerDayNumber,
+        });
+        const nextPlayerTeam = applyStaffStateToPlayerTeam(currentPlayerTeam, releasedStaffState);
 
         return {
           ...prev,
           career: {
             ...prev.career,
+            world: {
+              ...(prev.career?.world ?? {}),
+              playerTeam: nextPlayerTeam,
+            },
             calendar: {
               ...(prev.career?.calendar ?? {}),
               currentDayIndex: nextDayIndex,
@@ -1175,6 +1186,7 @@ const CareerHome = () => {
                 library={cardLibrary}
                 onDiscardCard={discardLibraryCard}
                 onScoutCard={useScoutingCard}
+                onGoToAcademyCard={goToAcademyForCard}
                 onHireStaffMemberCard={hireStaffMemberCard}
                 onUseStaffUpgradeCard={useStaffUpgradeCard}
                 staffSummary={staffSlotSummary}

@@ -4,11 +4,12 @@ import { useGame } from "../../engine/gameContext/gameContext";
 import Button, { BUTTON_VARIANT } from "../../engine/ui/button/button";
 import { MODAL_BUTTONS, useModal } from "../../engine/ui/modal/modalContext";
 import PageLayout from "../shared/pageLayout/pageLayout";
+import { resolveLeagueTierFromCompetitionId } from "../cards/utils/cardRewardGenerator";
 import {
   addScoutedPlayerToAcademy,
   ensureCareerAcademyState,
   replaceAcademyPlayerWithScoutedPlayer,
-  resolveAcademyCapacityFromStaffSlots,
+  resolveExpandedAcademyCapacity,
 } from "../academy/utils/academyState";
 import {
   ensureCareerScoutingState,
@@ -23,6 +24,22 @@ import { applyStaffStateToPlayerTeam, ensurePlayerTeamStaffState } from "../staf
 import "./scouting.scss";
 
 const renderHiddenOrValue = (value, revealed) => (revealed ? value : "Hidden");
+const formatQualityBucketLabel = (value) => {
+  const safeValue = String(value ?? "").trim().toLowerCase();
+  if (safeValue === "ok") {
+    return "Ok";
+  }
+  if (safeValue === "good") {
+    return "Good";
+  }
+  if (safeValue === "great") {
+    return "Great";
+  }
+  if (safeValue === "elite") {
+    return "Elite";
+  }
+  return "Bad";
+};
 
 const Scouting = () => {
   const navigate = useNavigate();
@@ -43,10 +60,12 @@ const Scouting = () => {
     () => ensurePlayerTeamStaffState(careerWorld?.playerTeam),
     [careerWorld?.playerTeam]
   );
-  const academyCapacity = resolveAcademyCapacityFromStaffSlots(playerStaffState?.slotCount);
+  const academyCapacity = resolveExpandedAcademyCapacity(playerStaffState?.slotCount, academyState);
   const academyCount = Array.isArray(academyState.players) ? academyState.players.length : 0;
   const academyPlayers = Array.isArray(academyState.players) ? academyState.players : [];
   const academyHasSpace = academyCount < academyCapacity;
+  const playerLeagueTier = resolveLeagueTierFromCompetitionId(careerWorld?.playerTeam?.competitionId);
+  const playerLeagueLabel = careerWorld?.playerTeam?.competitionName ?? `League ${playerLeagueTier}`;
   const teamKit = {
     homeKit: careerWorld?.playerTeam?.homeKit ?? null,
     awayKit: careerWorld?.playerTeam?.awayKit ?? null,
@@ -63,6 +82,7 @@ const Scouting = () => {
     const report = generateScoutingReportFromTrip({
       trip: dueTrip,
       scoutingRating,
+      leagueTier: playerLeagueTier,
     });
 
     setGameState((prev) => ({
@@ -76,7 +96,7 @@ const Scouting = () => {
         }),
       },
     }));
-  }, [activeReport, dueTrip, playerStaffState?.members, setGameState]);
+  }, [activeReport, dueTrip, playerLeagueTier, playerStaffState?.members, setGameState]);
 
   if (generationStatus === "queued" || generationStatus === "in_progress") {
     return <Navigate to="/career/generating" replace />;
@@ -112,7 +132,7 @@ const Scouting = () => {
       }
 
       const currentStaffState = ensurePlayerTeamStaffState(prev?.career?.world?.playerTeam);
-      const currentCapacity = resolveAcademyCapacityFromStaffSlots(currentStaffState.slotCount);
+      const currentCapacity = resolveExpandedAcademyCapacity(currentStaffState.slotCount, currentAcademyState);
       const isAcademyFull = (currentAcademyState.players ?? []).length >= currentCapacity;
       let nextAcademyState = currentAcademyState;
 
@@ -289,7 +309,7 @@ const Scouting = () => {
   return (
     <PageLayout
       title="Scout Report"
-      subtitle={`Trip: ${dueTrip.cardName} | Staff: ${dueTrip.staffName} | Found: ${reportPlayers.length}`}
+      subtitle={`Trip: ${dueTrip.cardName} | Staff: ${dueTrip.staffName} | League: ${playerLeagueLabel} | Found: ${reportPlayers.length}`}
     >
       <section className="scoutReportPage">
         <article className="scoutReportPage__panel scoutReportPage__panel--summary">
@@ -310,6 +330,8 @@ const Scouting = () => {
               const revealedRatings = intel.revealedRatings ?? {};
               const traitVisibility = Array.isArray(intel.revealedTraits) ? intel.revealedTraits : [];
               const traits = Array.isArray(player.traits) ? player.traits : [];
+              const recommendation = reportPlayer?.recommendation ?? null;
+              const qualityBucketLabel = formatQualityBucketLabel(reportPlayer?.qualityBucket);
               const revealedTraitNames = traits
                 .map((trait, traitIndex) => {
                   const traitId = String(trait?.id ?? `trait-${traitIndex + 1}`);
@@ -323,10 +345,22 @@ const Scouting = () => {
                 <article className="scoutReportPage__playerCard" key={reportPlayer.id}>
                   <header className="scoutReportPage__playerHead">
                     <h3>{player.name ?? "Unknown Player"}</h3>
-                    <p>
-                      {player.playerType} | Quality: {reportPlayer.qualityBucket}
-                    </p>
+                    <p>{player.playerType}</p>
                   </header>
+
+                  <div
+                    className={`scoutReportPage__recommendation scoutReportPage__recommendation--${
+                      recommendation?.levelKey ?? "noFeedback"
+                    }`}
+                  >
+                    <span className="scoutReportPage__recommendationLabel">Coach Recommendation</span>
+                    <strong>{recommendation?.levelLabel ?? "No feedback"}</strong>
+                  </div>
+
+                  <div className="scoutReportPage__debugValue">
+                    <span className="scoutReportPage__debugLabel">Debug True Quality</span>
+                    <strong>{qualityBucketLabel}</strong>
+                  </div>
 
                   <div className="scoutReportPage__contentGrid">
                     <div className="scoutReportPage__imageWrap">

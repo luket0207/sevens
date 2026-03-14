@@ -109,7 +109,7 @@ const DayCard = ({
       </header>
 
       {visibleEvents.length === 0 ? (
-        <p className="seasonCalendar__empty">No events</p>
+        <p className="seasonCalendar__empty"></p>
       ) : (
         <div className="seasonCalendar__events">
           {visibleEvents.map((event) => (

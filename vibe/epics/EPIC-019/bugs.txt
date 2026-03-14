@@ -278,3 +278,129 @@ Attempted fixes:
 
 Final fix:
 - Added `align-items: flex-start;` to `.scoutReportPage__playerCard` in scouting styles.
+
+BUG-012 - Show true player overall in scouting report for debugging
+Status: fixed
+
+Repro steps:
+1. Open a scouting report after a trip resolves.
+2. Inspect the player card while coach recommendation is shown.
+
+Expected behavior:
+- The scouting report should still show the coach recommendation as the gameplay-facing guidance.
+- For debugging, an additional underlying scout-result value should be visible somewhere on the report card.
+
+Actual behavior:
+- Only the coach recommendation was shown, with no additional debug readout on the card.
+
+Suspected cause:
+- The report UI intentionally hid true scout-result values and had no temporary debug display.
+
+Attempted fixes:
+- Reviewed current scouting report card layout and existing report-player data already available in the UI.
+- Initially exposed true overall, but that interpretation was corrected in BUG-013.
+
+Final fix:
+- Clarified that the intended debug output was not true overall.
+- Final resolved behavior is captured in BUG-013, which replaced the temporary overall display with the intended hidden quality-bucket debug readout.
+
+BUG-013
+Status: fixed
+
+Repro steps:
+1. Open a scouting report after a trip resolves.
+2. Inspect the debug readout area on each player card.
+
+Expected behavior:
+- The report should show the underlying hidden scout result for debugging as the quality bucket:
+  - Bad
+  - Ok
+  - Good
+  - Great
+  - Elite
+- It should not show the player's true overall rating.
+
+Actual behavior:
+- The temporary debug readout showed true overall instead of the intended hidden quality bucket.
+
+Suspected cause:
+- BUG-012 was implemented with the wrong interpretation of "actual rating".
+
+Attempted fixes:
+- Re-read the clarified bug note and mapped the report entry's stored `qualityBucket` into a user-readable debug label.
+
+Final fix:
+- Replaced the temporary overall debug display with a clearly-labeled `Debug True Quality` row showing `Bad`, `Ok`, `Good`, `Great`, or `Elite` on each scouting report card.
+
+
+BUG-014 - Coach recommendation attempts should be quieter and less wildly wrong
+Status: fixed
+
+Repro steps:
+1. Generate scouting reports using low-scouting and high-scouting staff.
+2. Compare coach recommendation output across bad/ok/good/great/elite players.
+3. Inspect debug quality bucket next to the recommendation.
+
+Expected behavior:
+- Low-scouting coaches should often give `No feedback`, especially on weaker or less obvious players.
+- Even weak coaches should still recognize obviously strong elite players with high overall more often.
+- High-scouting coaches should be much more confident:
+  - elite -> usually `Certain to be worth recruiting`
+  - great -> usually `Highly likely to be worth recruiting`
+  - good -> usually `Likely to be worth recruiting`
+  - bad / ok -> usually `No feedback`
+- When coaches are wrong, the mistake should usually be small, not wildly off.
+
+Actual behavior:
+- Coaches attempted recommendations too often and the noise model allowed advice to be worse than intended.
+
+Suspected cause:
+- Recommendation logic focused on broad noisy remapping from an ideal level instead of first deciding whether the coach should comment at all.
+
+Attempted fixes:
+- Reworked the central scouting recommendation resolver.
+- Split the logic into:
+  - attempt chance
+  - base recommendation by quality
+  - mild mistake handling only after a coach decides to comment
+
+Final fix:
+- Low-scouting coaches now attempt far fewer recommendations and mostly stay at `No feedback` unless the player is clearly valuable.
+- Elite players with strong overall values are still much more likely to draw feedback, even from weaker coaches.
+- High-scouting coaches now trend toward:
+  - elite -> `Certain`
+  - great -> `Highly likely`
+  - good -> `Likely`
+  - bad / ok -> `No feedback`
+- Mistakes now stay close to the intended recommendation instead of becoming wildly wrong most of the time.
+
+
+BUG-015 - Mid-level scouts should still surface weak feedback on some good players
+Status: fixed
+
+Repro steps:
+1. Generate scouting reports with a mid-level scout (for example, scouting `54`).
+2. Inspect recommendation output on players whose `Debug True Quality` is `Good`.
+3. Compare recommendation variety across a full report with around 10 players.
+
+Expected behavior:
+- Mid-level scouts should still surface some weak guidance on `Good` players instead of collapsing too often to `No feedback`.
+- There should be a softer recommendation tier between `Likely` and `No feedback`.
+- That weaker tier should read `I have a hunch about this player`.
+
+Actual behavior:
+- Recommendation tuning became too quiet after BUG-014.
+- Mid-level scouts could produce too many `No feedback` outcomes across an entire report, including some `Good` players.
+
+Suspected cause:
+- The model only had a hard jump from `Likely` to `No feedback`, so moderate-confidence reads had nowhere sensible to land.
+
+Attempted fixes:
+- Promoted `hunch` into a first-class recommendation tier across the resolver, report debug counts, and report styling.
+- Retuned `Good`-player attempt behavior so mid-level scouts comment a bit more often.
+- Softened the default `Good` output for sub-60 scouts from `Likely` to `Hunch`.
+
+Final fix:
+- Added `I have a hunch about this player` as the low-confidence recommendation tier between `Likely` and `No feedback`.
+- Mid-level scouts are now more likely to give some feedback on `Good` players, while still reserving `Likely` for stronger reads.
+- Report recommendation counts and card styling now fully support the new `Hunch` outcome.

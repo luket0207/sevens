@@ -1,0 +1,532 @@
+EPIC-020 - Academy Card Usage and Academy Card Bar
+
+Overview
+The goal of this epic is to implement how Academy cards actually work in the game.
+
+This epic introduces:
+- Academy card usage from within the Academy page
+- an Academy card bar above the academy players
+- Academy card handling rules
+- maturity reduction cards
+- academy slot expansion cards
+- academy-value reveal cards for current value and potential
+- single-target academy card selection flow for targeted cards
+- persistence of newly revealed current/potential values
+
+This epic is about:
+- using Academy cards
+- applying Academy card effects
+- improving the Academy page flow
+- integrating Academy cards with coaches' Judgement ratings
+
+This epic is not about:
+- changing how Academy cards are generated
+- changing the post-match reward system
+- changing player generation
+- changing scouting report generation
+- adding new Academy cards beyond the listed set
+
+================================================================
+Academy Cards in Scope
+================================================================
+
+Use these exact Academy cards:
+
+ID	Name	Rarity	Effect
+AC-C-001	Organise Weak Friendly Game	Common	Reduce all academy player's maturity by 1
+AC-C-002	Run Training Drills	Common	Give the coaches a slight chance of working out players current values
+AC-C-003	3v3 mini games	Common	Give the coaches a slight chance of working out players potential values
+AC-C-004	1 on 1 session	Common	Reduce 1 academy player's maturity by 3
+AC-U-001	Organise Average Friendly Game	Uncommon	Reduce all academy player's maturity by 3
+AC-U-002	Expand Academy	Uncommon	Add an Academy slot
+AC-U-003	Full Training Games	Uncommon	Give the coaches a good chance of working out players current values
+AC-U-004	Classroom Lessons	Uncommon	Give the coaches a good chance of working out players potential values
+AC-R-001	Organise Strong Friendly Game	Rare	Reduce all academy player's maturity by 5
+AC-R-002	Mentor Sessions	Rare	Give the coaches a excellent chance of working out players current values
+AC-R-003	Video Analysis	Rare	Give the coaches a excellent chance of working out players potential values
+AC-R-004	Train with the first team	Rare	Reduce 1 academy player's maturity by 10
+
+All table values should be used exactly as written above.
+
+================================================================
+Career Home Behaviour
+================================================================
+
+From the Career Home page:
+- all Academy cards should show a button:
+  - Go to Academy
+
+This button should:
+- simply navigate to the Academy page
+- not trigger the card effect directly
+- not consume the card
+- act only as a shortcut to where the card is used
+
+================================================================
+Academy Page Card Bar
+================================================================
+
+The Academy page needs a new bar above the academy players.
+
+Requirements:
+- this bar holds all Academy cards currently in the player's library
+- it should scroll horizontally
+- visually it should feel similar to the card library area on Career Home
+- it should sit above the academy player list/content
+
+This is the main place Academy cards are used.
+
+================================================================
+Academy Card Usage Model
+================================================================
+
+From the Academy page card bar:
+- the user should be able to use Academy cards
+
+There are 3 usage patterns:
+
+1. Immediate all-player or global effects
+- card can simply be used immediately
+- effect applies at once
+
+2. Expand Academy special case
+- if academy has fewer than 12 slots:
+  - add 1 academy slot
+- if academy already has 12 slots:
+  - this card should instead behave as:
+    - Organise Average Friendly Game
+    - meaning reduce all academy players' maturity by 3
+
+3. Single-target cards
+- cards like:
+  - 1 on 1 session
+  - Train with the first team
+- these do not affect all players
+- when one of these is selected:
+  - temporarily remove the current academy-player action buttons
+  - replace them with a Choose button
+  - the user selects which academy player the card applies to
+  - after selection/resolution, UI returns to normal
+
+================================================================
+Maturity Reduction Card Rules
+================================================================
+
+Cards that reduce maturity should apply their effect immediately.
+
+If the card affects all players:
+- reduce maturity for all academy players by the specified amount
+
+If the card affects one player:
+- reduce maturity for the selected academy player by the specified amount
+
+Maturity floor:
+- maturity cannot go below 0
+
+If maturity reaches 0:
+- handle it exactly as normal maturity completion is already handled
+- this means:
+  - show the icon on the Academy button on Career Home
+  - update the academy player's available action button state appropriately
+
+================================================================
+Current Value and Potential Reveal Cards
+================================================================
+
+Cards that help coaches work out player values apply to all academy players.
+
+These cards reveal either:
+- current value
+- potential value
+
+They do not reveal both unless separate cards are used.
+
+The reveal process uses:
+- the coaches' Judgement rating
+
+Use the coaches Judgement rating exactly as described:
+- Judgement is out of 100
+- this becomes the chance that an academy player is affected by the card
+
+Example:
+- coach Judgement = 35
+- each academy player independently has a 35% chance to be affected
+- if 10 players are in the academy, roughly 3 or 4 would typically be affected
+
+Then for affected players:
+- use the card's success chance to decide whether the card succeeds for that player
+
+Success chances by wording:
+- slight chance = 25%
+- good chance = 50%
+- excellent chance = 75%
+
+This second step is also rolled independently per affected player.
+
+If successful:
+- the relevant value becomes permanently displayed for that player
+
+Permanent reveal rule:
+- if current value is revealed, it stays revealed forever
+- if potential value is revealed, it stays revealed forever
+
+Display persistence:
+- once revealed, the value should be displayed:
+  - in the Academy
+  - and later in the first team if that player is promoted
+
+================================================================
+Coach Source for Academy Cards
+================================================================
+
+These Academy value-reveal cards use the coaches' Judgement rating.
+
+Use the currently active staff/coaches available to the team.
+This epic should use the existing team staff state already introduced.
+
+If there are multiple staff members:
+- choose a clear consistent rule for which Judgement rating is used
+- preferably the best available relevant Judgement rating unless the existing staff system already implies another single-source rule
+
+Keep the rule centralised and explicit in implementation.
+
+================================================================
+Card Consumption Rules
+================================================================
+
+Academy cards should only be removed from the library when their effect has actually been used successfully.
+
+Remove the card when:
+- its effect is applied
+- or the targeted academy-player selection has been completed and the effect resolves successfully
+
+Do not remove the card when:
+- the player navigates to the Academy page from Career Home
+- the user begins a single-target flow but cancels before choosing a player
+- the card has not yet been applied
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-2001 - Add Go to Academy Button to Academy Cards on Career Home
+----------------------------------------------------------------
+
+Description
+Add a shortcut button on Academy cards from the Career Home card library.
+
+Requirements
+- All Academy cards shown on Career Home should display a button:
+  - Go to Academy
+- Clicking it should open the Academy page.
+- It must not apply the card effect.
+- It must not consume/remove the card.
+
+Acceptance Criteria
+- Academy cards on Career Home have a Go to Academy button.
+- Clicking it opens the Academy page only.
+- The card remains unused in the library.
+
+----------------------------------------------------------------
+FEAT-2002 - Add Academy Card Bar Above Academy Players
+----------------------------------------------------------------
+
+Description
+Create the Academy card bar on the Academy page.
+
+Requirements
+- Add a bar above the academy player list/content.
+- This bar displays all Academy cards currently in the player's library.
+- It should scroll horizontally.
+- It should remain usable with many cards.
+- Keep the styling aligned with the wider card UI language.
+
+Acceptance Criteria
+- The Academy page has a horizontally scrolling Academy card bar above the players.
+- The bar displays the player's Academy cards from the library.
+
+----------------------------------------------------------------
+FEAT-2003 - Add Academy Card Use Flow from Academy Page
+----------------------------------------------------------------
+
+Description
+Allow Academy cards to be used from the Academy page.
+
+Requirements
+- Academy cards in the Academy card bar should be usable from that page.
+- Support immediate-use cards, single-target cards, and Expand Academy special handling.
+- Keep card application logic centralised and consistent.
+
+Acceptance Criteria
+- Academy cards can be used from the Academy page.
+- Different Academy card usage types are supported correctly.
+
+----------------------------------------------------------------
+FEAT-2004 - Implement Immediate All-Player Maturity Reduction Cards
+----------------------------------------------------------------
+
+Description
+Apply maturity-reduction cards that affect all academy players.
+
+Cards in scope:
+- AC-C-001 Organise Weak Friendly Game -> reduce all academy player's maturity by 1
+- AC-U-001 Organise Average Friendly Game -> reduce all academy player's maturity by 3
+- AC-R-001 Organise Strong Friendly Game -> reduce all academy player's maturity by 5
+
+Requirements
+- Apply the exact maturity reduction values from the card definitions.
+- Affect all academy players immediately.
+- Clamp maturity at 0 minimum.
+- Trigger normal maturity-complete behaviour for any player who reaches 0.
+
+Acceptance Criteria
+- All-player maturity cards reduce maturity immediately.
+- Values are reduced by the exact defined amounts.
+- Maturity never goes below 0.
+- Players reaching 0 are handled normally.
+
+----------------------------------------------------------------
+FEAT-2005 - Implement Single-Target Maturity Reduction Card Flow
+----------------------------------------------------------------
+
+Description
+Apply single-target maturity reduction cards through a player-selection flow.
+
+Cards in scope:
+- AC-C-004 1 on 1 session -> reduce 1 academy player's maturity by 3
+- AC-R-004 Train with the first team -> reduce 1 academy player's maturity by 10
+
+Requirements
+- When one of these cards is selected:
+  - temporarily replace the academy player action buttons with a Choose button
+- The user selects one academy player as the target.
+- Apply the exact maturity reduction value.
+- Restore the normal academy player action UI afterwards.
+- If the user cancels out before selecting a player:
+  - no effect is applied
+  - the card remains in the library
+
+Acceptance Criteria
+- Single-target maturity cards enter a choose-target mode.
+- The selected player receives the exact defined maturity reduction.
+- The UI returns to normal afterwards.
+- Cancelling does not consume the card.
+
+----------------------------------------------------------------
+FEAT-2006 - Implement Expand Academy Card with Fallback Behaviour
+----------------------------------------------------------------
+
+Description
+Apply the Expand Academy card and handle the max-capacity fallback rule.
+
+Card in scope:
+- AC-U-002 Expand Academy -> Add an Academy slot
+
+Requirements
+- If academy slots are below 12:
+  - add 1 academy slot
+- If academy slots are already 12:
+  - this card should behave as:
+    - Organise Average Friendly Game
+    - reduce all academy players' maturity by 3
+- Keep the logic explicit and centralised.
+
+Acceptance Criteria
+- Expand Academy adds 1 slot when capacity is below 12.
+- If capacity is already 12, it instead reduces all academy players' maturity by 3.
+- The card is consumed only when the effect is successfully applied.
+
+----------------------------------------------------------------
+FEAT-2007 - Implement Current Value Reveal Cards
+----------------------------------------------------------------
+
+Description
+Apply cards that let coaches work out academy players' current values.
+
+Cards in scope:
+- AC-C-002 Run Training Drills -> slight chance of working out players current values
+- AC-U-003 Full Training Games -> good chance of working out players current values
+- AC-R-002 Mentor Sessions -> excellent chance of working out players current values
+
+Requirements
+- Use the coaches' Judgement rating as the first filter:
+  - each academy player independently has a Judgement% chance to be affected
+- Then use the card success chance:
+  - slight chance = 25%
+  - good chance = 50%
+  - excellent chance = 75%
+- For players who pass both checks:
+  - reveal the player's current value permanently
+- Current value reveal should persist in:
+  - the Academy
+  - and the first team if promoted later
+
+Acceptance Criteria
+- Current value reveal cards use the exact two-step process.
+- Affected players are selected using coach Judgement.
+- Success uses the exact slight/good/excellent percentages.
+- Successful reveals permanently show current value.
+
+----------------------------------------------------------------
+FEAT-2008 - Implement Potential Value Reveal Cards
+----------------------------------------------------------------
+
+Description
+Apply cards that let coaches work out academy players' potential values.
+
+Cards in scope:
+- AC-C-003 3v3 mini games -> slight chance of working out players potential values
+- AC-U-004 Classroom Lessons -> good chance of working out players potential values
+- AC-R-003 Video Analysis -> excellent chance of working out players potential values
+
+Requirements
+- Use the coaches' Judgement rating as the first filter:
+  - each academy player independently has a Judgement% chance to be affected
+- Then use the card success chance:
+  - slight chance = 25%
+  - good chance = 50%
+  - excellent chance = 75%
+- For players who pass both checks:
+  - reveal the player's potential value permanently
+- Potential value reveal should persist in:
+  - the Academy
+  - and the first team if promoted later
+
+Acceptance Criteria
+- Potential value reveal cards use the exact two-step process.
+- Affected players are selected using coach Judgement.
+- Success uses the exact slight/good/excellent percentages.
+- Successful reveals permanently show potential value.
+
+----------------------------------------------------------------
+FEAT-2009 - Define and Use Academy Judgement Source from Current Staff
+----------------------------------------------------------------
+
+Description
+Determine which coach/staff Judgement value is used when Academy reveal cards are played.
+
+Requirements
+- Use the team's existing current staff.
+- Apply one clear centralised rule for which Judgement value is used.
+- Prefer a consistent best-available Judgement approach unless the current staff system already has another intended single-source rule.
+- Keep this rule reusable for future Academy systems.
+
+Acceptance Criteria
+- Academy reveal cards use a clear and consistent Judgement source from the current staff.
+- The source rule is centralised and explicit.
+
+----------------------------------------------------------------
+FEAT-2010 - Persist Revealed Current and Potential Values on Academy Players
+----------------------------------------------------------------
+
+Description
+Store newly revealed current/potential values permanently on academy players.
+
+Requirements
+- When a current value is successfully revealed, persist that reveal state.
+- When a potential value is successfully revealed, persist that reveal state.
+- These values should remain visible afterwards.
+- If the player is promoted, the revealed values must remain visible in the first team.
+
+Acceptance Criteria
+- Current and potential reveal states persist permanently once unlocked.
+- Revealed values remain visible in the Academy and after promotion.
+
+----------------------------------------------------------------
+FEAT-2011 - Consume Academy Cards Only After Successful Application
+----------------------------------------------------------------
+
+Description
+Enforce correct card-consumption rules for Academy cards.
+
+Requirements
+- Remove an Academy card from the library only when its effect has been successfully applied.
+- Do not consume the card when:
+  - the user clicks Go to Academy
+  - the user begins a single-target flow and cancels before selecting a player
+  - no effect has been applied yet
+
+Acceptance Criteria
+- Academy cards are only removed after successful use.
+- Cancelled or navigation-only actions do not consume the card.
+
+----------------------------------------------------------------
+FEAT-2012 - Reflect Maturity-Completion Side Effects from Academy Card Usage
+----------------------------------------------------------------
+
+Description
+Ensure maturity reduction from Academy cards integrates correctly with the existing maturity-complete systems.
+
+Requirements
+- If an Academy card causes a player's maturity to hit 0:
+  - trigger the normal mature-player handling
+  - show the Academy button alert icon on Career Home as appropriate
+  - update the player's available action button state in the Academy page
+- Reuse the existing maturity-complete behaviour rather than duplicating it.
+
+Acceptance Criteria
+- Players reaching 0 maturity through card usage are handled exactly like naturally matured players.
+- Alerts and UI state update correctly.
+
+----------------------------------------------------------------
+FEAT-2013 - Add Academy Card Usage Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for Academy card application and reveal logic.
+
+Requirements
+- Add development-friendly visibility for:
+  - academy card use
+  - current academy slots
+  - max academy slots
+  - Judgement source used
+  - affected-player rolls
+  - card success rolls
+  - revealed current values
+  - revealed potential values
+  - maturity reductions applied
+- Keep this support lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can inspect the key state and calculations behind Academy card usage.
+- Reveal and maturity-reduction behaviour is easier to validate.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- Academy cards on Career Home show a Go to Academy button.
+- The Academy page has a horizontally scrolling Academy card bar above the players.
+- Academy cards can be used from the Academy page.
+- All-player maturity cards apply their exact reductions immediately.
+- Single-target maturity cards use a choose-target flow.
+- Expand Academy adds a slot when below 12, and falls back to Organise Average Friendly Game when already at 12.
+- Current value reveal cards use the exact two-step Judgement + card-success process.
+- Potential value reveal cards use the exact two-step Judgement + card-success process.
+- slight chance maps to 25%, good chance to 50%, and excellent chance to 75%.
+- Successfully revealed current/potential values persist permanently for that player.
+- Revealed values remain visible in the Academy and after promotion to the first team.
+- Academy cards are only consumed after successful use.
+- Maturity reaching 0 through Academy card effects triggers the normal mature-player behaviour.
+
+================================================================
+Implementation Status (2026-03-13)
+================================================================
+
+- FEAT-2001: done
+- FEAT-2002: done
+- FEAT-2003: done
+- FEAT-2004: done
+- FEAT-2005: done
+- FEAT-2006: done
+- FEAT-2007: done
+- FEAT-2008: done
+- FEAT-2009: done
+- FEAT-2010: done
+- FEAT-2011: done
+- FEAT-2012: done
+- FEAT-2013: done

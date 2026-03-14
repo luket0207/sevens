@@ -19,6 +19,10 @@ const cloneStaffMember = (staffMember) => ({
 });
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const toCareerDay = (value) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+};
 
 export const resolveLeagueTierFromCompetitionId = (competitionId) => {
   const safeValue = String(competitionId ?? "").trim().toLowerCase();
@@ -107,6 +111,61 @@ export const applyStaffStateToPlayerTeam = (playerTeam, staffState) => {
       highestLeagueTierReached: normalizedStaffState.highestLeagueTierReached,
       slotUnlockHistory: normalizedStaffState.slotUnlockHistory,
     },
+  };
+};
+
+export const markStaffInUseUntilNextCareerDay = ({
+  staffState,
+  staffId,
+  currentCareerDay,
+  assignmentType = "academy_judgement",
+}) => {
+  const normalizedStaffState = normalizeStaffState(staffState);
+  const safeStaffId = String(staffId ?? "");
+  const safeCurrentCareerDay = toCareerDay(currentCareerDay);
+
+  return {
+    ...normalizedStaffState,
+    members: normalizedStaffState.members.map((member) => {
+      if (String(member?.id ?? "") !== safeStaffId) {
+        return member;
+      }
+
+      return {
+        ...member,
+        inUse: true,
+        inUseUntilCareerDay: safeCurrentCareerDay,
+        activeDutyType: String(assignmentType ?? "academy_judgement"),
+      };
+    }),
+  };
+};
+
+export const releaseCompletedStaffAssignmentsForCareerDay = ({ staffState, currentCareerDay }) => {
+  const normalizedStaffState = normalizeStaffState(staffState);
+  const safeCurrentCareerDay = toCareerDay(currentCareerDay);
+
+  return {
+    ...normalizedStaffState,
+    members: normalizedStaffState.members.map((member) => {
+      if (!member?.inUse || member?.activeScoutingTripId) {
+        return member;
+      }
+
+      const inUseUntilCareerDay = Number.isInteger(Number(member?.inUseUntilCareerDay))
+        ? Number(member.inUseUntilCareerDay)
+        : null;
+      if (inUseUntilCareerDay === null || safeCurrentCareerDay <= inUseUntilCareerDay) {
+        return member;
+      }
+
+      return {
+        ...member,
+        inUse: false,
+        inUseUntilCareerDay: null,
+        activeDutyType: "",
+      };
+    }),
   };
 };
 

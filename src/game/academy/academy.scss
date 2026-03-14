@@ -1,4 +1,26 @@
 @use "../../assets/scss/ui/import" as *;
+@use "sass:color";
+
+@keyframes academyChooseTargetAmbientPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 20px rgba(4, 28, 33, 0.24),
+      0 0 0 2px rgba($calendarEventLeagueCupMatchTile, 0.42),
+      0 0 10px 2px rgba($calendarEventLeagueCupMatchTile, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  }
+
+  50% {
+    box-shadow:
+      0 13px 24px rgba(4, 28, 33, 0.26),
+      0 0 0 2px rgba($calendarEventLeagueCupMatchTile, 0.42),
+      0 0 18px 4px rgba($calendarEventLeagueCupMatchTile, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  }
+}
 
 .academyPage {
   display: grid;
@@ -6,7 +28,8 @@
 }
 
 .academyPage__summary,
-.academyPage__empty {
+.academyPage__empty,
+.academyPage__cardBar {
   border: 1px solid rgba($lightText, 0.2);
   border-radius: 10px;
   background: rgba($siteBackground, 0.3);
@@ -21,9 +44,52 @@
   flex-wrap: wrap;
 }
 
+.academyPage__cardBar {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.academyPage__cardBarHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  p {
+    color: rgba($lightText, 0.84);
+  }
+}
+
+.academyPage__targetMode {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.academyPage__cardScroller {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  min-height: 200px;
+}
+
+.academyPage__emptyCopy {
+  margin: 0;
+  color: rgba($lightText, 0.82);
+}
+
 .academyPage__list {
   display: grid;
   gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .academyPage__playerCard {
@@ -33,6 +99,13 @@
   padding: 0.75rem;
   display: grid;
   gap: 0.5rem;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.academyPage__playerCard--targeting {
+  border-color: rgba($cardTypeScouting, 0.75);
+  box-shadow: 0 0 0 1px rgba($cardTypeScouting, 0.2);
 }
 
 .academyPage__playerHead h3 {
@@ -51,17 +124,96 @@
   gap: 0.6rem;
 }
 
+.academyPage__contentGrid--stacked {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.academyPage__identityRow {
+  display: grid;
+  grid-template-columns: minmax(70px, 84px) minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+}
+
+.academyPage__identityMeta {
+  display: grid;
+  gap: 0.2rem;
+
+  p {
+    margin: 0;
+    color: rgba($lightText, 0.88);
+  }
+}
+
 .academyPage__imageWrap {
   display: flex;
   align-items: flex-start;
   justify-content: center;
 }
 
+.academyPage__skillset {
+  height: 300px;
+  overflow-y: auto;
+  align-content: flex-start;
+
+  .playerSkillsetBars__label,
+  .playerSkillsetBars__traitsTitle,
+  .playerSkillsetBars__traitItem,
+  .playerSkillsetBars__traitsEmpty,
+  .bars__value {
+    color: rgba($lightText, 0.92);
+  }
+
+  .playerSkillsetBars__traits {
+    border-top-color: rgba($lightText, 0.14);
+  }
+}
+
 .academyPage__actions {
-  margin-top: 0.2rem;
+  margin-top: auto;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.academyPage__chooseTargetButton {
+  width: 100%;
+  border-color: rgba($calendarEventLeagueCupMatchTile, 0.78);
+  color: $lightText;
+  background-image: linear-gradient(
+    146deg,
+    color.mix($calendarEventLeagueCupMatchTile, $siteBackground, 58%) 0%,
+    color.mix($secondaryBackground, $siteBackground, 72%) 100%
+  );
+  box-shadow:
+    0 10px 20px rgba(4, 28, 33, 0.24),
+    0 0 0 2px rgba($calendarEventLeagueCupMatchTile, 0.42),
+    0 0 10px 2px rgba($calendarEventLeagueCupMatchTile, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  animation: academyChooseTargetAmbientPulse 2.8s ease-in-out infinite;
+
+  &:hover {
+    border-color: rgba($calendarEventLeagueCupMatchTile, 0.88);
+    background-image: linear-gradient(
+      146deg,
+      color.mix($calendarEventLeagueCupMatchTile, $siteBackground, 48%) 0%,
+      color.mix($secondaryBackground, $siteBackground, 58%) 100%
+    );
+  }
+
+  &:focus-visible {
+    border-color: rgba($lightText, 0.7);
+  }
+
+  &:active,
+  &:is(.btn--disabled, :disabled, [aria-disabled="true"]) {
+    animation: none;
+  }
 }
 
 .academyPage__modalContent {
@@ -96,6 +248,18 @@
 
   p {
     margin: 0;
-    color: rgba($lightText, 0.9);
+    color: rgba($darkText, 0.9);
+  }
+}
+
+@media (min-width: 760px) {
+  .academyPage__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1160px) {
+  .academyPage__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

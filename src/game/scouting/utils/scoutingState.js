@@ -13,9 +13,28 @@ const cloneTrip = (trip) => ({
   cardSnapshot: trip?.cardSnapshot && typeof trip.cardSnapshot === "object" ? { ...trip.cardSnapshot } : {},
 });
 
+const cloneReportPlayer = (entry) => ({
+  ...entry,
+  player: entry?.player && typeof entry.player === "object" ? { ...entry.player } : {},
+  scoutingIntel:
+    entry?.scoutingIntel && typeof entry.scoutingIntel === "object"
+      ? {
+          ...entry.scoutingIntel,
+          revealedRatings: { ...(entry.scoutingIntel.revealedRatings ?? {}) },
+          revealedTraits: Array.isArray(entry.scoutingIntel.revealedTraits)
+            ? entry.scoutingIntel.revealedTraits.map((traitEntry) => ({ ...traitEntry }))
+            : [],
+          alwaysHidden: { ...(entry.scoutingIntel.alwaysHidden ?? {}) },
+        }
+      : {},
+  recommendation:
+    entry?.recommendation && typeof entry.recommendation === "object" ? { ...entry.recommendation } : null,
+  debug: entry?.debug && typeof entry.debug === "object" ? { ...entry.debug } : {},
+});
+
 const cloneReport = (report) => ({
   ...report,
-  players: Array.isArray(report?.players) ? report.players.map((entry) => ({ ...entry })) : [],
+  players: Array.isArray(report?.players) ? report.players.map(cloneReportPlayer) : [],
   debug: report?.debug && typeof report.debug === "object" ? { ...report.debug } : {},
 });
 

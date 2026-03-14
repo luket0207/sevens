@@ -289,3 +289,38 @@ Additional files changed in bug-fix pass (update 4):
 - `vibe/epics/EPIC-018/bugs.txt`
 - `vibe/epics/EPIC-018/implementation.txt`
 - `vibe/epics/EPIC-018/testing.txt`
+
+Bug fix pass (2026-03-13, update 5):
+- Implemented BUG-005 from updated `EPIC-018/bugs.txt`.
+- Key updates:
+  - Staff upgrade cards now target all current staff members, including staff marked `inUse`.
+  - Staff-member replacement flow remains unchanged, so in-use staff still cannot be sacked/replaced by incoming staff-member cards.
+  - Updated the empty-state copy for staff upgrades so it only blocks when there are no active staff members at all.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `gameContext` through the Career Home card-use flow that persists upgraded staff state.
+- `button` via the existing staff-selection modal actions.
+- `modal` + `modalContext` through the shared staff-selection and no-available-staff flows.
+
+Engine components not used (and why):
+- `bars`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this pass only adjusted staff-upgrade eligibility and copy.
+
+Additional files changed in bug-fix pass (update 5):
+- `src/game/careerHome/careerHome.jsx`
+- `vibe/epics/EPIC-018/bugs.txt`
+- `vibe/epics/EPIC-018/implementation.txt`
+- `vibe/epics/EPIC-018/testing.txt`

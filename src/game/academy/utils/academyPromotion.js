@@ -15,6 +15,17 @@ const buildPromotedPlayer = ({ academyPlayer, playerTeam }) => {
   return {
     ...basePlayer,
     id: nextId,
+    academyOrigin: {
+      sourceTripId: String(academyPlayer?.sourceTripId ?? ""),
+      reportPlayerId: String(academyPlayer?.reportPlayerId ?? ""),
+      valueReveal:
+        academyPlayer?.valueReveal && typeof academyPlayer.valueReveal === "object"
+          ? { ...academyPlayer.valueReveal }
+          : {
+              currentValueRevealed: false,
+              potentialValueRevealed: false,
+            },
+    },
   };
 };
 

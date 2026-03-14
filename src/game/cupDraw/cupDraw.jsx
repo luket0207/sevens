@@ -8,6 +8,11 @@ import { ensureCareerCardState, normalizeCareerDayNumber, pruneExpiredStaffMembe
 import { tickAcademyMaturityAndLoss } from "../academy/utils/academyState";
 import { getContinueFlowLabel, resolveCupDrawContinueAction } from "../careerFlow/utils/continueFlow";
 import { resolveDayOneSetupGateState } from "../careerFlow/utils/dayOneSetupGate";
+import {
+  applyStaffStateToPlayerTeam,
+  ensurePlayerTeamStaffState,
+  releaseCompletedStaffAssignmentsForCareerDay,
+} from "../staff/utils/staffState";
 import "./cupDraw.scss";
 
 const EMPTY_DRAWS = Object.freeze([]);
@@ -162,6 +167,13 @@ const CupDraw = () => {
         cardsState: prev?.career?.cards,
         currentCareerDay: nextCareerDayNumber,
       });
+      const currentPlayerTeam = prev?.career?.world?.playerTeam;
+      const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+      const releasedStaffState = releaseCompletedStaffAssignmentsForCareerDay({
+        staffState: currentStaffState,
+        currentCareerDay: nextCareerDayNumber,
+      });
+      const nextPlayerTeam = applyStaffStateToPlayerTeam(currentPlayerTeam, releasedStaffState);
       const nextAcademyState = shouldAdvanceCareerDay
         ? tickAcademyMaturityAndLoss({
             academyState: prev?.career?.academy,
@@ -173,6 +185,10 @@ const CupDraw = () => {
         ...prev,
         career: {
           ...prev.career,
+          world: {
+            ...(prev.career?.world ?? {}),
+            playerTeam: nextPlayerTeam,
+          },
           calendar: {
             ...(prev.career?.calendar ?? {}),
             currentDayIndex: nextDayIndex,

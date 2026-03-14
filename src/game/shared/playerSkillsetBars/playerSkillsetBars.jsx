@@ -42,7 +42,7 @@ const getBandKeyForValue = (value) => {
   return SKILL_BAND_KEYS[bandIndex];
 };
 
-const getNumericSkillEntries = (skills) => {
+const getNumericSkillEntries = (skills, hiddenRatings) => {
   if (!skills || typeof skills !== "object") {
     return [];
   }
@@ -56,6 +56,7 @@ const getNumericSkillEntries = (skills) => {
     name: skillName,
     value: Math.max(0, Math.min(100, Math.round(Number(skills[skillName]) || 0))),
     bandKey: getBandKeyForValue(skills[skillName]),
+    isHidden: Boolean(hiddenRatings?.[skillName]),
   }));
 };
 
@@ -85,8 +86,8 @@ const getTraitEntries = (traits) => {
     .filter(Boolean);
 };
 
-const PlayerSkillsetBars = ({ skills, traits, className, hideTraits }) => {
-  const entries = getNumericSkillEntries(skills);
+const PlayerSkillsetBars = ({ skills, traits, className, hideTraits, hiddenRatings }) => {
+  const entries = getNumericSkillEntries(skills, hiddenRatings);
   const traitEntries = getTraitEntries(traits);
 
   if (entries.length === 0 && (hideTraits || traitEntries.length === 0)) {
@@ -100,9 +101,21 @@ const PlayerSkillsetBars = ({ skills, traits, className, hideTraits }) => {
       {entries.length > 0 ? (
         <div className="playerSkillsetBars__skills">
           {entries.map((entry) => (
-            <div className={`playerSkillsetBars__row playerSkillsetBars__row--${entry.bandKey}`} key={entry.name}>
+            <div
+              className={[
+                "playerSkillsetBars__row",
+                `playerSkillsetBars__row--${entry.bandKey}`,
+                entry.isHidden ? "playerSkillsetBars__row--hidden" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={entry.name}
+            >
               <span className="playerSkillsetBars__label">{entry.name}</span>
-              <Bars min={0} max={100} current={entry.value} />
+              <div className="playerSkillsetBars__barWrap">
+                <Bars min={0} max={100} current={entry.isHidden ? 0 : entry.value} />
+                {entry.isHidden ? <span className="playerSkillsetBars__hiddenValue">Hidden</span> : null}
+              </div>
             </div>
           ))}
         </div>
@@ -141,6 +154,7 @@ PlayerSkillsetBars.propTypes = {
   ),
   className: PropTypes.string,
   hideTraits: PropTypes.bool,
+  hiddenRatings: PropTypes.object,
 };
 
 PlayerSkillsetBars.defaultProps = {
@@ -148,6 +162,7 @@ PlayerSkillsetBars.defaultProps = {
   traits: [],
   className: "",
   hideTraits: false,
+  hiddenRatings: null,
 };
 
 export default PlayerSkillsetBars;

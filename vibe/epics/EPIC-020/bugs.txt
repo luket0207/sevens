@@ -1,0 +1,561 @@
+BUG-001 - Academy reveal cards should let the user choose which coach's Judgement is used
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with at least one reveal-style Academy card and multiple staff members.
+2. Use a current-value or potential-value reveal card.
+3. Check whether the card resolves immediately or prompts for coach selection.
+
+Expected behavior:
+- Reveal cards should open a coach-selection modal before rolling results.
+- Only staff members not currently `inUse` should be selectable.
+- The selected coach's `Judgement` should be the value used for the calculation.
+
+Actual behavior:
+- Reveal cards resolved without asking which coach should provide the Judgement value.
+
+Suspected cause:
+- Academy reveal logic auto-resolved to a best-available staff member centrally with no user selection step.
+
+Attempted fixes:
+- Added explicit Academy reveal-card detection and available-coach filtering.
+- Reused the existing staff-selection modal flow for Judgement selection.
+- Passed the selected coach into the centralized Academy card resolver.
+
+Final fix:
+- Reveal cards now open a modal to select which available, not-in-use coach provides the `Judgement` rating.
+- The selected coach is passed into the Academy card resolver and recorded in the result/debug payload.
+
+
+BUG-002 - Academy card use should show a friendly result modal
+Status: fixed
+
+Repro steps:
+1. Use several Academy cards from the Academy card bar.
+2. Observe whether the page provides direct feedback after the card resolves.
+
+Expected behavior:
+- After a card resolves, an OK modal should explain what happened in player-friendly language.
+- The result should summarize the actual outcome, such as:
+  - maturity reduced
+  - slots expanded
+  - fallback behavior used
+  - coach chosen
+  - players revealed
+
+Actual behavior:
+- Card resolution was mostly silent apart from the state change.
+
+Suspected cause:
+- Academy card application returned debug data, but no user-facing result modal consumed it.
+
+Attempted fixes:
+- Added a user-facing result modal builder for Academy card outcomes.
+- Wired Academy card application flow to open that modal after successful resolution.
+
+Final fix:
+- Every successful Academy card use now opens a friendly result modal summarizing the actual outcome of that card.
+
+
+BUG-003 - Academy player cards should use responsive multi-column layout
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with several academy players.
+2. View the page on mobile, medium, and full desktop widths.
+
+Expected behavior:
+- Academy player cards should not stretch as a single full-width stack on large screens.
+- Layout should be responsive:
+  - 1 column on small screens
+  - 2 columns on medium screens
+  - 3 columns on large screens
+
+Actual behavior:
+- Academy players rendered as a single full-width column even on wide screens.
+
+Suspected cause:
+- Academy list grid only defined a single-column layout.
+
+Attempted fixes:
+- Added responsive grid breakpoints to the Academy player list.
+
+Final fix:
+- Academy player cards now render in a responsive 1/2/3-column layout, topping out at 3 columns on full-width screens.
+
+
+BUG-004 - Academy player stat display should use shared skillset bars with hidden-state handling
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with players who have a mix of revealed and hidden ratings/traits.
+2. Inspect player card stat presentation.
+
+Expected behavior:
+- Academy player stats should use the existing shared player skillset display style.
+- Hidden ratings should still show a bar row, but:
+  - the fill should be `0`
+  - the value text should read `Hidden` instead of `0 / 100`
+- Hidden traits should not be shown at all.
+
+Actual behavior:
+- Academy cards rendered custom text rows rather than the shared skillset bar display.
+- Hidden ratings were shown as plain text rather than hidden-state bars.
+
+Suspected cause:
+- Academy player cards used a local text-based renderer instead of the shared `PlayerSkillsetBars` component.
+
+Attempted fixes:
+- Reworked academy player cards to use the shared skillset-bar component.
+- Extended hidden-rating support locally in the shared skillset display usage so academy-hidden ratings render as zero-fill bars with `Hidden` text.
+- Filtered trait rendering to only pass revealed traits into the shared display.
+
+Final fix:
+- Academy player cards now use the shared skillset bar display.
+- Hidden ratings render as zero-fill bars with `Hidden` value text.
+- Hidden traits are omitted entirely from the traits section.
+
+
+BUG-005 - Academy player cards should keep a consistent internal height when traits vary
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with several academy players.
+2. Compare a player card with revealed traits against a player card with no visible traits.
+3. Inspect the skillset block height and the position of the action buttons.
+
+Expected behavior:
+- Card content should stack from the top consistently.
+- The skillset area should reserve the same vertical space across academy cards.
+- Trait-heavy cards should not push buttons and spacing into visibly uneven positions compared with no-trait cards.
+
+Actual behavior:
+- Academy cards with visible traits grew taller through the skillset area.
+- Buttons and lower spacing landed at different heights from card to card.
+
+Suspected cause:
+- The Academy card layout already aligned items toward the top, but the skillset override only used `min-height`.
+- When traits were present, the shared skillset component expanded beyond that minimum and stretched the card interior.
+
+Attempted fixes:
+- Kept the Academy card grid aligned to `flex-start`.
+- Changed the Academy skillset block from a minimum height to a fixed local height.
+- Added local overflow handling so longer skill/trait content stays usable without stretching the full card.
+
+Final fix:
+- Academy player cards now use a fixed-height Academy skillset area with top-aligned content.
+- Trait differences no longer change the overall internal card rhythm, so buttons and spacing stay visually consistent across cards.
+
+
+BUG-006 - Academy cards should still be discardable from the Academy screen
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with one or more Academy cards in the card bar.
+2. Inspect the available actions on those Academy cards.
+3. Try to remove an Academy card without using it.
+
+Expected behavior:
+- Academy cards should still have a discard path while viewed on the Academy screen.
+- Discarding should remove the selected card from the library without requiring card usage.
+- If the discarded card was the active target-selection card, target mode should clear cleanly.
+
+Actual behavior:
+- The Academy screen only exposed `Use` / `Choose Target`.
+- There was no way to discard Academy cards from that page.
+
+Suspected cause:
+- The Academy-specific card bar replaced the generic library-bar action set and never reintroduced discard behavior.
+
+Attempted fixes:
+- Added a dedicated discard action under each Academy card tile.
+- Reused the existing card-library discard helper and debug metadata update path.
+- Cleared Academy target mode if the discarded card was the one currently waiting for a target.
+
+Final fix:
+- Academy cards on `/academy` now include a discard action with confirmation.
+- Discarding removes the card from the library and safely exits target mode when relevant.
+
+
+BUG-007 - Academy choose-target buttons should use a green pulsing highlight
+Status: fixed
+
+Repro steps:
+1. Open `/academy`.
+2. Start a single-target Academy card so player cards switch into choose-target mode.
+3. Inspect the `Choose` button styling on academy player cards.
+
+Expected behavior:
+- Choose-target buttons should stand out clearly as the current primary action.
+- Styling should be green and include a pulsing glow similar to the continue button treatment.
+
+Actual behavior:
+- Choose-target buttons used the default primary button styling with no Academy-specific pulse treatment.
+
+Suspected cause:
+- The target-selection flow reused the shared primary button with no local visual override.
+
+Attempted fixes:
+- Added a dedicated Academy choose-target button class.
+- Applied a green gradient, stronger border/glow, and a local pulse animation inspired by the continue CTA styling.
+
+Final fix:
+- Academy choose-target buttons now render with a green pulsing glow treatment that makes target mode visually obvious.
+
+
+BUG-008 - Academy player-card action buttons should be center-justified
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with one or more players.
+2. Inspect the action row on academy player cards in both normal and mature-player states.
+
+Expected behavior:
+- Player-card action buttons should sit centered within the card action row.
+- Cards with one or two action buttons should still look balanced rather than left-anchored.
+
+Actual behavior:
+- Academy player-card action buttons aligned from the left edge of the action row.
+
+Suspected cause:
+- The Academy action container used `align-items: flex-start` with no horizontal centering rule.
+
+Attempted fixes:
+- Updated the Academy action row alignment to center its contents consistently.
+
+Final fix:
+- Academy player-card actions are now center-justified so the lower CTA area reads more cleanly across card states.
+
+
+BUG-009 - Academy choose-target hover should use a slightly darker green
+Status: fixed
+
+Repro steps:
+1. Open `/academy`.
+2. Start a single-target Academy card so the green `Choose` buttons appear.
+3. Hover a `Choose` button.
+
+Expected behavior:
+- Hover state should stay within the same green target-mode visual family.
+- The hover treatment should shift to a slightly darker green rather than only nudging border color.
+
+Actual behavior:
+- Hover mostly changed border emphasis and kept the base green fill too close to its resting state.
+
+Suspected cause:
+- The Academy choose-target override did not provide a dedicated hover background treatment.
+
+Attempted fixes:
+- Added an Academy-local hover gradient using slightly darker green mixes while preserving the same pulse/glow treatment.
+
+Final fix:
+- Academy choose-target buttons now darken slightly on hover, making the state change clearer without breaking the green target-mode styling.
+
+
+BUG-010 - Academy card tile actions should all sit inside the compact card tile and be centered
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with one or more Academy cards visible in the Academy card bar.
+2. Inspect where the `Discard Card` button sits relative to the compact Academy card tile.
+3. Check horizontal alignment of the action buttons on those Academy card tiles.
+
+Expected behavior:
+- `Discard Card` should live inside the `careerCardTile careerCardTile--academy careerCardTile--compact` tile rather than below it.
+- The Academy card tile's action buttons should be centered and visually grouped within the card footer area.
+
+Actual behavior:
+- `Discard Card` was rendered outside the compact card tile in a wrapper below it.
+- The Academy card tile action area did not own both actions together.
+
+Suspected cause:
+- The Academy card bar added a second button outside `CardTile` instead of letting `CardTile` render both actions internally.
+
+Attempted fixes:
+- Extended the shared `CardTile` action area to support an optional second action.
+- Moved the Academy discard action into the `CardTile` footer.
+- Centered card-tile action layouts so Academy card actions group cleanly within the tile.
+
+Final fix:
+- Academy card tiles now render both the main action and `Discard Card` inside the compact Academy tile.
+- The tile action area is centered and owns the full Academy card footer layout.
+
+
+BUG-011 - Academy card result modal should always list the names of affected players
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with several academy players.
+2. Use different Academy cards that affect players, including maturity cards and reveal cards.
+3. Read the result modal after each card resolves.
+
+Expected behavior:
+- Result modals should list the names of the affected players explicitly.
+- Copy should not stop at generic summaries like `2 player(s)` when the names are known.
+
+Actual behavior:
+- Some result modals only showed counts such as `player(s)` instead of naming who was affected.
+
+Suspected cause:
+- Maturity/fallback debug payloads only tracked affected player IDs, and the modal copy relied heavily on counts.
+
+Attempted fixes:
+- Added affected-player names to the Academy card debug payload for maturity-based effects.
+- Updated the result modal to render named lists for affected players, players ready for promotion, assessed players, passed-Judgement players, and revealed players where relevant.
+
+Final fix:
+- Academy card result modals now explicitly list the names of affected players across supported result types instead of only using generic player counts.
+
+
+BUG-012 - Academy Judgement coach should be marked in use for the rest of the current day
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with a reveal-style Academy card and at least one available coach.
+2. Use the card and choose a coach for the Judgement step.
+3. Without advancing to the next career day, try to use that same coach again for another scouting or Academy Judgement action.
+
+Expected behavior:
+- Once a coach is selected for an Academy Judgement card, that coach should be marked `inUse` for the rest of the current day.
+- The coach should become available again on the next career day.
+
+Actual behavior:
+- The chosen coach provided Judgement for the Academy card but remained immediately available for more same-day work.
+
+Suspected cause:
+- Academy card resolution consumed the card and stored debug data but never updated staff availability state.
+
+Attempted fixes:
+- Added a shared temporary staff-assignment helper for same-day non-scouting usage.
+- Marked the selected Academy Judgement coach as `inUse` until the next career day.
+- Released completed temporary staff assignments during every career-day advancement path.
+
+Final fix:
+- Coaches chosen for Academy Judgement cards are now unavailable for the remainder of that day and automatically release on the next career day.
+
+
+BUG-013 - Career Home Academy alert should use `faCircleExclamation` and pulse only when active
+Status: fixed
+
+Repro steps:
+1. Open Career Home with and without an Academy alert active.
+2. Inspect the `Academy` navigation button in the control panel.
+
+Expected behavior:
+- When an Academy alert is active, the button should show `faCircleExclamation` instead of a plain `!`.
+- The button should only show a pulsing glow when that icon is present.
+- When no alert is active, the button should render normally with no pulse.
+
+Actual behavior:
+- The button used a plain `!` text marker.
+- There was no alert-only pulse treatment on the button.
+
+Suspected cause:
+- The Academy alert state was rendered as inline text with no dedicated icon or alert-state class.
+
+Attempted fixes:
+- Replaced the plain text marker with `FontAwesomeIcon` using `faCircleExclamation`.
+- Added an Academy-alert button class that only applies pulsing glow styling when the alert is active.
+
+Final fix:
+- Career Home now shows `faCircleExclamation` for Academy alerts, and the button pulses only while the alert icon is present.
+
+
+BUG-014 - Every Academy card should require coach selection so the coach can be locked for the day
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with several Academy cards, including one that does not use Judgement.
+2. Try to use a non-Judgement Academy card such as a maturity or expansion card.
+3. Check whether a coach is selected first and whether that coach becomes unavailable afterward.
+
+Expected behavior:
+- Every Academy card should require coach selection before it is applied.
+- The chosen coach should be marked `inUse` for the rest of the current day after the card resolves.
+- Single-target Academy cards should preserve the chosen coach while the user is selecting the player target.
+
+Actual behavior:
+- Only Judgement-based Academy cards prompted for coach selection.
+- Non-Judgement Academy cards could resolve without selecting a coach, so no coach was explicitly tied to the action.
+
+Suspected cause:
+- Academy coach selection flow was only wired behind the Judgement-card branch.
+
+Attempted fixes:
+- Reused the existing staff-selection modal for all Academy card types.
+- Stored the selected coach while target-mode cards wait for player selection.
+- Passed the selected coach through Academy card resolution so the existing same-day `inUse` lock applies consistently.
+- Added selected-coach debug metadata so result modals can still show who ran the card.
+
+Final fix:
+- All Academy cards now require coach selection before use.
+- The selected coach is retained through single-target selection when needed and becomes unavailable for the rest of the day once the card resolves.
+
+
+
+BUG-015 - Academy current/potential reveal cards should use the updated reveal rules
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with players who still have hidden skill ratings and hidden current/potential values.
+2. Use potential-value Academy cards across the common, uncommon, and rare tiers.
+3. Use current-value Academy cards on players with hidden ratings, then again after their ratings are fully revealed.
+
+Expected behavior:
+- Potential-value Academy cards should use reduced success chances:
+  - slight = `15%`
+  - good = `30%`
+  - excellent = `60%`
+- Current-value Academy cards should no longer reveal overall immediately.
+- On a successful current-value reveal:
+  - hidden skill ratings should be revealed first
+  - once all skill ratings are already visible, a later successful reveal can unhide overall
+- Current-value success chances should remain:
+  - slight = `25%`
+  - good = `50%`
+  - excellent = `75%`
+
+Actual behavior:
+- Potential-value cards still used the older, more generous success percentages.
+- Current-value cards revealed the overall value directly instead of progressively revealing hidden player values first.
+
+Suspected cause:
+- Academy card definitions still carried the old potential reveal percentages.
+- Academy current-value reveal state only toggled `currentValueRevealed` with no intermediate skill-reveal stage.
+
+Attempted fixes:
+- Updated potential-value Academy card definitions to the lower success percentages.
+- Reworked current-value reveal application so successful reveals first expose hidden skill ratings and only later expose overall once no hidden ratings remain.
+- Adjusted reveal success handling so players only count as newly revealed when the action actually changes visible information.
+
+Final fix:
+- Potential-value Academy cards now use `15%`, `30%`, and `60%` success rates by rarity tier.
+- Current-value Academy cards now reveal hidden skill ratings first and only reveal overall after all ratings are already visible.
+
+
+
+BUG-016 - Current-value Academy cards should only reveal one hidden rating per successful use
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with a player who still has multiple hidden skill ratings.
+2. Use a successful current-value Academy card on that player.
+3. Compare the hidden ratings before and after the card resolves.
+
+Expected behavior:
+- A successful current-value card should reveal only one hidden skill rating at a time.
+- Additional successful current-value cards should be needed to reveal the remaining hidden ratings.
+
+Actual behavior:
+- One successful current-value Academy card revealed every still-hidden skill rating at once.
+
+Suspected cause:
+- The progressive reveal logic marked all hidden ratings as visible in one pass instead of selecting a single rating to reveal.
+
+Attempted fixes:
+- Reworked current-value reveal application to choose one hidden skill rating per successful reveal using the shared RNG helper.
+- Kept the existing progressive reveal flow so later successful cards can continue revealing the remaining hidden information.
+
+Final fix:
+- Successful current-value Academy cards now reveal exactly one hidden skill rating per use while any hidden ratings remain.
+
+
+BUG-017 - Overall should stay hidden until all ratings and traits are visible
+Status: fixed
+
+Repro steps:
+1. Open `/academy` with a player who still has at least one hidden trait after all skill ratings are known.
+2. Use successful current-value Academy cards on that player.
+3. Watch whether overall reveals before all traits are visible.
+
+Expected behavior:
+- Current overall should remain hidden until every skill rating and every trait is visible.
+- If all ratings are visible but hidden traits remain, current-value cards should reveal hidden traits before they can reveal overall.
+
+Actual behavior:
+- Overall could reveal as soon as all skill ratings were visible, even if hidden traits still remained.
+
+Suspected cause:
+- The overall gate only checked hidden skill ratings and ignored hidden Academy traits.
+
+Attempted fixes:
+- Extended the current-value reveal gate to inspect both hidden ratings and hidden traits.
+- Added trait-by-trait progressive reveals after ratings are complete and before overall can unhide.
+- Updated reveal-change detection so current-value cards only count as newly revealed when they expose a hidden rating, hidden trait, or overall at the correct stage.
+
+Final fix:
+- Current-value Academy cards now reveal one hidden rating at a time, then one hidden trait at a time, and only reveal overall once all ratings and traits are already visible.
+
+
+BUG-018 - Current-value Academy cards should use the updated success chances
+Status: fixed
+
+Repro steps:
+1. Open `/academy` and inspect the common, uncommon, and rare current-value Academy cards.
+2. Compare their configured success chances against the latest requested values.
+
+Expected behavior:
+- Current-value Academy cards should use:
+  - slight chance = `30%`
+  - good chance = `60%`
+  - excellent chance = `90%`
+
+Actual behavior:
+- Current-value Academy cards still used the older `25%`, `50%`, and `75%` success chances.
+
+Suspected cause:
+- Academy card definitions were not updated after the revised current-value balance request.
+
+Attempted fixes:
+- Updated the common, uncommon, and rare current-value Academy card definitions to the new percentages.
+
+Final fix:
+- Current-value Academy cards now use `30%`, `60%`, and `90%` success chances by rarity tier.
+
+
+BUG-019 - Academy reveal cards should roll card success before coach judgement
+Status: fixed
+
+Repro steps:
+1. Use a current-value or potential-value Academy card on a squad of Academy players.
+2. Inspect the reveal resolution order in the resulting debug output or code path.
+
+Expected behavior:
+- The Academy card's own reveal-success chance should be rolled first.
+- Only if that card-success roll passes should the coach's Judgement roll then decide whether the value is actually identified.
+
+Actual behavior:
+- Academy reveal resolution rolled coach Judgement first and only attempted the card-success chance afterward.
+
+Suspected cause:
+- Reveal roll sequencing in Academy card resolution gated the card-success check behind a successful Judgement roll.
+
+Attempted fixes:
+- Reordered the reveal-roll logic so the card-success chance is resolved before the coach Judgement check.
+- Kept the existing reveal gating and debug fields intact so downstream reveal handling still works the same way.
+
+Final fix:
+- Academy current-value and potential-value cards now roll their own success chance first and only then roll coach Judgement before revealing anything.
+
+
+BUG-020 - Staff-upgrade blocked message should be generic when staff are busy
+Status: fixed
+
+Repro steps:
+1. Open Career Home when all staff are currently marked `inUse`.
+2. Try to access the upgrade flow that shows the blocked-staff message.
+
+Expected behavior:
+- The message should explain that staff are unavailable in a generic way, because they may be busy with scouting, Academy work, or other tasks.
+
+Actual behavior:
+- The message specifically said staff were on scouting trips, which was inaccurate when they were busy for other reasons.
+
+Suspected cause:
+- The blocked-staff copy was written for the original scouting-only flow and was never generalized after more staff activities started using the shared `inUse` state.
+
+Attempted fixes:
+- Replaced the scouting-specific copy with a generic staff-unavailable message in the Career Home upgrade flow.
+
+Final fix:
+- The blocked-staff message now says `All staff members are currently in use and cannot receive upgrades right now.`

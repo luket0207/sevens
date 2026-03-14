@@ -50,6 +50,74 @@
   color: rgba($lightText, 0.88);
 }
 
+.scoutReportPage__recommendation {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba($lightText, 0.18);
+  background: rgba($siteBackground, 0.4);
+
+  strong,
+  span {
+    color: $lightText;
+  }
+}
+
+.scoutReportPage__recommendationLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba($lightText, 0.7);
+}
+
+.scoutReportPage__recommendation--certain {
+  border-color: rgba($formResultWin, 0.7);
+  background: rgba($formResultWin, 0.18);
+}
+
+.scoutReportPage__recommendation--highlyLikely {
+  border-color: rgba($cardTypeScouting, 0.78);
+  background: rgba($cardTypeScouting, 0.18);
+}
+
+.scoutReportPage__recommendation--likely {
+  border-color: rgba($cardTypeAcademy, 0.7);
+  background: rgba($cardTypeAcademy, 0.16);
+}
+
+.scoutReportPage__recommendation--hunch {
+  border-color: rgba($formResultDraw, 0.7);
+  background: rgba($formResultDraw, 0.14);
+}
+
+.scoutReportPage__recommendation--noFeedback {
+  border-color: rgba($lightText, 0.16);
+  background: rgba($siteBackground, 0.46);
+}
+
+.scoutReportPage__debugValue {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px dashed rgba($lightText, 0.24);
+  background: rgba($siteBackground, 0.28);
+
+  strong,
+  span {
+    color: rgba($lightText, 0.92);
+  }
+}
+
+.scoutReportPage__debugLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .scoutReportPage__contentGrid {
   display: grid;
   grid-template-columns: minmax(70px, 84px) minmax(0, 1fr);

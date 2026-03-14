@@ -890,3 +890,113 @@ This epic is complete when:
 - Mature academy players can also be lost to other clubs using the exact post-maturity timing/chance rules.
 - Academy alert icons and loss notification modals behave correctly.
 - Staff return from inUse state after scouting completes.
+
+
+----------------------------------------------------------------
+FEAT-1923 - Add Coach Recruitment Judgement to Scouting Reports
+----------------------------------------------------------------
+Status: done
+
+Description
+Add a coach judgement/recommendation system to the scouting report so the scouting coach gives their opinion on whether each scouted player is worth adding to the academy.
+
+This recommendation is not a guaranteed truth.
+It is the coach's best guess.
+
+The coach's Scouting rating should determine how reliable this judgement is:
+- lower-rated coaches should be more error-prone
+- they should miss some players that are actually worth recruiting
+- they should also sometimes recommend weaker players
+- higher-rated coaches should be much more accurate and much more likely to judge players correctly
+
+This judgement should also be relative to the league the player is currently in.
+A player that looks highly valuable in League 5 may not look nearly as valuable in League 1.
+
+This system is intended to guide the user, not replace their decision-making.
+
+Requirements
+- Add a recommendation output to every player shown in the scouting report.
+- This recommendation should be based on:
+  - the player's hidden true quality bucket
+  - the coach's Scouting rating
+  - the player's current league context
+- The recommendation should reflect whether the coach believes the player is worth recruiting into the academy.
+
+Use these 4 recommendation levels exactly:
+- Certain to be worth recruiting
+- Highly likely to be worth recruiting
+- Likely to be worth recruiting
+- No feedback
+
+Judgement intent
+- The recommendation is an opinion, not a reveal of the true player quality.
+- It should not directly expose the internal quality bucket.
+- It should feel like scouting advice.
+
+League-relative interpretation
+- The recommendation threshold must be relative to the league the user is currently in.
+- Lower leagues should make coaches more liberal in their recommendation.
+- Higher leagues should make coaches more demanding.
+- Example intent:
+  - in League 5, a Great player should usually be seen as very valuable
+  - in League 1, a Great player may be less special and may not receive the strongest recommendation as often
+- The system should scale its judgement expectations by league level so recruitment advice feels relevant to the player's current competitive level.
+
+Coach reliability behaviour
+- Higher Scouting rating means the coach is more reliable.
+- Lower Scouting rating means the coach is more error-prone.
+- Error-prone behaviour should include both:
+  - false negatives:
+    - failing to recommend players that actually would be worth recruiting
+  - false positives:
+    - recommending players that are actually lower quality
+- High-rated coaches should be much closer to the correct recommendation most of the time.
+- Low-rated coaches should produce noisier and less trustworthy advice.
+
+Implementation guidance
+- Keep this as a centralised judgement system rather than scattering logic in the report UI.
+- The system should take as input:
+  - coach scouting rating
+  - current league
+  - player's hidden quality bucket
+- The system should output one of the 4 recommendation levels.
+- The recommendation should be generated when the scouting report is built and stored with the report/player report entry so it remains stable for that report instance.
+
+Suggested conceptual approach
+- First define the "ideal" recommendation strength for each hidden quality bucket relative to the current league.
+- Then apply coach accuracy/noise based on Scouting rating.
+- Higher-rated coaches should stay close to that ideal output.
+- Lower-rated coaches should have a greater chance of shifting the judgement:
+  - up too high
+  - down too low
+  - to no feedback
+- The final system should feel believable rather than perfectly mechanical.
+
+UI requirements
+- Display the recommendation clearly on each player entry in the scouting report.
+- Keep it visually distinct from revealed ratings and hidden ratings.
+- The recommendation should read as coach feedback/advice, not as a hard stat.
+- Keep it present even if most ratings are still hidden.
+
+Persistence requirements
+- Store the recommendation with the scouting report entry.
+- If the player is added to the academy, this recommendation may also be preserved as part of their scouting-origin data if useful, but the main requirement is that it remains stable within the report once generated.
+
+Acceptance Criteria
+- Every scouted player in a scouting report can receive one of these 4 recommendation levels:
+  - Certain to be worth recruiting
+  - Highly likely to be worth recruiting
+  - Likely to be worth recruiting
+  - No feedback
+- The recommendation is influenced by the coach's Scouting rating.
+- Low-Scouting coaches are more prone to false positives and false negatives.
+- High-Scouting coaches are far more accurate.
+- The recommendation system is relative to the player's current league.
+- Lower leagues produce more liberal recruitment recommendations.
+- Higher leagues produce more demanding recruitment recommendations.
+- The recommendation is shown clearly in the scouting report UI.
+- The recommendation is generated centrally and remains stable for that report instance.
+
+Testing checkpoint
+- Stop implementation after the recommendation is generated centrally, displayed on report cards, and stored with the report entry.
+- At this point, test by generating scouting reports with low- and high-scouting staff while in different league tiers and confirm the recommendation strength/noise changes in a believable league-relative way.

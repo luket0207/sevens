@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 import Button, { BUTTON_VARIANT } from "../../../engine/ui/button/button";
 import CareerCalendarContinueButton from "./careerCalendarContinueButton";
@@ -41,8 +43,19 @@ const CareerControlPanel = ({
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/staff">
             Staff
           </Button>
-          <Button variant={BUTTON_VARIANT.SECONDARY} to="/academy">
-            Academy {academyAlertActive ? "!" : ""}
+          <Button
+            variant={BUTTON_VARIANT.SECONDARY}
+            to="/academy"
+            className={`careerControlPanel__academyAlertButton${
+              academyAlertActive ? " careerControlPanel__academyAlertButton--active" : ""
+            }`}
+          >
+            <span>Academy</span>
+            {academyAlertActive ? (
+              <span className="careerControlPanel__academyAlertIcon" aria-hidden="true">
+                <FontAwesomeIcon icon={faCircleExclamation} />
+              </span>
+            ) : null}
           </Button>
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/career/cups">
             Cups

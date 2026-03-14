@@ -19,6 +19,22 @@ const cloneAcademyPlayer = (entry) => ({
           alwaysHidden: { ...(entry.scoutingIntel.alwaysHidden ?? {}) },
         }
       : {},
+  scoutingRecommendation:
+    entry?.scoutingRecommendation && typeof entry.scoutingRecommendation === "object"
+      ? { ...entry.scoutingRecommendation }
+      : null,
+  scoutingOrigin:
+    entry?.scoutingOrigin && typeof entry.scoutingOrigin === "object" ? { ...entry.scoutingOrigin } : null,
+  valueReveal:
+    entry?.valueReveal && typeof entry.valueReveal === "object"
+      ? {
+          currentValueRevealed: Boolean(entry.valueReveal.currentValueRevealed),
+          potentialValueRevealed: Boolean(entry.valueReveal.potentialValueRevealed),
+        }
+      : {
+          currentValueRevealed: false,
+          potentialValueRevealed: false,
+        },
 });
 
 export const ACADEMY_MAX_SLOTS = 12;
@@ -26,12 +42,14 @@ export const ACADEMY_MAX_SLOTS = 12;
 export const createDefaultCareerAcademyState = () => ({
   players: [],
   nextAcademyPlayerNumber: 1,
+  slotExpansionCount: 0,
   hasAlert: false,
   pendingLossNotifications: [],
   debug: {
     lastMaturityTick: null,
     lastPromotion: null,
     lastRemoval: null,
+    lastCardAction: null,
   },
 });
 
@@ -43,6 +61,7 @@ export const ensureCareerAcademyState = (value) => {
     ...source,
     players: Array.isArray(source.players) ? source.players.map(cloneAcademyPlayer) : [],
     nextAcademyPlayerNumber: Math.max(1, Number(source.nextAcademyPlayerNumber) || 1),
+    slotExpansionCount: Math.max(0, Number(source.slotExpansionCount) || 0),
     hasAlert: Boolean(source.hasAlert),
     pendingLossNotifications: Array.isArray(source.pendingLossNotifications)
       ? [...source.pendingLossNotifications]
@@ -53,6 +72,14 @@ export const ensureCareerAcademyState = (value) => {
 
 export const resolveAcademyCapacityFromStaffSlots = (staffSlotCount) =>
   Math.min(ACADEMY_MAX_SLOTS, Math.max(0, Number(staffSlotCount) || 0));
+
+export const resolveExpandedAcademyCapacity = (staffSlotCount, academyState) => {
+  const safeAcademyState = ensureCareerAcademyState(academyState);
+  return Math.min(
+    ACADEMY_MAX_SLOTS,
+    Math.max(0, Number(staffSlotCount) || 0) + Math.max(0, Number(safeAcademyState.slotExpansionCount) || 0)
+  );
+};
 
 export const addScoutedPlayerToAcademy = ({
   academyState,
@@ -69,6 +96,19 @@ export const addScoutedPlayerToAcademy = ({
     sourceTripId: String(reportPlayer?.sourceTripId ?? ""),
     player: { ...(reportPlayer?.player ?? {}) },
     scoutingIntel: { ...(reportPlayer?.scoutingIntel ?? {}) },
+    scoutingRecommendation:
+      reportPlayer?.recommendation && typeof reportPlayer.recommendation === "object"
+        ? { ...reportPlayer.recommendation }
+        : null,
+    scoutingOrigin: {
+      sourceTripId: String(reportPlayer?.sourceTripId ?? ""),
+      reportPlayerId: String(reportPlayer?.id ?? ""),
+      qualityBucket: String(reportPlayer?.qualityBucket ?? ""),
+    },
+    valueReveal: {
+      currentValueRevealed: false,
+      potentialValueRevealed: false,
+    },
     maturity,
     addedCareerDay: toCareerDay(currentCareerDay),
     maturedCareerDay: null,

@@ -37,6 +37,7 @@ Feature status:
 - FEAT-1920: done
 - FEAT-1921: done
 - FEAT-1922: done
+- FEAT-1923: done
 
 What was implemented:
 - Scouting state + lifecycle utilities:
@@ -309,6 +310,193 @@ Engine components not used (and why):
 - `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not required because this pass only changed local feature SCSS alignment.
 
 Additional files changed in bug-fix pass (update 4):
+- `src/game/scouting/scouting.scss`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Feature pass (2026-03-13, FEAT-1923):
+- Implemented coach recruitment judgement recommendations for scouting report entries.
+- Key updates:
+  - Added centralized recommendation resolution using hidden quality bucket, player league tier, and coach scouting rating.
+  - Stored stable recommendation output on each scouting report player entry.
+  - Preserved recommendation/scouting-origin metadata when adding players to the academy.
+  - Updated scouting report UI to display coach recommendation clearly and removed visible quality-bucket exposure from player cards.
+  - Extended scouting report debug payload with recommendation counts and per-player recommendation debug context.
+
+Engine components considered for feature pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in feature pass:
+- `gameContext` for stable persistence of scouting reports and academy scouting-origin metadata.
+- `button` for existing scouting report actions on entries.
+- `rng` for centralized coach-reliability and recommendation-noise rolls.
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not required for this recommendation-generation and report-rendering pass.
+
+Additional files changed in feature pass (FEAT-1923):
+- `src/game/scouting/utils/scoutingRecommendation.js`
+- `src/game/scouting/utils/scoutingReportGenerator.js`
+- `src/game/scouting/utils/scoutingState.js`
+- `src/game/scouting/scouting.jsx`
+- `src/game/scouting/scouting.scss`
+- `src/game/academy/utils/academyState.js`
+- `vibe/epics/EPIC-019/features.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Tradeoffs / follow-up tasks:
+- Recommendation tuning currently uses a compact weighted-noise model; it is centralized and easy to retune if playtesting shows advice is too strict or too generous in specific leagues.
+
+Bug fix pass (2026-03-13, update 5):
+- Implemented BUG-013 clarification from updated `EPIC-019/bugs.txt` after BUG-012 was initially interpreted too literally.
+- Key updates:
+  - Added a temporary debug display of each scouted player's true quality bucket on the scouting report card.
+  - Replaced the earlier misread overall-value debug display with the intended `Bad` / `Ok` / `Good` / `Great` / `Elite` output.
+  - Kept coach recommendation messaging intact as the primary gameplay-facing scouting guidance.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- None required for this local scouting-report UI debug display.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not required because this pass only exposed already-available report data in local feature UI.
+
+Additional files changed in bug-fix pass (update 5):
+- `src/game/scouting/scouting.jsx`
+- `src/game/scouting/scouting.scss`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 6):
+- Resolved remaining `BUG-012` tracking state after confirming its original request was superseded by the clarified `BUG-013` fix.
+- Key updates:
+  - Marked `BUG-012` fixed with explicit resolution notes pointing to the final intended behavior implemented under `BUG-013`.
+  - No gameplay code changes were required because the report already showed the intended debug quality bucket instead of true overall.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- None required for this tracking-only resolution pass.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not required because the code path was already correct and only epic tracking needed to be synchronized.
+
+Additional files changed in bug-fix pass (update 6):
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 7):
+- Implemented BUG-014 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Retuned the centralized scouting recommendation resolver so low-scouting coaches attempt feedback less often and default to `No feedback` more frequently.
+  - Made elite players with stronger overall values much more likely to draw feedback, even from weaker coaches.
+  - Tightened mistake behavior so attempted recommendations usually stay close to the intended quality bucket instead of drifting wildly.
+  - Kept high-scouting coaches near the intended top-end pattern:
+    - elite -> `Certain`
+    - great -> `Highly likely`
+    - good -> `Likely`
+    - bad / ok -> `No feedback`
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `rng` for recommendation attempt/accuracy rolls.
+- `gameContext` for stable scouting report persistence after retuning recommendation output.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not required because this pass only adjusted the central scouting recommendation resolver and generator inputs.
+
+Additional files changed in bug-fix pass (update 7):
+- `src/game/scouting/utils/scoutingRecommendation.js`
+- `src/game/scouting/utils/scoutingReportGenerator.js`
+- `vibe/epics/EPIC-019/bugs.txt`
+- `vibe/epics/EPIC-019/implementation.txt`
+- `vibe/epics/EPIC-019/testing.txt`
+
+Bug fix pass (2026-03-13, update 8):
+- Implemented BUG-015 from updated `EPIC-019/bugs.txt`.
+- Key updates:
+  - Added `Hunch` as a first-class scouting recommendation tier between `No feedback` and `Likely`.
+  - Retuned `Good`-player recommendation attempts so mid-level scouts comment a bit more often instead of going silent across full reports.
+  - Lowered the default confidence for `Good` players under weaker scouts so moderate reads now surface as `Hunch` rather than overstating certainty.
+  - Synchronized report debug recommendation counts and card styling with the new tier.
+
+Engine components considered for bug-fix pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug-fix pass:
+- `rng` for recommendation attempt/accuracy rolls after introducing the `Hunch` confidence tier.
+- `gameContext` for stable persistence of the updated recommendation output inside generated scouting reports.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not required because this pass only retuned local recommendation generation, report debug counts, and report styling.
+
+Additional files changed in bug-fix pass (update 8):
+- `src/game/scouting/utils/scoutingRecommendation.js`
+- `src/game/scouting/utils/scoutingReportGenerator.js`
 - `src/game/scouting/scouting.scss`
 - `vibe/epics/EPIC-019/bugs.txt`
 - `vibe/epics/EPIC-019/implementation.txt`
