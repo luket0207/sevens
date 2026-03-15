@@ -1,0 +1,94 @@
+BUG-001 - Training session always shows 0 eligible players
+
+Status: fixed
+
+Repro steps:
+1. Open Career Home with a saved Team Management setup and at least one Training card in the library.
+2. Start any Training card session and select an available coach.
+3. Load the Training page and inspect the Session Players panel.
+
+Expected behavior:
+- Players whose saved Team Management positions match the Training card's `Positions` field should appear in the session list.
+
+Actual behavior:
+- The Training page always showed:
+  - `0 player(s) involved in this training card.`
+  - `No current first-team players match this card's position rules.`
+
+Suspected cause:
+- Training-card session participant selection was reading `trainingCard.positions` only.
+- Real library cards store Training metadata inside `trainingCard.payload`, so the allowed-positions list resolved to an empty array for normal card usage.
+
+Attempted fixes:
+- Traced the Career Home session-setup flow into `createTrainingSessionSnapshot`.
+- Compared how session snapshot positions were resolved versus how participant entries were built.
+
+Final fix:
+- Added a shared `resolveTrainingCardPositions` helper in `src/game/training/utils/trainingSession.js`.
+- Updated participant selection to read positions from `trainingCard.payload.positions` first, with fallback to top-level `trainingCard.positions`.
+- Reused the same helper for the stored session snapshot positions so setup and runtime logic stay aligned.
+
+
+BUG-002 - Potential gap above 5 is being treated as excluded
+
+Status: fixed
+
+Repro steps:
+1. Start a Training session with a player whose `Potential - Overall` gap is greater than `5`.
+2. Run the session and inspect that player's entry in the end-of-session modal.
+
+Expected behavior:
+- A player with `Potential - Overall > 5` should be certain to remain eligible for training.
+- The modal should not report that player as excluded by the eligibility gate.
+
+Actual behavior:
+- The modal showed `Eligibility outcome: Potential gap too large for this session`.
+- Those players were being excluded from later training success checks.
+
+Suspected cause:
+- The OR/PR eligibility resolver treated `potentialGap > 5` as a blocked outcome instead of an automatic pass.
+
+Attempted fixes:
+- Reviewed the `resolveEligibilityOutcome` branches in `src/game/training/utils/trainingSession.js`.
+- Confirmed the modal copy was reflecting the resolver's blocked state rather than introducing the bug itself.
+
+Final fix:
+- Updated `resolveEligibilityOutcome` so `potentialGap > 5` now returns `eligible: true`.
+- Cleared the blocked reason for that branch so the modal now shows `Eligible` and those players continue into the normal training success roll.
+
+BUG-003
+
+The user should be able to get to the training page from the control panel on the career home. If they go there this way, the training panel is missing and there is a new button that allows them to go back to home (still not there when they are in an actual training session). The player focuse element should be justified center when there is no training panel. 
+
+Status: fixed
+
+Repro steps:
+1. Open Career Home.
+2. Try to navigate to `/training` without first starting a Training card session.
+3. Observe the Training page behavior and layout.
+
+Expected behavior:
+- Career Home should provide a Training navigation route from the control panel.
+- Opening `/training` this way should show a read-only Training page:
+  - no training panel
+  - a button to return to Career Home
+  - the focused-player section centered when it is the only main panel
+- During a real active Training session, the normal training panel should still appear and the extra back-home button should not.
+
+Actual behavior:
+- There was no Training navigation button in the Career Home control panel.
+- Visiting `/training` without an active session redirected straight back to Career Home, so the standalone inspection view did not exist.
+
+Suspected cause:
+- The Training page required `activeSession` and hard-redirected when none existed.
+- The Career Home control panel did not expose a route into the Training page outside a live session.
+
+Attempted fixes:
+- Reviewed `CareerControlPanel` navigation links.
+- Reviewed the `Training` page guard and layout branches around `activeSession`.
+
+Final fix:
+- Added a `Training` navigation button to the Career Home control panel.
+- Updated the Training page to support a no-session browse mode instead of redirecting away.
+- In browse mode, the training panel is hidden, a `Back to Home` button is shown, and the focused-player panel is centered.
+- Active training sessions still keep the existing session panel and do not show the extra back-home button.

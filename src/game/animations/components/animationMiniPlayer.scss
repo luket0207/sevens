@@ -1,0 +1,50 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.animationMiniPlayer {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.18rem;
+  transition:
+    left 420ms ease,
+    top 420ms ease,
+    transform 220ms ease,
+    filter 220ms ease;
+}
+
+.animationMiniPlayer__shirt.shirtRenderer {
+  width: 34px;
+  height: 40px;
+}
+
+.animationMiniPlayer__shirt .shirtRenderer__shape {
+  border-width: 1.5px;
+  box-shadow: 0 4px 10px rgba($darkText, 0.18);
+}
+
+.animationMiniPlayer__shirt .shirtRenderer__collar {
+  border-width: 1px;
+}
+
+.animationMiniPlayer__tag {
+  min-width: 1.7rem;
+  padding: 0.08rem 0.24rem;
+  border-radius: 999px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  text-align: center;
+  color: $lightText;
+  background: rgba($siteBackground, 0.7);
+  border: 1px solid rgba($lightText, 0.2);
+}
+
+.animationMiniPlayer--highlighted {
+  z-index: 4;
+  transform: translate(-50%, -50%) scale(1.08);
+  filter: drop-shadow(0 0 10px rgba($lightText, 0.2));
+}
+
+.animationMiniPlayer--goalkeeper {
+  z-index: 3;
+}

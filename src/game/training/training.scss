@@ -1,0 +1,186 @@
+@use "../../assets/scss/ui/import" as *;
+
+.trainingPage {
+  display: grid;
+  gap: 1rem;
+}
+
+.trainingPage__panel {
+  background: rgba($primaryBackground, 0.92);
+  border: 1px solid rgba($lightText, 0.22);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 10px 24px rgba($darkText, 0.08);
+}
+
+.trainingPage__sectionHead h2,
+.trainingPage__sectionHead h3,
+.trainingPage__resultsHead h3 {
+  margin: 0;
+}
+
+.trainingPage__sectionHead p,
+.trainingPage__resultsHead p,
+.trainingPage__playerSummary p,
+.trainingPage__sessionPlayer p,
+.trainingPage__resultsPlayer p,
+.trainingPage__resultsSummary p,
+.trainingPage__stripCard p {
+  margin: 0;
+}
+
+.trainingPage__panel {
+  span, p, li {
+    color: $primaryForeground;
+  }
+}
+
+.trainingPage__playerStrip {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+}
+
+.trainingPage__stripCard {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba($darkText, 0.08);
+  background: linear-gradient(180deg, rgba($lightText, 1), rgba($lightText, 0.84));
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+
+    p {
+      color: $darkText;
+    }
+}
+
+.trainingPage__stripCard:hover,
+.trainingPage__stripCard:focus {
+  transform: translateY(-2px);
+  border-color: rgba($primaryBackground, 0.4);
+  box-shadow: 0 8px 18px rgba($darkText, 0.08);
+}
+
+.trainingPage__stripCard--focused {
+  border-color: rgba($primaryBackground, 0.7);
+  box-shadow: 0 10px 22px rgba($primaryBackground, 0.18);
+}
+
+.trainingPage__body {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+}
+
+.trainingPage__body--browse {
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: center;
+}
+
+.trainingPage__body--browse .trainingPage__panel--details {
+  width: min(100%, 760px);
+  justify-self: center;
+}
+
+.trainingPage__playerSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  font-weight: 600;
+}
+
+.trainingPage__sessionPanel {
+  display: grid;
+  gap: 1rem;
+}
+
+.trainingPage__sessionPlayers {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.trainingPage__sessionPlayer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: rgba($darkText, 0.04);
+}
+
+.trainingPage__sessionActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.trainingPage__standaloneActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.trainingPage__coachSkillset {
+  padding-top: 0.35rem;
+}
+
+.trainingPage__debug {
+  border-top: 1px solid rgba($darkText, 0.1);
+  padding-top: 0.9rem;
+}
+
+.trainingPage__debug summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.trainingPage__debug pre {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba($darkText, 0.05);
+  overflow-x: auto;
+  font-size: 0.78rem;
+}
+
+.trainingPage__resultsModal {
+  display: grid;
+  gap: 1rem;
+}
+
+.trainingPage__resultsList {
+  display: grid;
+  gap: 0.75rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.trainingPage__resultsPlayer {
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: rgba($darkText, 0.04);
+  display: grid;
+  gap: 0.28rem;
+}
+
+.trainingPage__resultsActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.trainingPage__empty {
+  color: rgba($darkText, 0.68);
+}
+
+@media (max-width: 960px) {
+  .trainingPage__body {
+    grid-template-columns: 1fr;
+  }
+}

@@ -18,6 +18,7 @@ import CareerLeagueStats from "./game/careerLeagueStats/careerLeagueStats";
 import CareerDayResults from "./game/careerDayResults/careerDayResults";
 import CareerSeasonSummary from "./game/careerSeasonSummary/careerSeasonSummary";
 import CardRewardChoice from "./game/cards/cardRewardChoice";
+import Animations from "./game/animations/animations";
 
 const NotFound = () => <div>404</div>;
 
@@ -25,6 +26,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/animations" element={<Animations />} />
       <Route path="/career/start" element={<CareerStart />} />
       <Route path="/career/generating" element={<CareerGenerationLoading />} />
       <Route path="/career/home" element={<CareerHome />} />

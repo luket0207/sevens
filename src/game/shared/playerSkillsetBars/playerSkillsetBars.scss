@@ -59,6 +59,13 @@
   font-size: 0.62rem;
 }
 
+.playerSkillsetBars__subRatingMeta {
+  display: block;
+  margin-top: 0.24rem;
+  font-size: 0.62rem;
+  color: rgba($darkText, 0.68);
+}
+
 .playerSkillsetBars__row--hidden .bars__value {
   visibility: hidden;
 }

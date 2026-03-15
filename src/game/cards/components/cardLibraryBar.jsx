@@ -10,6 +10,7 @@ import "./cardLibraryBar.scss";
 const CardLibraryBar = ({
   library,
   onDiscardCard,
+  onStartTrainingCard,
   onScoutCard,
   onGoToAcademyCard,
   onHireStaffMemberCard,
@@ -50,6 +51,14 @@ const CardLibraryBar = ({
         actionLabel: "Scout",
         actionVariant: BUTTON_VARIANT.PRIMARY,
         onAction: () => onScoutCard(card.id),
+      };
+    }
+
+    if (card?.type === CARD_TYPES.TRAINING && typeof onStartTrainingCard === "function") {
+      return {
+        actionLabel: "Start Session",
+        actionVariant: BUTTON_VARIANT.PRIMARY,
+        onAction: () => onStartTrainingCard(card.id),
       };
     }
 
@@ -160,6 +169,7 @@ CardLibraryBar.propTypes = {
     })
   ),
   onDiscardCard: PropTypes.func,
+  onStartTrainingCard: PropTypes.func,
   onScoutCard: PropTypes.func,
   onGoToAcademyCard: PropTypes.func,
   onHireStaffMemberCard: PropTypes.func,
@@ -174,6 +184,7 @@ CardLibraryBar.propTypes = {
 CardLibraryBar.defaultProps = {
   library: [],
   onDiscardCard: null,
+  onStartTrainingCard: null,
   onScoutCard: null,
   onGoToAcademyCard: null,
   onHireStaffMemberCard: null,

@@ -1,0 +1,69 @@
+Feature implementation pass (2026-03-14, update 1):
+- Implemented FEAT-2201 through FEAT-2211 from `EPIC-022/features.txt`.
+- Key updates:
+  - Added an `Animations` entry below `Start Career` on the home page and wired a new `/animations` route.
+  - Created a dedicated Animations page with reusable trigger-card layout and lightweight debug output.
+  - Built a reusable `animationContainer` overlay component that stays locked open for the supplied playback duration and auto closes when the animation ends.
+  - Built reusable animation presentation components for:
+    - full football pitch base with goals and pitch markings
+    - mini shirt-based player markers using dummy kit data
+    - reusable ball marker
+    - reusable end-state `goalAnimation`
+  - Implemented the `PenaltyGoal` prototype playback with:
+    - random stall between `0.5s` and `1.5s`
+    - penalty-taker run-up
+    - ball travel to a random left/right finish
+    - brief in-goal pause
+    - goal end-state overlay
+    - automatic container close at total playback end
+  - Added lightweight debug support for trigger flow, duration, stall time, shot side, phase progression, and goal-animation display timing.
+
+Engine components considered for feature pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in feature pass:
+- `button` for the home-page Animations entry, trigger buttons, and return navigation.
+- `rng` for randomized stall timing, shot-side selection, and playback ids.
+
+Engine components not used (and why):
+- `gameContext`, `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because EPIC-022 is a self-contained prototype/test surface with local playback state and a custom locked overlay container.
+
+Files changed in feature pass (update 1):
+- `src/routes.jsx`
+- `src/game/home/home.jsx`
+- `src/game/home/home.scss`
+- `src/game/animations/animations.jsx`
+- `src/game/animations/animations.scss`
+- `src/game/animations/components/animationContainer.jsx`
+- `src/game/animations/components/animationContainer.scss`
+- `src/game/animations/components/animationPitch.jsx`
+- `src/game/animations/components/animationPitch.scss`
+- `src/game/animations/components/animationMiniPlayer.jsx`
+- `src/game/animations/components/animationMiniPlayer.scss`
+- `src/game/animations/components/animationBall.jsx`
+- `src/game/animations/components/animationBall.scss`
+- `src/game/animations/components/goalAnimation.jsx`
+- `src/game/animations/components/goalAnimation.scss`
+- `src/game/animations/components/penaltyGoalAnimation.jsx`
+- `src/game/animations/components/penaltyGoalAnimation.scss`
+- `src/game/animations/utils/animationDefinitions.js`
+- `vibe/epics/EPIC-022/features.txt`
+- `vibe/epics/EPIC-022/implementation.txt`
+- `vibe/epics/EPIC-022/testing.txt`
+- `vibe/epics/EPIC-022/bugs.txt`
+
+Tradeoffs / follow-up notes:
+- The current animation system uses dummy teams and a fixed prototype scene rather than real match data, which is intentional for this epic.
+- `animationContainer` is purpose-built instead of reusing the existing modal because the current modal supports early close via escape/backdrop and does not match the locked playback requirement.
+- Manual visual verification is still needed to tune player clustering, motion clarity, and timing feel on both desktop and mobile.

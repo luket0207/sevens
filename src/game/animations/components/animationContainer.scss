@@ -1,0 +1,74 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.animationContainer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 2vw, 2rem);
+}
+
+.animationContainer__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba($lightText, 0.06), transparent 42%),
+    rgba($siteBackground, 0.84);
+  backdrop-filter: blur(6px);
+}
+
+.animationContainer__panel {
+  position: relative;
+  width: min(1180px, 100%);
+  min-height: min(82vh, 760px);
+  border-radius: 24px;
+  border: 1px solid rgba($lightText, 0.16);
+  background: linear-gradient(180deg, rgba($primaryBackground, 0.96), rgba($siteBackground, 0.96));
+  box-shadow: 0 28px 60px rgba($darkText, 0.42);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.animationContainer__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid rgba($lightText, 0.12);
+}
+
+.animationContainer__header h2,
+.animationContainer__header p {
+  margin: 0;
+}
+
+.animationContainer__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  color: rgba($lightText, 0.72);
+}
+
+.animationContainer__lockNote {
+  color: rgba($lightText, 0.82);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.animationContainer__body {
+  min-height: 0;
+  padding: 1rem;
+}
+
+@media (max-width: 720px) {
+  .animationContainer__header {
+    display: grid;
+  }
+
+  .animationContainer__lockNote {
+    text-align: left;
+  }
+}

@@ -1,0 +1,497 @@
+EPIC-022 - Animation Testing Area and PenaltyGoal Prototype
+
+Overview
+The goal of this epic is to create an experimental area for building and testing future animations.
+
+This epic introduces:
+- a new Animations entry on the home page
+- a dedicated Animations page
+- a reusable animationContainer component
+- a shared football pitch animation base
+- a mini kit/player visual for animations
+- a simple ball visual for animations
+- the first prototype animation:
+  - PenaltyGoal
+- a reusable goalAnimation end-state component
+
+This epic is about:
+- animation testing infrastructure
+- reusable animation presentation components
+- one working proof-of-concept animation flow
+
+This epic is not about:
+- match engine integration
+- real match events
+- dynamic team data
+- user control of the animation outcome
+- advanced animation authoring tools
+
+================================================================
+Core Goals
+================================================================
+
+The main goals of this epic are:
+
+1. Add an Animations entry point from the home page
+- below the Start Career button
+
+2. Create an Animations page
+- containing an array/list of buttons for triggering test animations
+
+3. Create a reusable animationContainer
+- a large modal-like container for playing animations
+- it stays open for the animation duration
+- it cannot be closed early
+- it auto closes at the end
+
+4. Build shared animation visuals
+- full football pitch
+- mini kit/player markers
+- simple ball marker
+
+5. Implement the first animation
+- PenaltyGoal
+
+6. Add a reusable goalAnimation component
+- shown at the end of goal animations
+- used after the PenaltyGoal prototype finishes
+
+================================================================
+Home Page Navigation Update
+================================================================
+
+Add a new line/button/link on the home page:
+- Animations
+
+Placement:
+- below the Start Career button
+
+Clicking it should:
+- navigate to the new Animations page
+
+================================================================
+Animations Page
+================================================================
+
+The Animations page is a test surface for future animation work.
+
+Requirements:
+- show an array/list of animation trigger buttons
+- each button represents one available animation
+- clicking a button opens the animationContainer and plays the selected animation inside it
+
+For now:
+- only one animation button is needed:
+  - PenaltyGoal
+
+The page structure should be reusable so more test animations can be added later.
+
+================================================================
+animationContainer Component
+================================================================
+
+Create a new component:
+- animationContainer
+
+Purpose:
+- acts like a large modal for displaying animations
+- fills most of the screen
+- overlays above the rest of the UI
+
+Rules:
+- takes a value representing how long the animation lasts
+- cannot be closed before that duration has elapsed
+- closes automatically after that duration
+- renders the selected animation as a child inside it
+
+This component should be reusable for all future test animations.
+
+================================================================
+Shared Football Pitch Animation Base
+================================================================
+
+Every animation needs a shared football pitch base.
+
+Requirements:
+- full football pitch visible
+- goalposts on both sides
+- full pitch markings
+- suitable for reuse across all future animations
+
+This pitch acts as the animation stage for all future football animation prototypes.
+
+================================================================
+Mini Kit / Player Visual for Animations
+================================================================
+
+Animations should use the game's kit component as the player marker.
+
+Requirements:
+- make a mini version of the kit element
+- total size should be around:
+  - 40px x 40px
+- use dummy kit data for now
+- the mini kit element represents players on the pitch
+- all 14 players must always be visible in all animations
+
+This means:
+- 7 home players visible
+- 7 away players visible
+
+These mini kits are the player visuals used by the animation system.
+
+================================================================
+Ball Visual for Animations
+================================================================
+
+The ball should be a simple reusable animation element.
+
+Requirements:
+- white circle
+- black border
+- size:
+  - 8px x 8px
+- border:
+  - 2px
+
+This ball visual should be reusable across future animations.
+
+================================================================
+PenaltyGoal Animation
+================================================================
+
+Create the first animation:
+- PenaltyGoal
+
+Scenario:
+- home team has a penalty
+
+Initial layout requirements:
+- one home kit positioned by the penalty spot
+- away goalkeeper positioned in goal
+- all remaining players are crowded around the area
+- all 14 players must still be visible
+
+Animation sequence:
+1. initial setup visible on the pitch
+2. stall for a random amount of time between:
+   - 0.5 seconds
+   - 1.5 seconds
+3. the home penalty-taking kit moves towards the ball
+4. the ball then moves towards the goal
+5. the ball should travel either:
+   - to the left of the goalkeeper
+   - or to the right of the goalkeeper
+6. the left/right destination should be random
+7. the ball stops in the goal
+8. wait for 0.3 seconds
+9. show the goalAnimation component
+10. then the animation ends
+11. then the animationContainer closes automatically
+
+Important notes:
+- this is a goal animation, so the penalty always results in a goal
+- no save/miss branch is required in this epic
+- the movement can be simple but must clearly show the action
+
+================================================================
+goalAnimation Component
+================================================================
+
+Create a new component:
+- goalAnimation
+
+Purpose:
+- displayed at the end of goal animations
+- indicates that a goal has been scored
+
+For this epic:
+- after the PenaltyGoal animation finishes and the ball is in the net
+- show goalAnimation
+- then end the overall animation flow
+
+This component should be reusable for other future goal animations.
+
+================================================================
+Feature List
+================================================================
+
+----------------------------------------------------------------
+FEAT-2201 - Add Animations Entry on Home Page
+----------------------------------------------------------------
+
+Description
+Add a new Animations line/button/link to the home page.
+
+Requirements
+- Add a new entry labelled:
+  - Animations
+- Place it below the Start Career button.
+- Clicking it should navigate to the new Animations page.
+
+Acceptance Criteria
+- The home page contains an Animations entry below Start Career.
+- Clicking it opens the Animations page.
+
+----------------------------------------------------------------
+FEAT-2202 - Create Animations Test Page
+----------------------------------------------------------------
+
+Description
+Create the dedicated page for triggering and testing future animations.
+
+Requirements
+- Add a new Animations page.
+- The page should display an array/list of buttons for available animations.
+- For now, include one animation button:
+  - PenaltyGoal
+- Keep the page structure reusable so more animation triggers can be added later.
+
+Acceptance Criteria
+- An Animations page exists.
+- It contains a trigger button for PenaltyGoal.
+- The page is ready for additional animations later.
+
+----------------------------------------------------------------
+FEAT-2203 - Create Reusable animationContainer Component
+----------------------------------------------------------------
+
+Description
+Build the reusable modal-like container used for playing test animations.
+
+Requirements
+- Create a new component:
+  - animationContainer
+- It should fill most of the screen.
+- It should render above the rest of the UI like a large modal.
+- It must accept a duration value.
+- It cannot be closed before that duration expires.
+- It should auto close after that duration.
+- It should render the chosen animation as a child.
+
+Acceptance Criteria
+- animationContainer exists.
+- It accepts a duration value.
+- It stays open until the duration has elapsed.
+- It auto closes afterwards.
+- It can render child animation content.
+
+----------------------------------------------------------------
+FEAT-2204 - Build Shared Full-Pitch Animation Base
+----------------------------------------------------------------
+
+Description
+Create the reusable football pitch background used by all animations.
+
+Requirements
+- Build a full football pitch visual.
+- Include:
+  - both goalposts
+  - full pitch markings
+- The pitch should be reusable across all future animation components.
+- It should serve as the base layer for animation playback.
+
+Acceptance Criteria
+- A reusable full-pitch animation base exists.
+- It includes goalposts and full pitch markings.
+- It can be used by the PenaltyGoal animation.
+
+----------------------------------------------------------------
+FEAT-2205 - Create Mini Kit Visual for Animation Players
+----------------------------------------------------------------
+
+Description
+Create a mini version of the game's kit element for use as player markers in animations.
+
+Requirements
+- Reuse the game's kit component or adapt it into a mini animation version.
+- Size should be around:
+  - 40px x 40px total
+- Use dummy kit data for now.
+- This mini kit visual will represent players on the pitch during animations.
+- Keep it reusable for all future animations.
+
+Acceptance Criteria
+- A mini kit/player visual exists for animations.
+- It uses or derives from the game's kit visual system.
+- It is approximately 40px x 40px.
+- It works with dummy kit data for now.
+
+----------------------------------------------------------------
+FEAT-2206 - Create Reusable Ball Visual for Animations
+----------------------------------------------------------------
+
+Description
+Create the reusable football ball element for animations.
+
+Requirements
+- Ball should be:
+  - white circle
+  - black border
+- Size:
+  - 8px x 8px
+- Border:
+  - 2px
+- Keep it reusable across future animation types.
+
+Acceptance Criteria
+- A reusable ball visual exists.
+- It matches the required size and styling.
+
+----------------------------------------------------------------
+FEAT-2207 - Position All 14 Players on the Pitch for Animation Scenes
+----------------------------------------------------------------
+
+Description
+Ensure animation scenes always show all 14 players on the pitch.
+
+Requirements
+- All animations should keep all 14 players visible.
+- For now, this means:
+  - 7 home players
+  - 7 away players
+- In the PenaltyGoal scene:
+  - one home player is the penalty taker
+  - the away goalkeeper is in goal
+  - all other players are crowded around the penalty area
+- Keep the layout readable enough to understand the scene.
+
+Acceptance Criteria
+- The PenaltyGoal scene shows all 14 players.
+- The penalty taker and goalkeeper are clearly identifiable.
+- Other players are visibly positioned around the area.
+
+----------------------------------------------------------------
+FEAT-2208 - Implement PenaltyGoal Animation Sequence
+----------------------------------------------------------------
+
+Description
+Create the first working prototype animation: PenaltyGoal.
+
+Requirements
+- Build the PenaltyGoal animation inside the animation system.
+- Initial scene must show:
+  - home penalty taker by the penalty spot
+  - away goalkeeper in goal
+  - remaining players around the area
+- Animation flow:
+  1. stall for a random 0.5 to 1.5 seconds
+  2. penalty-taking kit moves towards the ball
+  3. ball moves toward goal
+  4. ball destination is random left or right of goalkeeper
+  5. ball stops in the goal
+  6. wait 0.3 seconds
+  7. show goalAnimation
+  8. finish
+- The penalty always results in a goal in this epic.
+
+Acceptance Criteria
+- PenaltyGoal animation plays inside the animationContainer.
+- It includes the required stall, player movement, ball movement, and goal finish.
+- Ball direction is random left or right of the goalkeeper.
+- The ball ends in the goal.
+- The goalAnimation appears before the animation ends.
+
+----------------------------------------------------------------
+FEAT-2209 - Create Reusable goalAnimation Component
+----------------------------------------------------------------
+
+Description
+Create the reusable goalAnimation component shown at the end of goal animations.
+
+Requirements
+- Create a new component:
+  - goalAnimation
+- It should be displayed at the end of a goal animation.
+- For this epic, it is shown after PenaltyGoal finishes.
+- It should communicate that a goal has been scored.
+- Keep it reusable for future goal animations.
+
+Acceptance Criteria
+- goalAnimation exists.
+- It is shown at the end of PenaltyGoal.
+- It is reusable for future goal-based animations.
+
+----------------------------------------------------------------
+FEAT-2210 - Wire Animation Buttons to animationContainer Playback
+----------------------------------------------------------------
+
+Description
+Connect the Animations page trigger buttons to the animationContainer and selected animation content.
+
+Requirements
+- Clicking an animation button on the Animations page should:
+  - open the animationContainer
+  - load the correct animation as a child
+  - play the animation flow
+- For this epic, wire the PenaltyGoal button fully.
+
+Acceptance Criteria
+- Clicking PenaltyGoal opens animationContainer.
+- PenaltyGoal plays inside it.
+- The container closes automatically after playback.
+
+----------------------------------------------------------------
+FEAT-2211 - Add Animation Debug/Test Support
+----------------------------------------------------------------
+
+Description
+Provide lightweight debugging support for the new animation test area.
+
+Requirements
+- Add development-friendly support for validating:
+  - animation trigger flow
+  - container timing
+  - random stall timing
+  - random ball side selection
+  - goalAnimation display timing
+- Keep this support lightweight and useful during implementation.
+
+Acceptance Criteria
+- Developers can validate key timing/state parts of the animation system.
+- PenaltyGoal animation flow is easier to test.
+
+================================================================
+Epic Completion Criteria
+================================================================
+
+This epic is complete when:
+
+- The home page has an Animations entry below Start Career.
+- An Animations page exists with a PenaltyGoal trigger button.
+- A reusable animationContainer component exists and auto closes after its duration.
+- A shared full football pitch animation base exists.
+- A mini kit/player visual exists for animations using dummy kit data.
+- A reusable ball visual exists with the specified size and styling.
+- All 14 players are visible in the PenaltyGoal scene.
+- The PenaltyGoal animation plays with:
+  - random stall between 0.5 and 1.5 seconds
+  - penalty-taker movement
+  - ball movement
+  - random left/right finish
+  - 0.3 second pause in the goal
+  - goalAnimation display
+- A reusable goalAnimation component exists.
+- The system forms a working experimental area for future animation prototypes.
+
+================================================================
+Implementation Status
+================================================================
+
+Update 1 - 2026-03-14
+
+- FEAT-2201: done
+- FEAT-2202: done
+- FEAT-2203: done
+- FEAT-2204: done
+- FEAT-2205: done
+- FEAT-2206: done
+- FEAT-2207: done
+- FEAT-2208: done
+- FEAT-2209: done
+- FEAT-2210: done
+- FEAT-2211: done
+
+Implementation stop point:
+- Core EPIC-022 feature set is implemented in code.
+- Next step is manual playback verification on the home entry, Animations page trigger flow, and PenaltyGoal timing/visual behavior.

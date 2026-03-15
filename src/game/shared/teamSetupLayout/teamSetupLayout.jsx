@@ -58,9 +58,9 @@ const getPlayerOverallMeta = (player) => {
   };
 };
 
-const getPlayerPotentialValue = (player) => {
-  return Math.max(0, Math.round(Number(player?.potential) || 0));
-};
+const getPlayerPotentialValue = (player) => Math.max(0, Math.round(Number(player?.potential) || 0));
+
+const isPlayerPotentialVisible = (player) => Boolean(player?.valueReveal?.potentialValueRevealed);
 
 const getFallbackInspectedPlayer = ({ players, playersById, slotLayout, slotAssignments, goalkeeper }) => {
   const assignedPlayer = slotLayout
@@ -172,7 +172,9 @@ const PlayerSkillInspector = ({ player, teamKit }) => {
     <aside className="teamSetupLayout__inspector">
       <h3>Player Skill Inspector</h3>
       <article className="teamSetupLayout__inspectorCard">
-        <p className="teamSetupLayout__inspectorSummary">Potential {getPlayerPotentialValue(player)}</p>
+        <p className="teamSetupLayout__inspectorSummary">
+          Potential {isPlayerPotentialVisible(player) ? getPlayerPotentialValue(player) : "Hidden"}
+        </p>
         <div className="teamSetupLayout__inspectorHead">
           <TopStripPlayerCard className="teamSetupLayout__inspectorProfile" player={player} teamKit={teamKit} />
         </div>

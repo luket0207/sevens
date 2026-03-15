@@ -1,0 +1,104 @@
+@use "../../assets/scss/ui/import" as *;
+
+.animationsPage {
+  display: grid;
+  gap: 1rem;
+}
+
+.animationsPage__hero,
+.animationsPage__panel,
+.animationsPage__debug {
+  border-radius: 18px;
+  border: 1px solid rgba($lightText, 0.14);
+  background: rgba($primaryBackground, 0.74);
+  box-shadow: 0 16px 34px rgba($darkText, 0.18);
+}
+
+.animationsPage__hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.animationsPage__hero h1,
+.animationsPage__hero p,
+.animationsPage__sectionHead h2,
+.animationsPage__sectionHead p,
+.animationsPage__card h3,
+.animationsPage__card p {
+  margin: 0;
+}
+
+.animationsPage__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  color: rgba($lightText, 0.72);
+}
+
+.animationsPage__hero p {
+  max-width: 64ch;
+  color: rgba($lightText, 0.88);
+}
+
+.animationsPage__panel {
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.animationsPage__sectionHead {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.animationsPage__sectionHead p {
+  color: rgba($lightText, 0.82);
+}
+
+.animationsPage__list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.animationsPage__card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba($lightText, 0.12);
+  background: linear-gradient(180deg, rgba($siteBackground, 0.34), rgba($siteBackground, 0.2));
+}
+
+.animationsPage__card p {
+  color: rgba($lightText, 0.82);
+}
+
+.animationsPage__debug {
+  padding: 1rem 1.2rem;
+}
+
+.animationsPage__debug summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.animationsPage__debug pre {
+  margin: 0.8rem 0 0;
+  padding: 0.8rem;
+  border-radius: 14px;
+  background: rgba($siteBackground, 0.42);
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .animationsPage__hero,
+  .animationsPage__card {
+    display: grid;
+  }
+}

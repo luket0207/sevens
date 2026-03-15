@@ -1,5 +1,6 @@
 import { randomInt } from "../../../engine/utils/rng/rng";
 import { PLAYER_GENERATION_TYPES } from "../../playerGeneration";
+import { ensurePlayerTeamTrainingState } from "../../training/utils/playerTrainingState";
 import { ensureCareerAcademyState } from "./academyState";
 
 const clonePlayerForPromotion = (player) => ({
@@ -15,6 +16,13 @@ const buildPromotedPlayer = ({ academyPlayer, playerTeam }) => {
   return {
     ...basePlayer,
     id: nextId,
+    valueReveal:
+      academyPlayer?.valueReveal && typeof academyPlayer.valueReveal === "object"
+        ? { ...academyPlayer.valueReveal }
+        : {
+            currentValueRevealed: true,
+            potentialValueRevealed: false,
+          },
     academyOrigin: {
       sourceTripId: String(academyPlayer?.sourceTripId ?? ""),
       reportPlayerId: String(academyPlayer?.reportPlayerId ?? ""),
@@ -95,11 +103,11 @@ export const promoteAcademyPlayerByReplacement = ({
     reason: "",
     replacedPlayer,
     promotedPlayer,
-    nextPlayerTeam: {
+    nextPlayerTeam: ensurePlayerTeamTrainingState({
       ...(playerTeam ?? {}),
       players: nextPlayers,
       teamManagement: nextTeamManagement,
-    },
+    }),
     nextAcademyState: {
       ...safeAcademyState,
       players: safeAcademyState.players.filter((entry) => entry.id !== academyPlayerId),

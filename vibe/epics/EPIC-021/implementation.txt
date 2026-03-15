@@ -1,0 +1,188 @@
+Feature implementation pass (2026-03-14, update 1):
+- Implemented FEAT-2101 through FEAT-2115 from `EPIC-021/features.txt`.
+- Key updates:
+  - Added `Start Session` handling for Training cards on Career Home with coach selection, same-day coach `inUse` locking, Training session creation, and correct card consumption timing.
+  - Added persistent first-team training state with sub-ratings per skill and hidden-potential state for first-team players, including normalization during career generation and academy promotion.
+  - Replaced the placeholder Training page with a real 3-section Training screen:
+    - full first-team player strip
+    - focused player details with ratings plus sub-ratings
+    - training session panel showing participants, coach details, and session controls
+  - Implemented session participant selection from Training card position rules and saved Team Management slot assignments.
+  - Implemented OR/PR eligibility gating, coach-type success rolls, exact card-matrix sub-rating gains, visible skill upgrades with no carry-over, and overall recalculation from updated skills.
+  - Implemented first-team potential reveal during training using `Judgement / 10`, rounded to 1 decimal place, with a `+5%` bonus for rare cards.
+  - Added detailed end-of-session modal reporting and lightweight debug visibility for session setup and resolution data.
+  - Updated first-team potential display on Team Management/shared inspector surfaces so hidden potential remains hidden until revealed.
+
+Engine components considered for feature pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in feature pass:
+- `gameContext` for persistent Career Training session state, first-team player growth state, and staff state updates.
+- `bars` through the shared `PlayerSkillsetBars` component for rating rendering.
+- `button` for Career Home card actions, Training controls, and modal actions.
+- `modal` + `modalContext` for coach selection and end-of-session reporting.
+- `rng` for eligibility rolls, coach success rolls, session reveal rolls, and random revealed-player selection.
+
+Engine components not used (and why):
+- `slidePanel`, `toast`, `tooltip`, `makeDecision`, `saveGame`, and `timer` were not needed because EPIC-021 fits existing page/modal flows and uses deterministic utility logic plus the current save architecture.
+
+Additional files changed in feature pass (update 1):
+- `src/game/cards/components/cardLibraryBar.jsx`
+- `src/game/careerHome/careerHome.jsx`
+- `src/game/careerGeneration/utils/careerGenerator.js`
+- `src/game/academy/utils/academyPromotion.js`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.jsx`
+- `src/game/shared/playerSkillsetBars/playerSkillsetBars.scss`
+- `src/game/shared/teamSetupLayout/teamSetupLayout.jsx`
+- `src/game/teamManagement/teamManagement.jsx`
+- `src/game/training/training.jsx`
+- `src/game/training/training.scss`
+- `src/game/training/components/trainingPlayerStrip.jsx`
+- `src/game/training/components/trainingSessionPanel.jsx`
+- `src/game/training/components/trainingResultsModalContent.jsx`
+- `src/game/training/utils/playerTrainingState.js`
+- `src/game/training/utils/trainingState.js`
+- `src/game/training/utils/trainingSession.js`
+- `vibe/epics/EPIC-021/features.txt`
+- `vibe/epics/EPIC-021/implementation.txt`
+- `vibe/epics/EPIC-021/testing.txt`
+
+Tradeoffs / follow-up notes:
+- The current debug support is intentionally lightweight and lives on the Training page rather than in a separate global debug tool.
+- Manual in-app verification is still required for the full session flow, especially exact participant mapping and potential-reveal outcomes across multiple card/coach combinations.
+
+Bug fix pass (2026-03-14, update 2):
+- Implemented `BUG-001` from `EPIC-021/bugs.txt`.
+- Root cause:
+  - Training participant selection was reading allowed positions from the top-level card shape only.
+  - Actual library Training cards keep their position metadata inside `card.payload.positions`, so every normal session resolved an empty allowed-position list.
+- What changed:
+  - Added a shared `resolveTrainingCardPositions` helper in `src/game/training/utils/trainingSession.js`.
+  - Updated participant building to use the shared resolved positions helper.
+  - Updated training session snapshot creation to use the same helper so snapshot/debug/session data stay consistent.
+
+Engine components considered for bug pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug pass:
+- None directly. This fix stayed inside existing Training utility logic and reused the current session/state architecture already wired through `gameContext`.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this was a data-shape alignment fix inside the Training participant resolver.
+
+Files changed in bug pass (update 2):
+- `src/game/training/utils/trainingSession.js`
+- `vibe/epics/EPIC-021/bugs.txt`
+- `vibe/epics/EPIC-021/implementation.txt`
+- `vibe/epics/EPIC-021/testing.txt`
+
+Tradeoffs / follow-up notes:
+- The fix intentionally centralizes Training card position resolution in one helper to reduce future drift between session setup and participant display.
+- Manual in-app verification is still needed to confirm each single-position, multi-position, and `All` card maps correctly from saved Team Management positions.
+
+Bug fix pass (2026-03-14, update 3):
+- Implemented `BUG-002` from `EPIC-021/bugs.txt`.
+- Root cause:
+  - The OR/PR eligibility resolver was treating `Potential - Overall > 5` as a blocked state.
+  - That caused the end-of-session modal to report `Potential gap too large for this session` and incorrectly skipped later training success checks for those players.
+- What changed:
+  - Updated `resolveEligibilityOutcome` in `src/game/training/utils/trainingSession.js` so `potentialGap > 5` now guarantees eligibility.
+  - Cleared the blocked reason for that branch so the session report now shows `Eligible` instead of an exclusion message.
+
+Engine components considered for bug pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug pass:
+- None directly. This fix stayed inside the existing Training eligibility utility logic.
+
+Engine components not used (and why):
+- `bars`, `button`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this was a rules correction inside the Training eligibility resolver.
+
+Files changed in bug pass (update 3):
+- `src/game/training/utils/trainingSession.js`
+- `vibe/epics/EPIC-021/bugs.txt`
+- `vibe/epics/EPIC-021/implementation.txt`
+- `vibe/epics/EPIC-021/testing.txt`
+
+Tradeoffs / follow-up notes:
+- This change follows the latest bug clarification from the epic bug log, even though it differs from the earlier interpretation used in the initial feature pass.
+- Manual in-app verification is still needed to confirm large-gap players now reach the standard training success roll and no longer show the old exclusion text.
+
+Bug fix pass (2026-03-14, update 4):
+- Implemented `BUG-003` from `EPIC-021/bugs.txt`.
+- Root cause:
+  - The Career Home control panel had no direct Training navigation entry.
+  - The Training page hard-required `activeSession` and redirected to Career Home when none existed, so there was no standalone inspection mode.
+- What changed:
+  - Added a `Training` navigation button in `src/game/careerCalendar/components/careerControlPanel.jsx`.
+  - Updated `src/game/training/training.jsx` so the page now supports two modes:
+    - active-session mode with the normal training panel and debug output
+    - browse mode without a training panel when no session is active
+  - Added a centered `Back to Home` action for browse mode only.
+  - Updated `src/game/training/training.scss` so the focused-player panel is centered when it is the only main panel.
+
+Engine components considered for bug pass:
+- `src/engine/gameContext/gameContext.jsx`
+- `src/engine/ui/bars/bars.jsx`
+- `src/engine/ui/button/button.jsx`
+- `src/engine/ui/modal/modal.jsx`
+- `src/engine/ui/modal/modalContext.jsx`
+- `src/engine/ui/slidePanel/slidePanel.jsx`
+- `src/engine/ui/toast/toast.jsx`
+- `src/engine/ui/tooltip/tooltip.jsx`
+- `src/engine/utils/makeDecision/makeDecision.jsx`
+- `src/engine/utils/rng/rng.jsx`
+- `src/engine/utils/saveGame/saveGame.jsx`
+- `src/engine/utils/timer/timer.jsx`
+
+Engine components used in bug pass:
+- `button` for the new Career Home Training navigation entry and the standalone `Back to Home` action.
+- `gameContext` through existing Training page state access.
+
+Engine components not used (and why):
+- `bars`, `modal`, `modalContext`, `slidePanel`, `toast`, `tooltip`, `makeDecision`, `rng`, `saveGame`, and `timer` were not needed because this fix was limited to page routing/layout behavior and existing state reads.
+
+Files changed in bug pass (update 4):
+- `src/game/careerCalendar/components/careerControlPanel.jsx`
+- `src/game/training/training.jsx`
+- `src/game/training/training.scss`
+- `vibe/epics/EPIC-021/bugs.txt`
+- `vibe/epics/EPIC-021/implementation.txt`
+- `vibe/epics/EPIC-021/testing.txt`
+
+Tradeoffs / follow-up notes:
+- The standalone Training page currently acts as a first-team inspection view rather than a session history screen.
+- Manual in-app verification is still needed to confirm browse mode and active-session mode switch cleanly without stale UI state.

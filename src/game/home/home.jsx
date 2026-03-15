@@ -11,9 +11,14 @@ const Home = () => {
           <p className="homeScreen__summary">
             Start from day one and shape your team identity before the season begins.
           </p>
-          <Button variant={BUTTON_VARIANT.PRIMARY} to="/career/start">
-            Start Career
-          </Button>
+          <div className="homeScreen__actions">
+            <Button variant={BUTTON_VARIANT.PRIMARY} to="/career/start">
+              Start Career
+            </Button>
+            <Button variant={BUTTON_VARIANT.SECONDARY} to="/animations">
+              Animations
+            </Button>
+          </div>
         </main>
       </div>
 

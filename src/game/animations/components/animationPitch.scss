@@ -1,0 +1,193 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.animationPitch {
+  height: 100%;
+}
+
+.animationPitch__surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: min(68vh, 640px);
+  border-radius: 20px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.08)),
+    linear-gradient(90deg, #2f7f42 0%, #37964b 50%, #2f7f42 100%);
+}
+
+.animationPitch__surface::before,
+.animationPitch__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.animationPitch__surface::before {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.035) 0,
+    rgba(255, 255, 255, 0.035) 7.14%,
+    rgba(0, 0, 0, 0.03) 7.14%,
+    rgba(0, 0, 0, 0.03) 14.28%
+  );
+}
+
+.animationPitch__surface::after {
+  box-shadow: inset 0 0 0 1px rgba($lightText, 0.08);
+}
+
+.animationPitch__goal,
+.animationPitch__outline,
+.animationPitch__halfway,
+.animationPitch__centerCircle,
+.animationPitch__centerSpot,
+.animationPitch__box,
+.animationPitch__sixYard,
+.animationPitch__penaltySpot,
+.animationPitch__arc {
+  position: absolute;
+  pointer-events: none;
+}
+
+.animationPitch__goal {
+  top: 34%;
+  width: 2.4%;
+  height: 32%;
+  border: 3px solid rgba($lightText, 0.88);
+}
+
+.animationPitch__goal--left {
+  left: 0.4%;
+  border-right: 0;
+}
+
+.animationPitch__goal--right {
+  right: 0.4%;
+  border-left: 0;
+}
+
+.animationPitch__outline {
+  inset: 2.8%;
+  border: 3px solid rgba($lightText, 0.86);
+}
+
+.animationPitch__halfway {
+  top: 2.8%;
+  bottom: 2.8%;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: rgba($lightText, 0.86);
+}
+
+.animationPitch__centerCircle {
+  top: 50%;
+  left: 50%;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid rgba($lightText, 0.86);
+  transform: translate(-50%, -50%);
+}
+
+.animationPitch__centerSpot,
+.animationPitch__penaltySpot {
+  width: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba($lightText, 0.9);
+}
+
+.animationPitch__centerSpot {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.animationPitch__box {
+  top: 20%;
+  width: 14%;
+  height: 60%;
+  border: 3px solid rgba($lightText, 0.86);
+}
+
+.animationPitch__box--left {
+  left: 2.8%;
+  border-left: 0;
+}
+
+.animationPitch__box--right {
+  right: 2.8%;
+  border-right: 0;
+}
+
+.animationPitch__sixYard {
+  top: 31%;
+  width: 5.5%;
+  height: 38%;
+  border: 3px solid rgba($lightText, 0.86);
+}
+
+.animationPitch__sixYard--left {
+  left: 2.8%;
+  border-left: 0;
+}
+
+.animationPitch__sixYard--right {
+  right: 2.8%;
+  border-right: 0;
+}
+
+.animationPitch__penaltySpot--left {
+  left: 11%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.animationPitch__penaltySpot--right {
+  right: 11%;
+  top: 50%;
+  transform: translate(50%, -50%);
+}
+
+.animationPitch__arc {
+  top: 36%;
+  width: 10%;
+  height: 28%;
+  border: 3px solid rgba($lightText, 0.86);
+}
+
+.animationPitch__arc--left {
+  left: 11.5%;
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+.animationPitch__arc--right {
+  right: 11.5%;
+  border-right: 0;
+  border-radius: 999px 0 0 999px;
+}
+
+.animationPitch__layer {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 720px) {
+  .animationPitch__surface {
+    min-height: 460px;
+  }
+
+  .animationPitch__goal,
+  .animationPitch__outline,
+  .animationPitch__halfway,
+  .animationPitch__centerCircle,
+  .animationPitch__box,
+  .animationPitch__sixYard,
+  .animationPitch__arc {
+    border-width: 2px;
+  }
+}

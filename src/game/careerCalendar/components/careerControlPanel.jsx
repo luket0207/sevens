@@ -40,6 +40,9 @@ const CareerControlPanel = ({
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/team-management">
             Team Management
           </Button>
+          <Button variant={BUTTON_VARIANT.SECONDARY} to="/training">
+            Training
+          </Button>
           <Button variant={BUTTON_VARIANT.SECONDARY} to="/staff">
             Staff
           </Button>

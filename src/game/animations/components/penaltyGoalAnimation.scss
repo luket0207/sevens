@@ -1,0 +1,42 @@
+@use "../../../assets/scss/ui/import" as *;
+
+.penaltyGoalAnimation {
+  height: 100%;
+}
+
+.penaltyGoalAnimation__crowdBand {
+  position: absolute;
+  inset: auto 61% 20% 16%;
+  height: 30%;
+  border: 2px dashed rgba($lightText, 0.14);
+  border-right: 0;
+  border-radius: 999px 0 0 999px;
+}
+
+.penaltyGoalAnimation__status {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 14px;
+  background: rgba($siteBackground, 0.66);
+  border: 1px solid rgba($lightText, 0.16);
+  z-index: 7;
+}
+
+.penaltyGoalAnimation__status p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 720px) {
+  .penaltyGoalAnimation__status {
+    right: 0.6rem;
+    left: 0.6rem;
+    bottom: 0.6rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+}

@@ -598,3 +598,29 @@ This epic is complete when:
 - An end-of-session modal reports all training outcomes and returns the user to Career Home.
 - Training cards are consumed correctly.
 - Coaches are unavailable for further training that same day once assigned.
+
+================================================================
+Implementation Status
+================================================================
+
+Update 1 - 2026-03-14
+
+- FEAT-2101: done
+- FEAT-2102: done
+- FEAT-2103: done
+- FEAT-2104: done
+- FEAT-2105: done
+- FEAT-2106: done
+- FEAT-2107: done
+- FEAT-2108: done
+- FEAT-2109: done
+- FEAT-2110: done
+- FEAT-2111: done
+- FEAT-2112: done
+- FEAT-2113: done
+- FEAT-2114: done
+- FEAT-2115: done
+
+Implementation stop point:
+- Core EPIC-021 feature set is implemented in code.
+- Next step is manual session-flow verification from Career Home through Training session results.

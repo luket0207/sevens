@@ -16,6 +16,7 @@ import {
   applyStaffStateToPlayerTeam,
   createInitialPlayerTeamStaffState,
 } from "../../staff/utils/staffState";
+import { ensurePlayerTeamTrainingState } from "../../training/utils/playerTrainingState";
 
 export const CAREER_GENERATION_PHASES = Object.freeze({
   PREPARING: "preparing",
@@ -104,7 +105,7 @@ const buildPlayerTeamState = (careerSetup) => {
     teamManagement,
   };
 
-  return applyStaffStateToPlayerTeam(playerTeam, initialStaffState);
+  return ensurePlayerTeamTrainingState(applyStaffStateToPlayerTeam(playerTeam, initialStaffState));
 };
 
 const createProgressEmitter = ({ totalUnits, onProgress }) => {

@@ -1,0 +1,47 @@
+Feature testing pass (2026-03-14, update 1)
+
+Manual test flow:
+1. Open `/` and confirm an `Animations` entry appears below `Start Career`.
+2. Click `Animations` and confirm the app opens `/animations`.
+3. On the Animations page, confirm there is a trigger button for `PenaltyGoal`.
+4. Click `Play PenaltyGoal` and confirm the shared animation container opens above the page.
+5. While the animation is playing, confirm:
+   - the container cannot be closed early
+   - a full pitch is visible with both goals and pitch markings
+   - all 14 player markers are visible
+   - one home player is by the penalty spot
+   - the away goalkeeper is in goal
+   - the other players are grouped around the area
+6. Confirm the animation flow shows:
+   - a short random initial stall
+   - the penalty taker moving towards the ball
+   - the ball moving into the goal
+   - the finish going left or right of the goalkeeper
+   - a brief in-goal pause
+   - the reusable goal end-state appearing before close
+7. Confirm the container closes automatically when playback finishes.
+8. Re-run `PenaltyGoal` several times and confirm the debug output updates stall time, shot side, phase timing, and last completed playback state.
+
+Expected results:
+- Home page navigation exposes the new Animations test area.
+- Animations page trigger flow opens the locked playback container correctly.
+- `PenaltyGoal` runs end to end inside the container and auto closes afterward.
+- The scene uses reusable pitch, ball, mini player, and goal-animation building blocks.
+- Debug output makes the randomized timing and finish side easy to inspect.
+
+Automated tests completed:
+- `npm run build`
+- `npm run lint`
+
+Automated tests still needed:
+- A component/integration test covering trigger-button playback open/close flow.
+- A deterministic test path for `PenaltyGoal` timing phases and left/right finish selection.
+- Visual regression coverage for pitch layout and player visibility on smaller screens.
+
+Command checks run in update-1 feature pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-022 scope.
+  - Existing failures remained in `src/engine/*`, `src/game/info/*`, and `src/game/shared/pageLayout/*`.
+  - No new EPIC-022-specific lint failures were introduced by this feature pass.
+
+Update-1 feature test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

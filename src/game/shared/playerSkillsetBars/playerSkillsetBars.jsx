@@ -86,7 +86,7 @@ const getTraitEntries = (traits) => {
     .filter(Boolean);
 };
 
-const PlayerSkillsetBars = ({ skills, traits, className, hideTraits, hiddenRatings }) => {
+const PlayerSkillsetBars = ({ skills, traits, className, hideTraits, hiddenRatings, subRatings }) => {
   const entries = getNumericSkillEntries(skills, hiddenRatings);
   const traitEntries = getTraitEntries(traits);
 
@@ -115,6 +115,11 @@ const PlayerSkillsetBars = ({ skills, traits, className, hideTraits, hiddenRatin
               <div className="playerSkillsetBars__barWrap">
                 <Bars min={0} max={100} current={entry.isHidden ? 0 : entry.value} />
                 {entry.isHidden ? <span className="playerSkillsetBars__hiddenValue">Hidden</span> : null}
+                {!entry.isHidden && Number.isFinite(Number(subRatings?.[entry.name])) ? (
+                  <span className="playerSkillsetBars__subRatingMeta">
+                    Sub-rating: {Math.max(0, Number(subRatings?.[entry.name]) || 0)} / {entry.value}
+                  </span>
+                ) : null}
               </div>
             </div>
           ))}
@@ -155,6 +160,7 @@ PlayerSkillsetBars.propTypes = {
   className: PropTypes.string,
   hideTraits: PropTypes.bool,
   hiddenRatings: PropTypes.object,
+  subRatings: PropTypes.object,
 };
 
 PlayerSkillsetBars.defaultProps = {
@@ -163,6 +169,7 @@ PlayerSkillsetBars.defaultProps = {
   className: "",
   hideTraits: false,
   hiddenRatings: null,
+  subRatings: null,
 };
 
 export default PlayerSkillsetBars;

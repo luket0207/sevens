@@ -1,0 +1,152 @@
+Feature testing pass (2026-03-14, update 1)
+
+Manual test flow:
+1. Open `/career/home` with at least one Training card in the Card Library.
+2. Confirm Training cards show a `Start Session` button instead of resolving immediately.
+3. Click `Start Session` and verify a coach-selection modal appears with only available coaches.
+4. Cancel the modal and confirm the card is not consumed.
+5. Start the session for real, select a coach, and confirm:
+   - the card is consumed
+   - the chosen coach becomes `inUse`
+   - the app navigates to `/training`
+6. On `/training`, confirm the page shows:
+   - a top strip of all first-team players
+   - a focused player details area
+   - a session panel with session participants, coach details, and `Start Training`
+7. Hover different players in the top strip and confirm the focused player details update.
+8. Confirm the focused player details show ratings and sub-ratings together.
+9. Run a training session and verify the end-of-session modal reports:
+   - involved players
+   - OR/PR gating outcomes
+   - coach-flagged failures
+   - success/failure rolls
+   - sub-rating gains
+   - visible skill upgrades
+   - any potential reveal
+10. End the session and confirm the app returns to `/career/home`.
+11. Without advancing the day, verify the same coach cannot be selected for another training session.
+12. Advance to a later career day and confirm that coach becomes available again.
+13. Re-open Team Management / Training details and confirm:
+   - hidden potential remains hidden until revealed
+   - revealed potential stays visible
+   - sub-ratings persist on the player state
+
+Expected results:
+- Training cards begin a setup flow rather than resolving directly.
+- Coaches are selected before training starts and become unavailable for further same-day sessions.
+- The Training screen exists and uses the required 3-section layout.
+- Session participants follow the exact Training card position rules from saved Team Management positions.
+- Training applies the exact OR/PR gating, coach success chances, card-matrix gains, and no-carry-over upgrade rule.
+- Rare-card sessions apply the additional `+5%` potential reveal bonus.
+- End-of-session reporting clearly explains the full outcome per player.
+
+Automated tests completed:
+- `npm run build`
+- `npm run lint`
+
+Automated tests still needed:
+- Dedicated unit coverage for participant selection, OR/PR gate branching, sub-rating threshold resets, and potential reveal targeting.
+- An integration test that starts a Training session from Career Home and verifies coach locking plus card consumption timing.
+
+Command checks run in update-1 feature pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-021 scope.
+  - No new EPIC-021-specific lint failures were introduced by this feature pass.
+
+Update-1 feature test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug testing pass (2026-03-14, update 2)
+
+Manual regression steps:
+1. Open `/career/home` with a saved Team Management setup and at least one Training card in the library.
+2. Start a single-position Training card such as `DF` or `MD` and select an available coach.
+3. Confirm the Training page Session Players panel lists the expected players from the matching saved Team Management slots.
+4. Repeat with a multi-position card such as `DF, MD` and confirm both role groups are included.
+5. Repeat with an `All` card and confirm the full first-team session group appears.
+
+Expected results:
+- Session Players is no longer stuck at `0 player(s) involved in this training card` for valid Training cards.
+- Participant selection respects the Training card's stored `payload.positions` data.
+- Single-position, multi-position, and `All` cards all map correctly from saved Team Management assignments.
+
+Automated tests completed:
+- `npm run build`
+- `npm run lint`
+
+Automated tests still needed:
+- Dedicated unit coverage for Training card position resolution from library-card payload data.
+- Dedicated unit coverage for participant selection across `GK`, single outfield role, multi-role, and `All` Training cards.
+
+Command checks run in update-2 bug pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-021 scope.
+  - Existing failures remained in `src/engine/*`, `src/game/info/*`, and `src/game/shared/pageLayout/*`.
+  - No new EPIC-021-specific lint failures were introduced by this bug fix pass.
+
+Update-2 bug test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug testing pass (2026-03-14, update 3)
+
+Manual regression steps:
+1. Start a Training session that includes at least one player where `Potential - Overall > 5`.
+2. Run the session and inspect that player's entry in the end-of-session modal.
+3. Confirm the modal shows `Eligibility outcome: Eligible` for that player.
+4. Confirm the player still goes through the standard training success check instead of being excluded immediately.
+
+Expected results:
+- Players with `Potential - Overall > 5` are not blocked by the eligibility gate.
+- The old `Potential gap too large for this session` exclusion message no longer appears for that case.
+- Those players continue into the normal coach-based training success roll.
+
+Automated tests completed:
+- `npm run build`
+- `npm run lint`
+
+Automated tests still needed:
+- Dedicated unit coverage for every OR/PR branch, especially the clarified `potentialGap > 5` guaranteed-eligibility case.
+- An integration test covering end-of-session modal output for each eligibility outcome.
+
+Command checks run in update-3 bug pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-021 scope.
+  - Existing failures remained in `src/engine/*`, `src/game/info/*`, and `src/game/shared/pageLayout/*`.
+  - No new EPIC-021-specific lint failures were introduced by this bug fix pass.
+
+Update-3 bug test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)
+
+Bug testing pass (2026-03-14, update 4)
+
+Manual regression steps:
+1. Open Career Home and confirm the control panel navigation includes a `Training` button.
+2. Open `/training` from that control-panel button without starting a Training card session.
+3. Confirm the page stays open instead of redirecting back to Career Home.
+4. Confirm the standalone Training view shows:
+   - the first-team player strip
+   - the focused-player panel
+   - no training session panel
+   - a `Back to Home` button
+5. Confirm the focused-player panel is centered when browse mode is active.
+6. Start a real Training card session and navigate to `/training` again.
+7. Confirm active-session mode still shows the training panel and does not show the browse-mode `Back to Home` button.
+
+Expected results:
+- Career Home exposes direct navigation to the Training page.
+- The Training page supports a no-session browse mode without redirecting away.
+- Browse mode hides the training panel and centers the focused-player panel.
+- Active-session mode still behaves as before.
+
+Automated tests completed:
+- `npm run build`
+- `npm run lint`
+
+Automated tests still needed:
+- An integration test covering `/training` in both browse mode and active-session mode.
+- A UI regression test ensuring the browse-mode layout centers correctly when the session panel is absent.
+
+Command checks run in update-4 bug pass:
+- `npm run build`: passed.
+- `npm run lint`: failed due existing repository-wide lint baseline unrelated to EPIC-021 scope.
+  - Existing failures remained in `src/engine/*`, `src/game/info/*`, and `src/game/shared/pageLayout/*`.
+  - No new EPIC-021-specific lint failures were introduced by this bug fix pass.
+
+Update-4 bug test status: in progress (manual steps documented, not executed in this shell session), passed (build), failed (lint baseline unchanged)

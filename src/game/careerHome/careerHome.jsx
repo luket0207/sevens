@@ -69,10 +69,14 @@ import {
   applyStaffUpgradeToMember,
   ensurePlayerTeamStaffState,
   hireStaffMemberInOpenSlot,
+  markStaffInUseUntilNextCareerDay,
   releaseCompletedStaffAssignmentsForCareerDay,
   replaceActiveStaffMember,
   resolveStaffSlotSummary,
 } from "../staff/utils/staffState";
+import { ensurePlayerTeamTrainingState } from "../training/utils/playerTrainingState";
+import { createTrainingSessionSnapshot } from "../training/utils/trainingSession";
+import { ensureCareerTrainingState } from "../training/utils/trainingState";
 import "./careerHome.scss";
 
 const CALENDAR_STATUS_READY = "ready";
@@ -616,6 +620,124 @@ const CareerHome = () => {
               };
             });
             closeModal();
+          }}
+          onCancel={closeModal}
+        />
+      ),
+    });
+  };
+
+  const useTrainingCard = (cardId) => {
+    const trainingCard = cardLibrary.find((card) => card.id === cardId && card.type === CARD_TYPES.TRAINING);
+    if (!trainingCard) {
+      return;
+    }
+
+    if (availableStaffForScouting.length === 0) {
+      openNoAvailableStaffModal({
+        modalTitle: "No Available Coaches",
+        modalContent:
+          "All current staff members are already in use. Wait until a later day before starting another training session.",
+      });
+      return;
+    }
+
+    openModal({
+      modalTitle: "Assign Coach To Training",
+      buttons: MODAL_BUTTONS.NONE,
+      modalContent: (
+        <StaffSelectionModalContent
+          title={`Start ${trainingCard?.name ?? "Training Session"}`}
+          description="Select an available coach to run this training session."
+          staffMembers={availableStaffForScouting}
+          actionLabel="Start Session"
+          onSelectStaff={(selectedStaffId) => {
+            setGameState((prev) => {
+              const currentCardsState = ensureCareerCardState(prev?.career?.cards);
+              const nextTrainingCard = currentCardsState.library.find(
+                (card) => card.id === cardId && card.type === CARD_TYPES.TRAINING
+              );
+              if (!nextTrainingCard) {
+                return prev;
+              }
+
+              const currentPlayerTeam = ensurePlayerTeamTrainingState(prev?.career?.world?.playerTeam);
+              const currentStaffState = ensurePlayerTeamStaffState(currentPlayerTeam);
+              const selectableStaffMembers = getAvailableStaffForScouting(currentStaffState.members);
+              const selectedStaff = selectableStaffMembers.find((staffMember) => staffMember.id === selectedStaffId);
+              if (!selectedStaff) {
+                return prev;
+              }
+
+              const currentCareerDay = normalizeCareerDayNumber(prev?.career?.calendar?.careerDayNumber);
+              const nextStaffState = markStaffInUseUntilNextCareerDay({
+                staffState: currentStaffState,
+                staffId: selectedStaffId,
+                currentCareerDay,
+                assignmentType: "training_session",
+              });
+              const nextPlayerTeam = applyStaffStateToPlayerTeam(currentPlayerTeam, nextStaffState);
+              const nextTrainingState = ensureCareerTrainingState(prev?.career?.training);
+              const activeSession = createTrainingSessionSnapshot({
+                trainingCard: nextTrainingCard,
+                coach: selectedStaff,
+                playerTeam: nextPlayerTeam,
+                currentCareerDay,
+              });
+              const nextLibrary = discardCardFromLibrary({
+                library: currentCardsState.library,
+                cardId,
+              });
+              const nowIso = new Date().toISOString();
+
+              return {
+                ...prev,
+                career: {
+                  ...prev.career,
+                  world: {
+                    ...(prev.career?.world ?? {}),
+                    playerTeam: nextPlayerTeam,
+                  },
+                  training: {
+                    ...nextTrainingState,
+                    activeSession,
+                    debug: {
+                      ...nextTrainingState.debug,
+                      lastSessionSetup: {
+                        sessionId: activeSession.id,
+                        cardId,
+                        cardName: nextTrainingCard?.name ?? "",
+                        coachId: selectedStaffId,
+                        coachName: selectedStaff?.name ?? "",
+                        participantPlayerIds: activeSession.participantPlayerIds,
+                        at: nowIso,
+                      },
+                    },
+                  },
+                  cards: {
+                    ...currentCardsState,
+                    library: nextLibrary,
+                    debug: {
+                      ...currentCardsState.debug,
+                      lastStaffAction: {
+                        type: "training_assignment",
+                        status: "success",
+                        cardId,
+                        cardName: nextTrainingCard?.name ?? "",
+                        staffId: selectedStaffId,
+                        staffName: selectedStaff?.name ?? "",
+                        trainingSessionId: activeSession.id,
+                        at: nowIso,
+                      },
+                      librarySize: nextLibrary.length,
+                    },
+                    lastUpdatedAt: nowIso,
+                  },
+                },
+              };
+            });
+            closeModal();
+            navigate("/training");
           }}
           onCancel={closeModal}
         />
@@ -1185,6 +1307,7 @@ const CareerHome = () => {
               <CardLibraryBar
                 library={cardLibrary}
                 onDiscardCard={discardLibraryCard}
+                onStartTrainingCard={useTrainingCard}
                 onScoutCard={useScoutingCard}
                 onGoToAcademyCard={goToAcademyForCard}
                 onHireStaffMemberCard={hireStaffMemberCard}

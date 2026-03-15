@@ -1,0 +1,66 @@
+@use "../../../assets/scss/ui/import" as *;
+
+@keyframes goalAnimationPulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.goalAnimation {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.goalAnimation__burst {
+  position: absolute;
+  width: min(34vw, 320px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 208, 0, 0.36), rgba(255, 208, 0, 0));
+  filter: blur(2px);
+  animation: goalAnimationPulse 280ms ease-out both;
+}
+
+.goalAnimation__textWrap {
+  position: relative;
+  padding: 1rem 1.6rem;
+  border-radius: 18px;
+  border: 1px solid rgba($lightText, 0.28);
+  background: rgba($siteBackground, 0.72);
+  box-shadow: 0 18px 36px rgba($darkText, 0.24);
+  text-align: center;
+  animation: goalAnimationPulse 280ms ease-out both;
+}
+
+.goalAnimation__textWrap h3,
+.goalAnimation__textWrap p {
+  margin: 0;
+}
+
+.goalAnimation__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: rgba($lightText, 0.72);
+}
+
+.goalAnimation__textWrap h3 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+  color: #ffdd55;
+}

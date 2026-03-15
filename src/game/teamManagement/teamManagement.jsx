@@ -7,6 +7,7 @@ import PageLayout from "../shared/pageLayout/pageLayout";
 import TeamSetupLayout from "../shared/teamSetupLayout/teamSetupLayout";
 import { PLAYER_GENERATION_TYPES } from "../playerGeneration";
 import TeamManagementDebugPanel from "./components/teamManagementDebugPanel";
+import { ensurePlayerTeamTrainingState } from "../training/utils/playerTrainingState";
 import TeamManagementTacticBox from "./components/teamManagementTacticBox";
 import {
   TEAM_MANAGEMENT_DEFAULT_TACTICS,
@@ -40,7 +41,7 @@ const TeamManagement = () => {
   const { closeModal, openModal } = useModal();
 
   const generationStatus = gameState?.career?.generation?.status ?? "idle";
-  const playerTeam = gameState?.career?.world?.playerTeam ?? null;
+  const playerTeam = ensurePlayerTeamTrainingState(gameState?.career?.world?.playerTeam);
 
   const initialDraft = useMemo(
     () => createInitialTeamManagementDraft({ playerTeam }),
@@ -53,7 +54,7 @@ const TeamManagement = () => {
     return <Navigate to="/career/generating" replace />;
   }
 
-  if (generationStatus !== "complete" || !playerTeam) {
+  if (generationStatus !== "complete" || !playerTeam?.id) {
     return <Navigate to="/career/start" replace />;
   }
 
